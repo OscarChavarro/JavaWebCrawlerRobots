@@ -35,6 +35,8 @@ public class MetroCuadradoDatabaseConnection {
         properties = null;
     }
 
+    /**
+    */
     public static DB createMongoConnection()
     {
         try {
@@ -49,6 +51,9 @@ public class MetroCuadradoDatabaseConnection {
         return mongoConnection;
     }
     
+    /**
+    @return 
+    */
     public ArrayList<Property> fetchAllPropertiesMongo()
     {
         if ( properties == null ) {
