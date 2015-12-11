@@ -26,6 +26,7 @@ import vsdk.toolkit.io.PersistenceElement;
 //#endif
 
 import vsdk.toolkit.common.VSDK;
+import vsdk.toolkit.media.RGBAImage;
 
 /**
 Current class is an specific low level implementation of an uncompressed

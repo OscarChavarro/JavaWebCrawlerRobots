@@ -8,8 +8,12 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 // JOGL classes
-import com.jogamp.opengl.util.texture.spi.DDSImage;
-import com.jogamp.opengl.util.texture.spi.DDSImage.ImageInfo;
+//import com.jogamp.opengl.util.texture.spi.DDSImage;
+//import com.jogamp.opengl.util.texture.spi.DDSImage.ImageInfo;
+
+import com.sun.opengl.util.texture.spi.DDSImage;
+import com.sun.opengl.util.texture.spi.DDSImage.ImageInfo;
+
 
 // VitralSDK classes
 import vsdk.toolkit.common.VSDK;

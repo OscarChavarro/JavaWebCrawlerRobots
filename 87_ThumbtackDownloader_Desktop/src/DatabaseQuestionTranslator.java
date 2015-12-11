@@ -7,7 +7,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import org.bson.types.ObjectId;
+//import org.bson.types.ObjectId;
 
 /**
 */
@@ -173,7 +173,9 @@ public class DatabaseQuestionTranslator {
                 tu = false;
             }
             out += c;
-            if ( c == '¿'  ) {
+            //if ( c == '¿'  ) {
+            //MODIFICADO DM 09/12
+            if ( c == 'A'  ) {
                 numberOfQuestionMarks++;
                 tu = true;
             }
@@ -186,10 +188,14 @@ public class DatabaseQuestionTranslator {
             tu = true;
             for ( i = 0; i < in.length(); i++ ) {
                 c = in.charAt(i);
-                if ( c == '¿' ) {                    
+              //if ( c == '¿'  ) {
+                //MODIFICADO DM 09/12
+                if ( c == 'A'  ) {                    
                     tu = true;
                 }
-                if ( c == '¿' && noqm < numberOfQuestionMarks-1 ) {
+                //if ( c == '¿' && noqm < numberOfQuestionMarks-1 ) {
+              //MODIFICADO DM 09/12
+                if ( c == 'A' && noqm < numberOfQuestionMarks-1 ) {	
                     noqm++;
                 }
                 else {
