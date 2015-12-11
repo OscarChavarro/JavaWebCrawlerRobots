@@ -1,40 +1,42 @@
+
+// Java basic classes
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.StringTokenizer;
 
+// VSDK classes
 import vsdk.toolkit.io.PersistenceElement;
 
+// Application specific classes
 import databaseMongo.DatabaseConnection80mil;
 import databaseMongo.model.ContactData;
 
 /**
 */
 public class EmailListCsvImporter {
-    private static final String path = "/Users/oscar/usr/Abako/BodegasDeDatos/listadosDeCorreos/csv_total/";
-    public static void main(String args[])
-    {
-        try {
-            int n = traverseFilesAndCount(path);
-            traverseFilesAndProcess(path, n);
-        }
-        catch ( Exception e ) {
-            System.out.println("ERROR!");
-        }
-    }
+    private static final String path = 
+        "/Users/oscar/usr/Abako/BodegasDeDatos/listadosDeCorreos/csv_total/extendidos/enBogota";
 
-    private static int traverseFilesAndProcess(String path, int n)
+    /**
+    @param directoryPath
+    @param numberOfFilesToProcess
+    @return
+    @throws Exception 
+    */
+    private static int traverseFilesAndProcess(
+        String directoryPath, int numberOfFilesToProcess)
         throws Exception 
     {
-        int counter = 0;
+        int fileCounter = 0;
         File fd;
-        fd = new File(path);
+        fd = new File(directoryPath);
         if ( !fd.exists() ) {
-            System.out.println("ERROR: Folder not found: " + path);
+            System.out.println("ERROR: Folder not found: " + directoryPath);
             return 0;
         }
         if ( !fd.isDirectory() ) {
-            System.out.println("Path " + path + " is not a folder");
+            System.out.println("Path " + directoryPath + " is not a folder");
             return 0;
         }
         
@@ -44,27 +46,34 @@ public class EmailListCsvImporter {
         for ( i = 0; i < children.length; i++ ) {
             File fi = children[i];
             if ( fi.isDirectory() ) {
-                counter +=
-                    traverseFilesAndProcess(fi.getAbsolutePath(), n);
+                fileCounter +=
+                    traverseFilesAndProcess(fi.getAbsolutePath(), numberOfFilesToProcess);
             }
             else if ( fi.isFile() ) {
-                counter++;
-                processFile(fi, n, counter);
+                fileCounter++;
+                processFile(fi, numberOfFilesToProcess, fileCounter);
             }
         }   
-        return counter;
+        return fileCounter;
     }
 
-    private static int traverseFilesAndCount(String path) throws Exception {
+    /**
+    @param directoryPath
+    @return
+    @throws Exception 
+    */
+    private static int traverseFilesAndCountFiles(String directoryPath) 
+        throws Exception 
+    {
         File fd;
-        int count = 0;
-        fd = new File(path);
+        int fileCounter = 0;
+        fd = new File(directoryPath);
         if ( !fd.exists() ) {
-            System.out.println("ERROR: Folder not found: " + path);
+            System.out.println("ERROR: Folder not found: " + directoryPath);
             return 0;
         }
         if ( !fd.isDirectory() ) {
-            System.out.println("Path " + path + " is not a folder");
+            System.out.println("Path " + directoryPath + " is not a folder");
             return 0;
         }
         
@@ -74,36 +83,44 @@ public class EmailListCsvImporter {
         for ( i = 0; i < children.length; i++ ) {
             File fi = children[i];
             if ( fi.isDirectory() ) {
-                count += traverseFilesAndCount(fi.getAbsolutePath());
+                fileCounter += traverseFilesAndCountFiles(fi.getAbsolutePath());
             }
             else if ( fi.isFile() ) {
-                count++;
+                fileCounter++;
             }
         }   
-        return count;
+        return fileCounter;
     }
 
+    /**
+    @param fi
+    @param n
+    @param i
+    @throws Exception 
+    */
     private static void processFile(File fi, int n, int i) throws Exception
     {
         System.out.println("  - [" + i + "/" + n + "]: " + fi.getName());
-        
+
         FileInputStream fis;
         BufferedInputStream bis;
         
         fis = new FileInputStream(fi);
         bis = new BufferedInputStream(fis);
-        int lineCount = 0;
-        
+        int lineCounter = 0;
+
         while ( bis.available() > 0 ) {
             String line = PersistenceElement.readAsciiLine(bis);
             processLine(line);
-            lineCount++;
+            lineCounter++;
         }
-        
-        System.out.println("    . " + lineCount + " lines");
-        
+
+        System.out.println("    . " + lineCounter + " lines");
     }
 
+    /**
+    @param line 
+    */
     private static void processLine(String line) {
         StringTokenizer parser;
         parser = new StringTokenizer(line, ", ");
@@ -117,6 +134,10 @@ public class EmailListCsvImporter {
         }
     }
 
+    /**
+    @param token
+    @return 
+    */
     private static boolean isMail(String token) {
         if ( token == null || token.length() <= 0 ) {
             return false;
@@ -184,10 +205,27 @@ public class EmailListCsvImporter {
         return true;
     }
 
+    /**
+    @param email
+    */
     private static void addToken(String email) {
         ContactData c;
         c = new ContactData();
         c.setEmail(email);
         DatabaseConnection80mil.insertContactMongo(c);
+    }
+
+    /**
+    @param args 
+    */
+    public static void main(String args[])
+    {
+        try {
+            int numberOfFiles = traverseFilesAndCountFiles(path);
+            traverseFilesAndProcess(path, numberOfFiles);
+        }
+        catch ( Exception e ) {
+            System.out.println("ERROR!");
+        }
     }
 }

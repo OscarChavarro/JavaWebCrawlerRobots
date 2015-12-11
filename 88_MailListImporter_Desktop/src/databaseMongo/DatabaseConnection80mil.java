@@ -34,14 +34,17 @@ public class DatabaseConnection80mil {
         mongoConnection = createMongoConnection();
     }
 
+    /**
+    @return 
+    */
     public static DB createMongoConnection()
     {
         try {
             MongoClient mongoClient;
-            mongoClient = new MongoClient("localhost", 27018);
-            mongoConnection = mongoClient.getDB("domolyRobot");
+            mongoClient = new MongoClient("localhost", 27017);
+            mongoConnection = mongoClient.getDB("80mil");
             marketingClientLead = 
-                mongoConnection.getCollection("marketingClientLead");            
+                mongoConnection.getCollection("marketingClientLeadBogota");            
             marketingProfessionalLead = 
                 mongoConnection.getCollection("marketingProfessionalLead");            
         }
@@ -87,6 +90,7 @@ public class DatabaseConnection80mil {
             }
         }
         catch ( MongoException e ) {
+            
             //System.out.println("    . Saltando contacto - ya existía");
             //System.out.println("    . " + r.getEmail());
             /*
@@ -124,7 +128,8 @@ public class DatabaseConnection80mil {
         try {
             //if ( r.getCdcbLegalRepresentativeEmail() == null || 
             //     r.getCdcbLegalRepresentativeEmail().equals("null") ) {
-            //    System.out.println("    . Saltando contacto vacio: " + r.getCdcbCompanyName());
+            //    System.out.println("    . Saltando contacto vacio: " + 
+            //    r.getCdcbCompanyName());
             //}
             //else {
                 marketingProfessionalLead.insert(newDocument);
