@@ -103,8 +103,8 @@ public class MetroCuadradoDownloader {
         importIncrementalList(pageProcessor, sites);
 
         while ( !end ) {
-            int n = (pageNumber.get()+1);
-            int m = (pages.get());
+            int n = 10;//(pageNumber.get()+1);
+            int m = 10;//(pages.get());
             System.out.println("Ahora quiero ir a la pagina " + n + " de entre " + m);
             if ( n > m ) {
                 break;
@@ -676,7 +676,7 @@ public class MetroCuadradoDownloader {
     private static String[][] calculateRegions()
     {
         String m[][] = {
-            {"Abrego", "abrego"},
+            /*{"Abrego", "abrego"},
             {"Acacias", "acacias"},
             {"Acandi", "acandi"},
             {"Agua De Dios", "aguadedios"},
@@ -730,8 +730,8 @@ public class MetroCuadradoDownloader {
             {"Bolivar", "bolivar"},
             {"Boyaca", "boyaca"},
             {"Briceno", "briceno"},
-            {"Briceño", "briceño"},
-            {"Bucaramanga", "bucaramanga"},
+            {"Briceño", "briceño"},*/
+            {"Bucaramanga", "bucaramanga"}/*,
             {"Buenaventura", "buenaventura"},
             {"Buenavista", "buenavista"},
             {"Buesaco", "buesaco"},
@@ -1157,7 +1157,7 @@ public class MetroCuadradoDownloader {
             {"Zarzal", "zarzal"},
             {"Zetaquira", "zetaquira"},
             {"Zipacon", "zipacon"},
-            {"Zipaquira", "zipaquira"}
+            {"Zipaquira", "zipaquira"}*/
         };
         return m;
     }
