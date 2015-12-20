@@ -123,7 +123,7 @@ public class EmailListCsvImporter {
     */
     private static void processLine(String line) {
         StringTokenizer parser;
-        parser = new StringTokenizer(line, ", <>:;{}()");
+        parser = new StringTokenizer(line, ", ");
         int i;
         
         for ( i = 0; parser.hasMoreTokens(); i++ ) {
