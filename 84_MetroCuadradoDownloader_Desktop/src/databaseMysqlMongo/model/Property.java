@@ -25,6 +25,7 @@ public class Property extends JdbcEntity {
     private double businessPriceAdmin;
     private double businessPriceLease;
     private double businessPriceSale;
+    private String timeBuilt;
 
     /**
      * @return the id
@@ -378,6 +379,22 @@ public class Property extends JdbcEntity {
      */
     public void setBusinessPriceSale(double businessPriceSale) {
         this.businessPriceSale = businessPriceSale;
+    }
+    
+    /**
+     * @return the timeBuilt
+     */
+    public String getTimeBuilt()
+    {
+        return timeBuilt;
+    }
+
+    /**
+     * @param timeBuilt the timeBuilt to set
+     */
+    public void setTimeBuilt(String timeBuilt)
+    {
+        this.timeBuilt = timeBuilt;
     }
 
 

@@ -43,7 +43,7 @@ public class MetroCuadradoDatabaseConnection {
             MongoClient mongoClient;
             mongoClient = new MongoClient("localhost" , 27017);
             mongoConnection = mongoClient.getDB("domolyRobot");
-            properties = mongoConnection.getCollection("landPropertyInSale");            
+            properties = mongoConnection.getCollection("landPropertyInSale_test");            
         } 
         catch ( UnknownHostException ex ) {
             VSDK.reportMessageWithException(null, VSDK.FATAL_ERROR, "createMongoConnection", "Error connecting", ex);

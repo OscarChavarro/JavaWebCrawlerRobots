@@ -103,8 +103,8 @@ public class MetroCuadradoDownloader {
         importIncrementalList(pageProcessor, sites);
 
         while ( !end ) {
-            int n = 10;//(pageNumber.get()+1);
-            int m = 10;//(pages.get());
+            int n = (pageNumber.get()+1);
+            int m = (pages.get());
             System.out.println("Ahora quiero ir a la pagina " + n + " de entre " + m);
             if ( n > m ) {
                 break;
@@ -277,6 +277,7 @@ public class MetroCuadradoDownloader {
         boolean doPhone = false;
         boolean doAddress = false;
         boolean doPriceAdmin = false;
+        boolean doTimeBuilt = false;
         String lastPriceType = "unknown";
 
         for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
@@ -361,6 +362,13 @@ public class MetroCuadradoDownloader {
                 else if ( doCatastralBlock ) {
                     doCatastralBlock = false;
                     p.setBlockCadastre(ts.content);
+                }
+                else if  ( ts.content.contains("Tiempo de construido:") ) {
+                    doTimeBuilt = true;
+                }
+                else if ( doTimeBuilt ) {
+                    p.setTimeBuilt(ts.content);
+                    doTimeBuilt = false;
                 }
                 else if  ( ts.content.contains("Ver otras cara") ) {
                     if ( lastLink != null ) {
@@ -552,12 +560,17 @@ public class MetroCuadradoDownloader {
 
             fis = new FileInputStream(fd);
             bis = new BufferedInputStream(fis);
+            //Darwin Martinez
+            int cont = 0;
 
             while ( bis.available() > 0 ) {
                 String line;
                 line = PersistenceElement.readAsciiLine(bis);
                 processUrl(line, businessType, businessCity);
+                cont++;
             }
+            ///Darwin Martinez
+            System.out.println("Se procesaron "+cont+" URL");
 
         }
         catch ( Exception e ) {
