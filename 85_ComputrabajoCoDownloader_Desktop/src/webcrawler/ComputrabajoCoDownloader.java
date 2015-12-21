@@ -35,7 +35,7 @@ public class ComputrabajoCoDownloader {
         ArrayList<String> cookies)
     {
         System.out.println("1. Downloading initial main/front-end page");
-        String initialPage = "http://www.computrabajo.com.co";
+        String initialPage = "http://empresa.computrabajo.com.co";
         TaggedHtml pageProcessor;
         pageProcessor = new TaggedHtml();
         pageProcessor.getInternetPage(initialPage, cookies, false);
@@ -48,7 +48,7 @@ public class ComputrabajoCoDownloader {
         }
 
         System.out.println("2. Sending user login credentials");
-        String loginJsonPage = "http://www.computrabajo.com.co/Ajax/checkLogin.ashx";
+        String loginJsonPage = "http://www.computrabajo.com.co/login.aspx?e=1";
         pageProcessor = new TaggedHtml();
         
         TaggedHtml indexPageProcessor;
@@ -648,23 +648,27 @@ public class ComputrabajoCoDownloader {
 
         indexPageProcessor = doLoginIntoComputrabajoSystem(
             "talent%40abakoventures.com", "Qwerty77", cookies);
-        if ( indexPageProcessor != null ) {
-            TreeSet<String> resumeListToDownload;
-            resumeListToDownload = new TreeSet<String>();
-            TreeSet<String> resumeListAlreadyDownloaded;
-            resumeListAlreadyDownloaded = new TreeSet<String>();
-            String filename = "totalResumeListCache.txt";
-            File fd = new File(filename);
-            if ( fd.exists() ) {
-                importListFromCache(resumeListToDownload, filename);
-            }
-            analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
-              
-            ComputrabajoDatabaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
-            removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
-            exportList(resumeListToDownload);
-            downloadResumes(resumeListToDownload, cookies);
+        
+        if ( indexPageProcessor == null ) {
+            System.out.println("99. Saliendo por no confirmar login");
+            return;
         }
+        
+        TreeSet<String> resumeListToDownload;
+        resumeListToDownload = new TreeSet<String>();
+        TreeSet<String> resumeListAlreadyDownloaded;
+        resumeListAlreadyDownloaded = new TreeSet<String>();
+        String filename = "totalResumeListCache.txt";
+        File fd = new File(filename);
+        if ( fd.exists() ) {
+            importListFromCache(resumeListToDownload, filename);
+        }
+        analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
+
+        ComputrabajoDatabaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
+        removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
+        exportList(resumeListToDownload);
+        downloadResumes(resumeListToDownload, cookies);
     }
 
     private static void removeExistingResumes(

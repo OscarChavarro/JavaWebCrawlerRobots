@@ -215,17 +215,15 @@ public class TaggedHtml
         connection.setProtocolVersion(HttpVersion.HTTP_1_1);
         connection.setHeader("Host", getHostFromURL(pageUrl));
         connection.setHeader("Connection", "keep-alive");
+        connection.setHeader("Cache-Control", "max-age=0");
         connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
         connection.setHeader("Upgrade-Insecure-Requests", "1");
-        connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36");
+        connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36");
         connection.setHeader("DNT", "1");
-        connection.setHeader("Referer", "http://www.computrabajo.com.ve/");
         connection.setHeader("Accept-Encoding", "identity" /*"gzip, deflate, sdch"*/);
         connection.setHeader("Accept-Language", "en-US,en;q=0.8,es;q=0.6");
+        //connection.setHeader("Referer", "http://empresa.computrabajo.com.co/");
         prepareExistingCookies(cookies, connection);
-        //connection.setHeader("Origin", "http://www.computrabajo.com.ve");
-        //connection.setHeader("X-Requested-With", "XMLHttpRequest");
-        //connection.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
         //-----------------------------------------------------------------
         if ( !withRedirect ) {
@@ -318,19 +316,19 @@ public class TaggedHtml
             connection.setHeader("Host", "www.computrabajo.com.ve");
             connection.setHeader("Connection", "keep-alive");
             connection.setHeader("Accept", "*/*");
-            connection.setHeader("Origin", "http://www.computrabajo.com.ve");
+            connection.setHeader("Origin", "http://empresa.computrabajo.com.co");
             connection.setHeader("X-Requested-With", "XMLHttpRequest");
             connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36");
             connection.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             connection.setHeader("DNT", "1");
-            connection.setHeader("Referer", "http://www.computrabajo.com.ve/");
+            connection.setHeader("Referer", "http://empresa.computrabajo.com.co/");
             connection.setHeader("Accept-Encoding", "gzip, deflate, sdch");
             connection.setHeader("Accept-Language", "es-ES,es;q=0.8,en;q=0.6");
             connection.setProtocolVersion(HttpVersion.HTTP_1_1);
 
             //-----------------------------------------------------------------
             // Prepare POST contents request
-            String loginString = "pe=" + login + "&pp=" + password + "&rp=0";
+            String loginString = "txEmail=" + login + "&txPwd=" + password + "&bbR=Entrar&tn=0";
             ByteArrayInputStream bais;
             bais = new ByteArrayInputStream(loginString.getBytes());
             byte arr[];
