@@ -14,6 +14,7 @@ import java.util.Set;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 
 //
@@ -36,6 +37,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
 
 import vsdk.toolkit.common.VSDK;
+import vsdk.toolkit.io.PersistenceElement;
 
 /**
 This class is meant to keep an on-memory copy of a HTML or similar file.
@@ -300,13 +302,15 @@ public class TaggedHtml
     @param cookies
     @param login
     @param password
+    @param initialIdentifiers
     @return index page
     */
     public TaggedHtml postInternetPageForLogin(
         String pageUrl,
         ArrayList<String> cookies,
         String login,
-        String password)
+        String password,
+        HashMap<String, String> initialIdentifiers)
     {
         try {
             HttpPost connection = new HttpPost(pageUrl);
@@ -330,22 +334,56 @@ public class TaggedHtml
 
             //-----------------------------------------------------------------
             // Prepare POST contents request
-            String loginString;
-	    // = "txEmailLogin=" + login + s + "txPwdLogin=" + password;
-
-            loginString = "__VIEWSTATE=Esw6OrNrqrp2DwTYphaZq5GCP%2Fjx4MmPyex0i%2FUliQdYmlJT9QD9JqMwkXqcZsahsl5kkhLYL6DyJNiRDMg3%2FE5AztxA9hsEhOrzgn4zQP2AZwG8QOhI4mcJKR1xOvWUc4ZyVWcrepaEwevdWd3Ci6qQidsupaqkNdQO7ACMTaDgiUolOMf2sKtn0zHlPvPk1cbwS9ExOeYVhGoWCn6BuLE2kzQfYIKwH1DhKighLxLIEyEimmGK%2BrQLL%2Bmc13GrmYsT3N9%2BAfhSeK07YBgHCS6NpmGQhl0%2FoQGehzFB9TgH%2FXv0cczGidi4k1%2BA2zyFT3Gc89JJNQTWKJRnkVLdWPPNnlC4ffq4gWhTlr8mTSmnKTcuZSF3sR8uKRnv63kq4xYPTBrz1FQ0yVPreqmwR1UXSWCbc5GBNHc6jFGpnNnhuDTGviRe8FOSZ6XZ7Qk0yqfF531bO3QNarhikVENEQ7fBMNEgcU%2BGsTI9l%2BTKiSN3gaugu4Of3LkJY92XxP%2FmWdjAalDikEr8KeJv1xLATsDQzIK3INdv6Qbed24HV0FYfZZTBYFP7P4PHcNEo6s1B2VO57mQpj4fIm0ce4K8ECbAIkNcjyYgAES19F0nI1YrVPq3HDqz4%2FtEl%2Fb4UT5ZwoxwhPl5cgFNkwD%2FPAOVW2GDr%2BMfH2XYXfQMmoFd4SatCj2YbK2VCi9Z7qWRLacobd4%2FMVkC35xbOP9LBzqxo%2BjaQUtlX7ONryKaHMzKpMU1fI7NIxX5tn1nXhlbf6MANR13bcyc%2BCjv1g%2FGoknsho%2Fr7SKsC0AYwdXs%2F5gKFnHlyE5sdWY%2F7rPHM%2F%2B0GufZivKhZyrFCdw88QegKheO7B6Sqj7QZUqaNeijh2HWsIIWzcH8JN6N%2BkO28PkD6yXYwjaKpAkx4cWU3SWexuZsAdmYvJlT2%2FVB5frjIeQMx55jTB4SryTsFfyI1MiIBztNfPaS5dO4xmeJIbwhdfGRljLYOviqtc%2FefZarSccvCox6y%2FFgSKuBC5Krr4rqfG71jefqbGDun5Z5FMFlMygf%2FVeu6nYgYnUeNtaEWJXkmPIvRZMnn1LJvNY58ujgfaZm9s8C9GUrIqWORVAMo2UJW7%2BQtH7pAIm7bwLtc4ud33GdX52GFOHzh%2FrGffuAUQ1dDrZsVzQy2h6kGT6I%2FJ4b%2B5pJQHC%2FVgsvgmAorItmnyaTi490tEpBXSrG7bdBpdL5LEWMeDXNE1nmW7%2F%2FQ47bY%2Bek7QdHT%2Blvd3DHBJeAlQaA4W08%2Bxnf5KDYD65dPuD2dNmEord5cgJYAtYMFX76OCStEk4EVvH4OW8sYX1uo0v45zspkDAc5Xe4PKpo64ObGLdx4kMjNfdJp2wzEbb%2FBngjyEo%2BW%2FtyB8AjoALq%2BqwHVWOm%2FwhiJd4yM%2FvF0nMm1zscNjuXpczVsrsjb5jhkGgriSxmcNBFvEt3TEmLir%2BYv9zQCEUp2MW9XFyWOL1gUeoUrHrN4Ub58IyMQ6WIkce2F%2B4W2rnLDNYNaqjCbMSt03hLGPKXytEJAMd8bG2upVfs1fw6ZeDk6DbvClC67NwqMtHt1ddAZphLt9oxcpJ2r7D3I%2BEiWmMr%2Bmkmn0IkpVPiDyBD%2BmC1XhRFfCYcFjbfXyCsxq%2FSMQfaYNbpdsXwoF%2FJ5ppRjBtGTrkTnKu2vevuofXwN5%2Fk9N2einENbOVpiK57ThzG%2FtK9MbSuW3YRWSBcXrDw9T1Xp3APOL3RPr9FpsfDj2GbwLVMzIUYPeZG5RJUCqXDM1fjIySHK%2B%2F7LSN654PWi9mkaf5r5s0Sw0nQo%2BcLQHN4adLQALr9s8l9MtLtLNMo7GADNsMAAeXj9sa0u%2FZnQTBijDqqsyL4FPsnUZBXb2LV2xNrUc%2F4QV%2F%2B2JzrsV3n5KDW5hhnpxHSG2Y9yWJMXpLKHdH7q3xd16cr%2F%2F%2FhAZYXvhbe%2BzEU5X9LQ4j%2BiAeUlP%2Fa4xkICqlQUfHXIA09wDWCIP9YlHUobjVBOTQ%2FxEwneBo3Zmt07V1BdsliSxTWJ6jcHMUOJ6T%2BjtdE5NFDyWm%2FEG3OWWRJ0YjVXFcQ2dXSiNWZEbzoe%2FX%2B1WdQTFM048KKSgc0eTrVkbknm0GTiU6CUfLUl9T6lozAvw6jiHapAVPG1Kw68RN0H7If7PAOOazel9KiE49Iqi9fy4ZeEtthhfpOpBc48eE7VYcD1q1ZmFZH6VsKyvsnW97krcDYL2uyTv9i18RlkhvMhfHSSo1DrFZT9QQuAANPS61OK0hzLkAxRXvF2R6zFGVUcSeZAGPfcUB7tq5G7B3hrc8G9IJqPkwHGW2Ptw9rMq4UaIoP9nS5M1KaqleO4MyuOfdahZ%2Bes1XKX91GYLiNw24GjvVMv%2FphSPMWTaDEjfsM3cba1U2Ji%2Fzlaadb5G1f2d291O5YGFzd2MvUVojXytsvurtQbrhfNBOWOxJmgfiRZzDDXokuICtwY7US6fw2YKnT8ya2CFO1GBDk3J4%2FlLTYq0wtzMg9w9QPEM%2BYzQi7bfxIGrEV1UyOIDAO9Mk0IrKSJYG1GJ6C9s5U4hRS5mn6%2BsuYLZ7%2FY%2FrLO7THfan%2B19QTa4w7Z1GwfIQySkJAy6Qfx4fXxthMqLdaCrgsvkINcezsCRqGv1sH%2FA0NQzOG2DyYgnui%2BdVITlegMUOowJf3c930c443OnP%2BmoonmCWpRutODFMpqL%2FQOYgUpLAWWv1rcSmK0p8G6Y4ptXHtTObozakF66F090KHAWVYiWQuOPu3QykDhXWk8je2%2BDSuWL0%2F79C%2FQ9icqooW8H6X7Z7sBh0sejTPMboTydiA1cGpZRgP0DYEicOQ6zVaDgspJJV%2B5QH4nTvwEujNggoh00dC%2BUMAnoS%2FImDD7Oo3ojsW5JZa4vK%2FPkJKNPggn9lUbd49t1nnbm2O5Sf67EVInkP6tOCIpZW8JSmy9umyzs%2Bc41vtopifD3%2BddDwANUbr%2BoLzGhmGWQMONIXY7Zjgc2Hptq2wHficaGNfI%2FjkmWcgNHg9HBXZHKsCoONXHZf0iZ67B7k4SDvuY9QzUSLt8LmPsbZehNGv9SN6OyS94SrD4vhV%2BpJx6GL3J8cYedb9%2FZaYu2xY08BiOFM3UnsJEFie3t5QljpSV%2FTROedxwPMFXO2kobchNbDsDW6wbFSpWDEKyEpuqMayJCuO7QcNm3zUkW8xZScjIdBz1V7xcEFTKt0IpCXxsH0EXyOPeBB0yjMo2a1T%2BXFuqA5GIrRRmULjab2ug357PTSiaO8Va%2FnGod1LFiGi32n5Qq5r93xt7%2BkaMfbexkq86JKOZj29He%2FyQvOoxo%2FenSMcBBbnBDHqb3X5pJeQTptRT9OnBQQ58KjCEik800NrPx9eZEJ9pbGxQ9vUmzRkJqomqXnAI7z%2FsXCZfFS3YvRY9vM%2FBrBXGo8qYLjgmqMBOlUJhKo%2FKMXCcO1c1s%2Bht9BuyzRZ5%2BGPru6fLm9P%2FQfJKsjogqNqsM8TG35svtYjr9x0w4hSbLOkkS1CtfG%2FLaTUvFX2z2tOXoQVczxj6MaXkUGxZKf64coBMS7WriYixa6Bsa6e51h2jJS783MCiflfBS%2F9ZqURh%2B2hVDmo5njmTcI9Kbbsc9m0WUeAyiisjqn4yEa1L3aaplM%2F8o2IRg%2BiZqaxeiz2rbFjcOecpw3j3wZGdlO0UuoPFmb9z9QmrBHNh3VF0xShcUJVHaaSIV%2B5CIIFO%2BryKmHnBsx7sGbf1zfUot3qMKh6wXdRQTmjWsZTlOxwbq2wjoP4HLIDzERrQv4dZuIieZKNUnVZMmxRlwWsgMcaQetHckWccdu%2B5Ohs4KbTyCmg2sCzcqqubYVnR1huWAq8Ww6pUvW6M8IICEcM0tLx5%2Fg0n7yeqD86VE7e6r3jYStnRviatXwu5MQTjGvb1UvNDEi1xO7sdHo1l048KNAhDGikOJev51DOkgns7iJPV0vL8noNm651x7RT3LO4HRD%2BkVtVzmMlVH%2BKFPeQ6mxit4IXfDnivRzUdhtHmLv1jhHKgUnED%2ByU%2BxS4mvgg3Efg%2B6%2FU05Fy9Ps66DP5IeiyzMRRX3xOKPmt90sVkcxdb86d7HoVZQDOuZPuBETws0sxFOhXlibMv92KkswelcL2aayLBcd3dLlIrehB40uqpWtieNj36yOjiegNWPO7J6hLxi0JteX4wWxO64gB%2Fe4bbH2c52cQA4oCch5LMlu%2BaRsDIUUCTPlUPicrlQTqAAv4528OyLECmeXJ5uVTOvudoh7hW54f2wiX0js%2B9tlsUM9V0DdKzyMfBjh%2BXZWAAa627lb%2FjftrnWFwu5zknBLm8qXTc2zdXsVaaljPgW%2BCd35gVufsRr%2BjYA9NgioFMGxuNVTWSQkwdfXDtpqX%2FIdNFFc%2B%2Fh9Oc4ApTDtXa4y%2Fb1uWwhFend12FMj16p1BnnXWvpqAM%2F%2Burtw5N88CFQcfm307LbjQNyyhgCbvGR3LiPDHHm%2Fgg4uKqeXnWitcMKyxaa8Xw6mxT%2BlEby%2BiNFUAmEbwcQS0yMFPRcNBJd0Zj7xZR2rZp0o089ecRHdN38mCqOROQq0XIT8mmR9eyoC%2BjBHoA8pFQ%2FFmNx8kDwLci3feZ8P%2F%2FYhp3KDFsusZePialjWkJ9zp71nO4hsLXh75WlBlGKwhq6gbOAD5O%2FaI3628iuOoH3FIpRm0rbjYLiojA3ZYKERApOXyR9K1%2FsIQIJ6O%2FBljTkysIQWvTqVEhHHdXofoCCbGwi0%2FNrHlFLJCM6QVkufZM8owqomPvvnZXfGviSXVnOH9EbanPEyT5Us7ikjJyL1aJzlrVnIym9HVi2H6u3uZgdxb4bzh1pGhQJJU%2Fz7CszclGP8VU694IXnxFq0ZogAJswBpjo%2BhJXCJaQktvV4f4A8LejMf02V5rnZPVthqO53%2B9PmuggHX9JcySPZ3g0GGe2BvjPo3iDYNe04Il5%2BtpiPlEaCkh2xfNX3t8EtYhgHzW6nkk1DU7wyFBr36jzsx2FgUf1yvVkHqtnvHgZGS9kYWDiIFo%2Fs4U75IMx8XOzDLFLDDKCXMGt%2FBTPCCJl%2FsgAX1Ok60OQsdmU2WElMiw6IwLEmDEC3iu0abajyJAqBRjZRV%2B9p5RZjkCw%2Bew6ZbIQn5dxP319OVnkZYRYq8WwtYs8l3I%2BM%2FpCloQFiWm38PJIcXD1B83E2%2Brqg%2Bz7uvmw0cadk7nsgzlH88KV5ypFl8KIT%2F%2BPK2wdgDlkdk%2FgmMQ4pDpSGDe%2B0YqRILTC1MtC3nT1CVK0k2Ckr4e8wb3QadOAXlg%3D%3D&amp;" +
-
-"__VIEWSTATEGENERATOR=CA0B0334&amp;" +
-
-"__EVENTVALIDATION=ow6jjL8%2FZvn7Vlvaf6CE7EmYZnHYftlyj5F0RNKaCu6x478YhAXJK8fN0Ow3%2FAJLmfdoy7jFG3wedfYr8uMMzzY2kPb7AxM%2F09RkmjD5Y%2F1h%2Fbcnq5HHWsltv%2FwHCbpcA4PH91rego0UtYvx2jWPmWvdGx0ex3hAzxhGITBijV2hUGGMnyG1IjiH9AMFq6w3qZoNoGrFJYpnTk8bE7Joj94%2FnP3FuoWGkaBvZZ8K4HkjOYO0J1VX%2BCTz1tSobWVnh72ysMyXWp5zMwR08fCijv5G%2BBYS9WpVaQWO7GNO4%2BGqT9FdunBdXHz0PiOCXTaPa8jMcoqtDZRtijHUmN9xWnQ5jP9hKQdHXEjen1Pphy5jP4o%2BpBXWYI0zKOLvShAako2V5axC1m1C7l%2FH%2BRIqRmDvuS8pChCaGbJ8hGn0Q9J2NukOKbxYeD44uY3%2Bru88%2FOCdD3SDjHeFVjGEqI5KC537G24U1KG4ZDHc1I4bd8f5nJwDb6FpgM%2Btm5pzXPIq01SqZ7HEtnUWgHXrmE%2FWsoAsh7DMa8wdsFuCukNN6a%2BJB7ZDUF6lvp1s9ruJtqmympKMkjegI266woFIfT0Nf81gsbgDQRkQmgyn%2FtWDODVbr%2BjG4QyC5A56xVuSmPWHClUKwkZ0Wp5YlfOSNPLpzR2PsbqwPwnCVj6Erb5YuG9dnTyLiFgcgELU3nRwUCuagV59A0%2FmeIPkVRJx0n3wRn2TfB%2Bc9qmvUFGxEzYj64eQtmmv%2F0nqOXoON6ONh2Hz9tSzk066JoWm1cFVf90rO0muOWMoY%2FMnjdWVyP017cM%2FbIce6OojSKZ5m9uOUqmAIQdHlncA0sLViqpJ9%2FbRRI1pW9Oco0yABsasHmHytcSND3NLW5G30%2Bv4AXeKDhbWJlVJTLDqJJezQW1oU%2BvJrkDXMSBdK1AJRHdFEuJxpJuRYfasJn4%2FUrUxlHEi7Ji38zMdDjfShFJ1BXre5E3bFi630gLAx50xEX5ZIy7H%2F5piU6uVvmc6ewLswftqw7VaItLBIyu8LaIEWw%2FDAsX0Gf88tcOVmm94RkpDt6x0UeJ0UQc6LIdUCeDDnW3KdkYhdEJ0tIp4YAAj5KRj7gzegKxSjYZV7Z81hIb2iMWzD63dyq2GCAlM73nFLaDex2vq8GxtSBUZjGOD65cOcux77Opp8w4vpVIibvb6%2Bu6SDqqHpgi3JEuPD6yTh4ayX3bySg8ufEzpkw8J5%2FUp9xlMc%2Bw6svbpWqHQddD6pnIq6TBIms%2BJf6N%2BOk3Dl4MsptHqlk0CDiPRkl7KCxsBPblMx1NlPiITq%2F6r2dXOz4gH2ylupBGHnmYSJVfZ%2FAVEVpCWX79gOpKiDF4rxlYXoCexd4M0OY%2FE%2B%2F%2BcyoBzZAhrRlPL1hJ4hkEU3a14ctGvspVv3WNDcFXv%2BJ2TVHz5JFvd3VQhr%2BVYASHBys4pv6xpukfmLahm95SKheq9ESUPVCoSvzxbNA%3D%3D&amp;" +
-
-"ctl00%24txEmailLogin=talent%40abakoventures.com&amp;" +
-"ctl00%24txPwdLogin=Qwerty77&amp;" +
-"ctl00%24btnLogin=Entrar&amp;" +
-"ctl00%24ContentPlaceHolder1%24txQuery=&amp;" +
-"ctl00%24ContentPlaceHolder1%24ddProvince=0&amp;" +
-"ctl00%24ContentPlaceHolder1%24ddCat=0";
-
+            String loginString = "";
+            String separator = "";
+            
+            if ( initialIdentifiers.containsKey("__VIEWSTATE") ) {
+                loginString += "__VIEWSTATE" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("__VIEWSTATE"));
+                separator = "&";
+            }
+            if ( initialIdentifiers.containsKey("__VIEWSTATEGENERATOR") ) {
+                loginString += separator + "__VIEWSTATEGENERATOR" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("__VIEWSTATEGENERATOR"));
+                separator = "&";
+            }
+            if ( initialIdentifiers.containsKey("__EVENTVALIDATION") ) {
+                loginString += separator + "__EVENTVALIDATION" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("__EVENTVALIDATION"));
+                separator = "&";
+            }
+            loginString += separator + "txEmail=" + login + "&txPwd=" + password;
+            if ( initialIdentifiers.containsKey("bbR") ) {
+                loginString += separator + "bbR" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("bbR"));
+            }
+            loginString += "&tn=";
+            
+            //-----------------------------------------------------------------
+            /*
+            System.out.println("CADENA:");
+            System.out.println(loginString);
+            
+            try {
+                File fd = new File("/tmp/cadena.txt");
+                FileOutputStream fos;
+                fos = new FileOutputStream(fd);
+                PersistenceElement.writeAsciiLine(fos, loginString);
+                fos.flush();
+                fos.close();
+            }
+            catch ( Exception e ) {
+                
+            }
+            
+            System.exit(1);
+            */
+            
+            //-----------------------------------------------------------------
 
             ByteArrayInputStream bais;
             bais = new ByteArrayInputStream(loginString.getBytes());
@@ -401,7 +439,7 @@ public class TaggedHtml
             }
             val += c + " ";
         }
-        val += " _gat=1; _ga=GA1.3.575338493.1446664730";
+        val += " _ga=GA1.3.58098705.1450971763; _gat=1";
         if ( cookies.size() > 0 ) {
             connection.setHeader("Cookie", val);
         }
@@ -705,6 +743,96 @@ public class TaggedHtml
             System.exit(9);
         }
         return null;
+    }
+
+    private String normalizeStringForWeb(String a) {
+        char keys[] = {
+            ' ',
+            '!',
+            '"',
+            '#',
+            '$',
+            '%',
+            '&',
+            '\'',
+            '(',
+            ')',
+            '*',
+            '+',
+            ',',
+            '-',
+            '.',
+            '/',
+            ':',
+            ';',
+            '<',
+            '=',
+            '>',
+            '?',
+            '@',
+            '[',
+            '\\',
+            ']',
+            '^',
+            '_',
+            '`',
+            '{',
+            '|',
+            '}',
+            '~',
+	     ' '};
+        String values[] = {
+            "%20",
+            "%21",
+            "%22",
+            "%23",
+            "%24",
+            "%25",
+            "%26",
+            "%27",
+            "%28",
+            "%29",
+            "%2A",
+            "%2B",
+            "%2C",
+            "%2D",
+            "%2E",
+            "%2F",
+            "%3A",
+            "%3B",
+            "%3C",
+            "%3D",
+            "%3E",
+            "%3F",
+            "%40",
+            "%5B",
+            "%5C",
+            "%5D",
+            "%5E",
+            "%5F",
+            "%60",
+            "%7B",
+            "%7C",
+            "%7D",
+            "%7E",
+	    "%7F"};
+        int i;
+        int j;
+        
+        String b = "";
+        for ( i = 0; i < a.length(); i++ ) {
+            char c = a.charAt(i);
+            String code = "" + c;
+            for ( j = 0; j < keys.length; j++ ) {
+                if ( c == keys[j] ) {
+                    code = values[j];
+                    break;
+                }
+            }
+            b += code;
+        }
+
+        return b;
     }
 }
 
