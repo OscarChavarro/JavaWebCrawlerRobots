@@ -48,7 +48,7 @@ public class ComputrabajoCoDownloader {
         }
 
         System.out.println("2. Sending user login credentials");
-        String loginJsonPage = "http://www.computrabajo.com.co/login.aspx?e=1";
+        String loginJsonPage = "http://www.computrabajo.com.co/";
         pageProcessor = new TaggedHtml();
         
         TaggedHtml indexPageProcessor;
