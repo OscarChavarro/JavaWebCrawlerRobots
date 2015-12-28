@@ -92,7 +92,7 @@ public class MyRedirectStrategy implements RedirectStrategy
             public URI getURI() {
                 
                 if ( redirectUrl.startsWith("/") ) {
-                    redirectUrl = "http://empresa.computrabajo.com.ve" + redirectUrl;
+                    redirectUrl = "http://empresa.computrabajo.com.co" + redirectUrl;
                 }
                 
                 //System.out.println("  - Setting redirection URL to: " + redirectUrl);
@@ -124,7 +124,7 @@ public class MyRedirectStrategy implements RedirectStrategy
                 for ( i = 0; i < headers.length; i++ ) {
                     //System.out.println("    . " + headers[i].getName() + " = " + headers[i].getValue() + ";");
                     if ( headers[i].getName().equals("Host") ) {
-                        headers[i] = new BasicHeader("Host", "empresa.computrabajo.com.ve");
+                        headers[i] = new BasicHeader("Host", "empresa.computrabajo.com.co");
                     }
                 }
                 return headers;

@@ -14,6 +14,7 @@ import java.util.Set;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 
 //
@@ -36,6 +37,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
 
 import vsdk.toolkit.common.VSDK;
+import vsdk.toolkit.io.PersistenceElement;
 
 /**
 This class is meant to keep an on-memory copy of a HTML or similar file.
@@ -215,17 +217,15 @@ public class TaggedHtml
         connection.setProtocolVersion(HttpVersion.HTTP_1_1);
         connection.setHeader("Host", getHostFromURL(pageUrl));
         connection.setHeader("Connection", "keep-alive");
+        //connection.setHeader("Cache-Control", "max-age=0");
         connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
         connection.setHeader("Upgrade-Insecure-Requests", "1");
-        connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36");
+        connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36");
         connection.setHeader("DNT", "1");
-        connection.setHeader("Referer", "http://www.computrabajo.com.ve/");
         connection.setHeader("Accept-Encoding", "identity" /*"gzip, deflate, sdch"*/);
         connection.setHeader("Accept-Language", "en-US,en;q=0.8,es;q=0.6");
+        //connection.setHeader("Referer", "http://empresa.computrabajo.com.co/");
         prepareExistingCookies(cookies, connection);
-        //connection.setHeader("Origin", "http://www.computrabajo.com.ve");
-        //connection.setHeader("X-Requested-With", "XMLHttpRequest");
-        //connection.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
         //-----------------------------------------------------------------
         if ( !withRedirect ) {
@@ -302,35 +302,89 @@ public class TaggedHtml
     @param cookies
     @param login
     @param password
+    @param initialIdentifiers
     @return index page
     */
     public TaggedHtml postInternetPageForLogin(
         String pageUrl,
         ArrayList<String> cookies,
         String login,
-        String password)
+        String password,
+        HashMap<String, String> initialIdentifiers)
     {
         try {
             HttpPost connection = new HttpPost(pageUrl);
 
             prepareExistingCookies(cookies, connection);
 
-            connection.setHeader("Host", "www.computrabajo.com.ve");
+            connection.setHeader("Host", "empresa.computrabajo.com.co");
             connection.setHeader("Connection", "keep-alive");
-            connection.setHeader("Accept", "*/*");
-            connection.setHeader("Origin", "http://www.computrabajo.com.ve");
-            connection.setHeader("X-Requested-With", "XMLHttpRequest");
-            connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36");
-            connection.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            connection.setHeader("Cache-Control", "max-age=0");
+            connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            connection.setHeader("Origin", "http://empresa.computrabajo.com.co");
+            //connection.setHeader("X-Requested-With", "XMLHttpRequest");
+            connection.setHeader("Upgrade-Insecure-Requests", "1");
+            connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+            connection.setHeader("Content-Type", "application/x-www-form-urlencoded");
             connection.setHeader("DNT", "1");
-            connection.setHeader("Referer", "http://www.computrabajo.com.ve/");
-            connection.setHeader("Accept-Encoding", "gzip, deflate, sdch");
-            connection.setHeader("Accept-Language", "es-ES,es;q=0.8,en;q=0.6");
+            connection.setHeader("Referer", "http://empresa.computrabajo.com.co/");
+            connection.setHeader("Accept-Encoding", "identity" /*"gzip, deflate, sdch"*/);
+            connection.setHeader("Accept-Language", "es-US,en;q=0.8,es;q=0.6");
             connection.setProtocolVersion(HttpVersion.HTTP_1_1);
 
             //-----------------------------------------------------------------
             // Prepare POST contents request
-            String loginString = "pe=" + login + "&pp=" + password + "&rp=0";
+            String loginString = "";
+            String separator = "";
+            
+            if ( initialIdentifiers.containsKey("__VIEWSTATE") ) {
+                loginString += "__VIEWSTATE" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("__VIEWSTATE"));
+                separator = "&";
+            }
+            if ( initialIdentifiers.containsKey("__VIEWSTATEGENERATOR") ) {
+                loginString += separator + "__VIEWSTATEGENERATOR" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("__VIEWSTATEGENERATOR"));
+                separator = "&";
+            }
+            if ( initialIdentifiers.containsKey("__EVENTVALIDATION") ) {
+                loginString += separator + "__EVENTVALIDATION" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("__EVENTVALIDATION"));
+                separator = "&";
+            }
+            loginString += separator + "txEmail=" + login + "&txPwd=" + password;
+            if ( initialIdentifiers.containsKey("bbR") ) {
+                loginString += separator + "bbR" + "=";
+                loginString += normalizeStringForWeb(
+                    initialIdentifiers.get("bbR"));
+            }
+            loginString += "&tn=";
+            
+            //-----------------------------------------------------------------
+            /*
+            System.out.println("CADENA:");
+            System.out.println(loginString);
+            
+            try {
+                File fd = new File("/tmp/cadena.txt");
+                FileOutputStream fos;
+                fos = new FileOutputStream(fd);
+                PersistenceElement.writeAsciiLine(fos, loginString);
+                fos.flush();
+                fos.close();
+            }
+            catch ( Exception e ) {
+                
+            }
+            
+            System.exit(1);
+            */
+            
+            //-----------------------------------------------------------------
+
             ByteArrayInputStream bais;
             bais = new ByteArrayInputStream(loginString.getBytes());
             byte arr[];
@@ -385,7 +439,7 @@ public class TaggedHtml
             }
             val += c + " ";
         }
-        val += " _gat=1; _ga=GA1.3.575338493.1446664730";
+        val += " _ga=GA1.3.58098705.1450971763; _gat=1";
         if ( cookies.size() > 0 ) {
             connection.setHeader("Cookie", val);
         }
@@ -689,6 +743,96 @@ public class TaggedHtml
             System.exit(9);
         }
         return null;
+    }
+
+    private String normalizeStringForWeb(String a) {
+        char keys[] = {
+            ' ',
+            '!',
+            '"',
+            '#',
+            '$',
+            '%',
+            '&',
+            '\'',
+            '(',
+            ')',
+            '*',
+            '+',
+            ',',
+            '-',
+            '.',
+            '/',
+            ':',
+            ';',
+            '<',
+            '=',
+            '>',
+            '?',
+            '@',
+            '[',
+            '\\',
+            ']',
+            '^',
+            '_',
+            '`',
+            '{',
+            '|',
+            '}',
+            '~',
+	     ' '};
+        String values[] = {
+            "%20",
+            "%21",
+            "%22",
+            "%23",
+            "%24",
+            "%25",
+            "%26",
+            "%27",
+            "%28",
+            "%29",
+            "%2A",
+            "%2B",
+            "%2C",
+            "%2D",
+            "%2E",
+            "%2F",
+            "%3A",
+            "%3B",
+            "%3C",
+            "%3D",
+            "%3E",
+            "%3F",
+            "%40",
+            "%5B",
+            "%5C",
+            "%5D",
+            "%5E",
+            "%5F",
+            "%60",
+            "%7B",
+            "%7C",
+            "%7D",
+            "%7E",
+	    "%7F"};
+        int i;
+        int j;
+        
+        String b = "";
+        for ( i = 0; i < a.length(); i++ ) {
+            char c = a.charAt(i);
+            String code = "" + c;
+            for ( j = 0; j < keys.length; j++ ) {
+                if ( c == keys[j] ) {
+                    code = values[j];
+                    break;
+                }
+            }
+            b += code;
+        }
+
+        return b;
     }
 }
 

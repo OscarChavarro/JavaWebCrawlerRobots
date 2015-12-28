@@ -15,6 +15,7 @@ import vsdk.toolkit.io.PersistenceElement;
 import databaseMongo.ComputrabajoDatabaseConnection;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.util.HashMap;
 
 /**
 */
@@ -35,25 +36,28 @@ public class ComputrabajoCoDownloader {
         ArrayList<String> cookies)
     {
         System.out.println("1. Downloading initial main/front-end page");
-        String initialPage = "http://www.computrabajo.com.co";
+        String initialPage = "http://empresa.computrabajo.com.co/Login.aspx";
         TaggedHtml pageProcessor;
         pageProcessor = new TaggedHtml();
         pageProcessor.getInternetPage(initialPage, cookies, false);
 
-        //printCookies(cookies);
+        printCookies(cookies);
 
         if ( pageProcessor.segmentList == null ) {
             System.out.println("Warning: empty page");
             return null;
         }
+        HashMap<String, String> initialIdentifiers;
+        initialIdentifiers = new HashMap<String, String>();
+        extractIdentifiers(pageProcessor, initialIdentifiers);
 
         System.out.println("2. Sending user login credentials");
-        String loginJsonPage = "http://www.computrabajo.com.co/Ajax/checkLogin.ashx";
+        String loginJsonPage = "http://empresa.computrabajo.com.co/Login.aspx";
         pageProcessor = new TaggedHtml();
         
         TaggedHtml indexPageProcessor;
         indexPageProcessor = pageProcessor.postInternetPageForLogin(
-            loginJsonPage, cookies, login, password);
+            loginJsonPage, cookies, login, password, initialIdentifiers);
         
         return indexPageProcessor;        
     }
@@ -91,6 +95,64 @@ public class ComputrabajoCoDownloader {
 
                 System.out.println("  - " + n + " = " + v);
             }
+        }
+    }
+
+    /**
+    @param pageProcessor
+    @param identifiers
+    */
+    public static void extractIdentifiers(
+        TaggedHtml pageProcessor,
+        HashMap<String, String> identifiers)
+    {
+        if ( pageProcessor.segmentList == null ) {
+            System.out.println("Warning: empty page");
+            return;
+        }
+
+        TagSegment ts;
+        int i;
+        int j;
+        String n;
+        String v;
+
+        boolean doNext = false;
+
+        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
+            ts = pageProcessor.segmentList.get(i);
+
+            if ( ts == null ) {
+                continue;
+            }
+            
+            if ( !ts.insideTag && doNext ) {
+                doNext = false;
+                System.out.println(ts.getContent());
+            }
+            
+            String tn = ts.getTagName();
+            
+            if ( tn != null && tn.equals("INPUT") ) {
+                String elementName = null;
+                String elementValue = null;
+                for ( j = 0; j < ts.getTagParameters().size(); j++ ) {
+                    n = ts.getTagParameters().get(j).name;
+                    v = ts.getTagParameters().get(j).value;
+
+                    if ( n.equals("name") ) {
+                        elementName = TaggedHtml.trimQuotes(v);
+                    }
+                    if ( n.equals("value") ) {
+                        elementValue = TaggedHtml.trimQuotes(v);
+                    }
+                }
+
+                if ( elementName != null && elementValue != null ) {
+                    identifiers.put(elementName, elementValue);
+                }
+            }
+            
         }
     }
 
@@ -648,23 +710,27 @@ public class ComputrabajoCoDownloader {
 
         indexPageProcessor = doLoginIntoComputrabajoSystem(
             "talent%40abakoventures.com", "Qwerty77", cookies);
-        if ( indexPageProcessor != null ) {
-            TreeSet<String> resumeListToDownload;
-            resumeListToDownload = new TreeSet<String>();
-            TreeSet<String> resumeListAlreadyDownloaded;
-            resumeListAlreadyDownloaded = new TreeSet<String>();
-            String filename = "totalResumeListCache.txt";
-            File fd = new File(filename);
-            if ( fd.exists() ) {
-                importListFromCache(resumeListToDownload, filename);
-            }
-            analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
-              
-            ComputrabajoDatabaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
-            removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
-            exportList(resumeListToDownload);
-            downloadResumes(resumeListToDownload, cookies);
+        
+        if ( indexPageProcessor == null ) {
+            System.out.println("99. Saliendo por no confirmar login");
+            return;
         }
+        
+        TreeSet<String> resumeListToDownload;
+        resumeListToDownload = new TreeSet<String>();
+        TreeSet<String> resumeListAlreadyDownloaded;
+        resumeListAlreadyDownloaded = new TreeSet<String>();
+        String filename = "totalResumeListCache.txt";
+        File fd = new File(filename);
+        if ( fd.exists() ) {
+            importListFromCache(resumeListToDownload, filename);
+        }
+        analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
+
+        ComputrabajoDatabaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
+        removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
+        exportList(resumeListToDownload);
+        downloadResumes(resumeListToDownload, cookies);
     }
 
     private static void removeExistingResumes(
