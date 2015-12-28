@@ -278,19 +278,17 @@ public class MetroCuadradoDownloader {
         boolean doAddress = false;
         boolean doPriceAdmin = false;
         boolean doTimeBuilt = false;
+        boolean doPropertyType = false;
         String lastPriceType = "unknown";
+        
+        
 
         for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
             ts = pageProcessor.segmentList.get(i);
+            
 
             if ( !ts.insideTag  ) {
-                if ( v0.contains("latitude") ) {
-                    p.setLatitudeDegrees(doubleNumberCoordinate(ts.content));
-                }
-                if ( v0.contains("longitude") ) {
-                    p.setLongitudeDegrees(doubleNumberCoordinate(ts.content));
-                }
-                else if  ( v0.contains("price") ) {
+				if  ( v0.contains("price") ) {
                     
                     if ( lastPriceType.equals("Valor arriendo:") ) {
                         p.setBusinessPriceLease(doubleNumber(ts.content));
@@ -304,14 +302,14 @@ public class MetroCuadradoDownloader {
                         System.exit(9);
                     }
                 }
-                else if  ( ts.content.contains("Estrato:") ) {
+                else if  ( ts.content.contains("Estrato") ) {
                     doEstrato = true;
                 }
                 else if ( doEstrato ) {
                     p.setSocialLevel(intNumber(ts.content));
                     doEstrato = false;
                 }
-                else if  ( ts.content.contains("rea constru") ) {
+                else if  ( ts.content.contains("rea Construida") ) {
                     doConstructedArea = true;
                 }
                 else if ( doConstructedArea ) {
@@ -349,7 +347,7 @@ public class MetroCuadradoDownloader {
                     p.setNumberOfParkingLots(intNumber(ts.content));
                     doParkings = false;
                 }
-                else if  ( ts.content.contains("Barrio Co") ) {
+                else if  ( ts.content.contains("Nombre") && ts.content.contains("Barrio") ) {
                     doCommonBlock = true;
                 }
                 else if ( doCommonBlock ) {
@@ -363,12 +361,19 @@ public class MetroCuadradoDownloader {
                     doCatastralBlock = false;
                     p.setBlockCadastre(ts.content);
                 }
-                else if  ( ts.content.contains("Tiempo de construido:") ) {
+                else if  ( ts.content.contains("Tiempo de construido") ) {
                     doTimeBuilt = true;
                 }
                 else if ( doTimeBuilt ) {
                     p.setTimeBuilt(ts.content);
                     doTimeBuilt = false;
+                }
+                else if  ( ts.content.contains("Tipo Inmueble") ) {
+                    doPropertyType  = true;
+                }
+                else if ( doPropertyType ) {
+                    p.setPropertyType(ts.content);
+                    doPropertyType = false;
                 }
                 else if  ( ts.content.contains("Ver otras cara") ) {
                     if ( lastLink != null ) {
@@ -444,6 +449,15 @@ public class MetroCuadradoDownloader {
                 if ( doExtra && n.equals("/a") ) {
                     doExtra = false;
                     //return p;
+                }
+                if ((n.equals("id")) && (v.contains("latitud")))
+                {
+                	p.setLatitudeDegrees(doubleNumberCoordinate(ts.getTagParameters().get(j+1).value));
+                }
+                
+                if ((n.equals("id")) && (v.contains("longitud")))
+                {
+                	p.setLongitudeDegrees(doubleNumberCoordinate(ts.getTagParameters().get(j+1).value));
                 }
             }
         }
@@ -560,7 +574,6 @@ public class MetroCuadradoDownloader {
 
             fis = new FileInputStream(fd);
             bis = new BufferedInputStream(fis);
-            //Darwin Martinez
             int cont = 0;
 
             while ( bis.available() > 0 ) {
@@ -569,7 +582,6 @@ public class MetroCuadradoDownloader {
                 processUrl(line, businessType, businessCity);
                 cont++;
             }
-            ///Darwin Martinez
             System.out.println("Se procesaron "+cont+" URL");
 
         }
@@ -743,8 +755,8 @@ public class MetroCuadradoDownloader {
             {"Bolivar", "bolivar"},
             {"Boyaca", "boyaca"},
             {"Briceno", "briceno"},
-            {"Briceño", "briceño"},*/
-            {"Bucaramanga", "bucaramanga"}/*,
+            {"Briceño", "briceño"},
+            {"Bucaramanga", "bucaramanga"},
             {"Buenaventura", "buenaventura"},
             {"Buenavista", "buenavista"},
             {"Buesaco", "buesaco"},
@@ -922,8 +934,8 @@ public class MetroCuadradoDownloader {
             {"Maicao", "maicao"},
             {"Malambo", "malambo"},
             {"Mamonal", "mamonal"},
-            {"Mani", "mani"},
-            {"Manizales", "manizales"},
+            {"Mani", "mani"},*/
+            {"Manizales", "manizales"}/*,
             {"Manta", "manta"},
             {"Mapiripan", "mapiripan"},
             {"marandua", "marandua"},

@@ -25,6 +25,7 @@ public class Property extends JdbcEntity {
     private double businessPriceAdmin;
     private double businessPriceLease;
     private double businessPriceSale;
+    private String propertyType;
     private String timeBuilt;
 
     /**
@@ -396,6 +397,14 @@ public class Property extends JdbcEntity {
     {
         this.timeBuilt = timeBuilt;
     }
+
+	public String getPropertyType() {
+		return propertyType;
+	}
+
+	public void setPropertyType(String propertyType) {
+		this.propertyType = propertyType;
+	}
 
 
 }
