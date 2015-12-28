@@ -14,22 +14,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 import vsdk.toolkit.common.VSDK;
 import vsdk.toolkit.io.PersistenceElement;
 
+// Utilities classes
+import databaseConnection.*;
+import databaseMongo.model.Property;
+
 // Toolkit classes
 import webcrawler.TagSegment;
 import webcrawler.TaggedHtml;
 
 // Application specific classes
-import databaseMysqlMongo.MetroCuadradoDatabaseConnection;
-import databaseMysqlMongo.model.Property;
+//import databaseMysqlMongo.MetroCuadradoDatabaseConnection;
+//import databaseMysqlMongo.model.Property;
 
 /**
 */
 public class MetroCuadradoDownloader {
-    private static final MetroCuadradoDatabaseConnection databaseConnection;
+//    private static final MetroCuadradoDatabaseConnection databaseConnection;
+	private static final DatabaseMongoConnection databaseConnection;
 
     static {
-        databaseConnection = new MetroCuadradoDatabaseConnection();
-        MetroCuadradoDatabaseConnection.createMongoConnection();
+        databaseConnection = new DatabaseMongoConnection();
+        DatabaseMongoConnection.createMongoConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
     }
 
     /**
