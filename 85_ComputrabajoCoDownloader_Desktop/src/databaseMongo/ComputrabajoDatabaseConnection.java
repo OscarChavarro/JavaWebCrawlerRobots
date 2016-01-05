@@ -41,7 +41,7 @@ public class ComputrabajoDatabaseConnection {
         try {
             MongoClient mongoClient;
             mongoClient = new MongoClient("localhost", 27017);
-            mongoConnection = mongoClient.getDB("domolyRobot");
+            mongoConnection = mongoClient.getDB("computrabajoCo");
             professionalResume = 
                 mongoConnection.getCollection("professionalResume");            
         }

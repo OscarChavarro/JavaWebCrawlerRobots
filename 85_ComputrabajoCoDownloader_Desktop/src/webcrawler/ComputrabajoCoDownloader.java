@@ -30,7 +30,7 @@ public class ComputrabajoCoDownloader {
     @param password
     @param cookies
     */
-    private static TaggedHtml doLoginIntoComputrabajoSystem(
+    private static boolean doLoginIntoComputrabajoSystem(
         String login,
         String password,
         ArrayList<String> cookies)
@@ -44,8 +44,8 @@ public class ComputrabajoCoDownloader {
         printCookies(cookies);
 
         if ( pageProcessor.segmentList == null ) {
-            System.out.println("Warning: empty page");
-            return null;
+            System.out.println("Warning: empty page A");
+            return false;
         }
         HashMap<String, String> initialIdentifiers;
         initialIdentifiers = new HashMap<String, String>();
@@ -55,11 +55,8 @@ public class ComputrabajoCoDownloader {
         String loginJsonPage = "http://empresa.computrabajo.com.co/Login.aspx";
         pageProcessor = new TaggedHtml();
         
-        TaggedHtml indexPageProcessor;
-        indexPageProcessor = pageProcessor.postInternetPageForLogin(
+        return pageProcessor.postInternetPageForLogin(
             loginJsonPage, cookies, login, password, initialIdentifiers);
-        
-        return indexPageProcessor;        
     }
 
     /**
@@ -68,7 +65,7 @@ public class ComputrabajoCoDownloader {
     public static void listTagsFromPage(TaggedHtml pageProcessor)
     {
         if ( pageProcessor.segmentList == null ) {
-            System.out.println("Warning: empty page");
+            System.out.println("Warning: empty page B");
             return;
         }
 
@@ -107,7 +104,7 @@ public class ComputrabajoCoDownloader {
         HashMap<String, String> identifiers)
     {
         if ( pageProcessor.segmentList == null ) {
-            System.out.println("Warning: empty page");
+            System.out.println("Warning: empty page C");
             return;
         }
 
@@ -172,33 +169,32 @@ public class ComputrabajoCoDownloader {
         TreeSet<String> listOfResumeLinks,
         TaggedHtml parentPageProcessor, ArrayList<String> cookies) 
     {
-        if ( parentPageProcessor.segmentList == null ) {
-            System.out.println("Warning: empty page");
-            return;
-        }
-        
-        // Here we have first internal page, which is of no use
-        //listTagsFromPage(parentPageProcessor);
-        
         System.out.println("4. Accesing resume lists");
         TaggedHtml pageProcessor;
         pageProcessor = new TaggedHtml();
-        pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/hojas-de-vida", cookies, false);
-        
+        pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/Company/Cvs", cookies, false);
+                
         int n;
         n = getNumberOfResumes(pageProcessor);
         System.out.println("  - 4.1. Preparing for downloading " + n + " resumes from "  + (n/20) + " listing pages:" );
         
         int i;
-        for ( i = 213; i <= (n/20) + 1; i++ ) {
+        for ( i = 1; i <= (n/20) + 1; i++ ) {
+            // Process current page
             System.out.println("    . Downloading listing page " + i + " of " + (n/20 + 1));
             importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
-            pageProcessor = new TaggedHtml();
-            pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/hojas-de-vida/?p=" + (i+1), cookies, false);
             
-            if ( i >= 10 ) {
+            /*
+            if ( i == 1 ) {
+                System.out.println("***** LISTO, PRUEBA DETENIDA! *****");
                 break;
             }
+            */
+
+            // Advance to next
+            pageProcessor = new TaggedHtml();
+            pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/Company/Cvs/?p=" + (i+1), cookies, false);
+            
         }
     }
 
@@ -308,7 +304,7 @@ public class ComputrabajoCoDownloader {
     private static void addNewResume(TreeSet<String> resumeLinks, String url) {
         try {
             if ( resumeLinks.contains(url) ||
-                 !url.contains("/Company/Cvs/curriculums/")) {
+                 !url.contains("/Company/Cvs/hojas-de-vida/")) {
                 return;
             }
             
@@ -708,10 +704,12 @@ public class ComputrabajoCoDownloader {
         ArrayList<String> cookies;
         cookies = new ArrayList<String>();
 
-        indexPageProcessor = doLoginIntoComputrabajoSystem(
-            "talent%40abakoventures.com", "Qwerty77", cookies);
+        // "hismael@80milprofesionales.com", "d.jfoQ?1*"
+        // "talent%40abakoventures.com", "Qwerty77"
+        boolean ready = doLoginIntoComputrabajoSystem(
+            "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);
         
-        if ( indexPageProcessor == null ) {
+        if ( ready == false ) {
             System.out.println("99. Saliendo por no confirmar login");
             return;
         }
@@ -720,11 +718,13 @@ public class ComputrabajoCoDownloader {
         resumeListToDownload = new TreeSet<String>();
         TreeSet<String> resumeListAlreadyDownloaded;
         resumeListAlreadyDownloaded = new TreeSet<String>();
+        
         String filename = "totalResumeListCache.txt";
         File fd = new File(filename);
         if ( fd.exists() ) {
             importListFromCache(resumeListToDownload, filename);
         }
+        indexPageProcessor = new TaggedHtml();
         analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
 
         ComputrabajoDatabaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);

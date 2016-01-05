@@ -305,7 +305,7 @@ public class TaggedHtml
     @param initialIdentifiers
     @return index page
     */
-    public TaggedHtml postInternetPageForLogin(
+    public boolean postInternetPageForLogin(
         String pageUrl,
         ArrayList<String> cookies,
         String login,
@@ -364,27 +364,6 @@ public class TaggedHtml
             loginString += "&tn=";
             
             //-----------------------------------------------------------------
-            /*
-            System.out.println("CADENA:");
-            System.out.println(loginString);
-            
-            try {
-                File fd = new File("/tmp/cadena.txt");
-                FileOutputStream fos;
-                fos = new FileOutputStream(fd);
-                PersistenceElement.writeAsciiLine(fos, loginString);
-                fos.flush();
-                fos.close();
-            }
-            catch ( Exception e ) {
-                
-            }
-            
-            System.exit(1);
-            */
-            
-            //-----------------------------------------------------------------
-
             ByteArrayInputStream bais;
             bais = new ByteArrayInputStream(loginString.getBytes());
             byte arr[];
@@ -400,18 +379,24 @@ public class TaggedHtml
 
             addRecievedCookies(response, cookies);
 
+            int status = response.getStatusLine().getStatusCode();
+            System.out.println("  - HTTP Post result status: " + status);
+            
+            if ( status != 302 ) {
+                return false;
+            }
+            
             //-----------------------------------------------------------------
             InputStream is;
             is = response.getEntity().getContent();
-            String responseUrl;
-            responseUrl = importDataFromJson(is);
-            if ( responseUrl != null ) {
-                System.out.println("3. Activating authentication tokens");
-                TaggedHtml pageProcessor = new TaggedHtml();
-                pageProcessor.getInternetPage(responseUrl, cookies, true);
-                return pageProcessor;
-            }
+            
+            importDataFromHtml(is);
+            System.out.println("3. Activating page");
+            
+            //ComputrabajoCoDownloader.listTagsFromPage(this);
+            
             response.close();
+            return true;
         }
         catch ( IOException e ) {
             VSDK.reportMessageWithException(this,
@@ -420,7 +405,7 @@ public class TaggedHtml
                 "HTTP ERROR",
                 e);
         }
-        return null;
+        return false;
     }
 
     private void prepareExistingCookies(
