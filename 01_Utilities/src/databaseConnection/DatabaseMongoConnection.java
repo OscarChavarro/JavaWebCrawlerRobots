@@ -84,14 +84,14 @@ public class DatabaseMongoConnection
         return mongoConnection;
     }
 	
-    public ArrayList<Property> fetchAllPropertiesMongo()
+    public ArrayList<Object> fetchAllPropertiesMongo()
     {
         if ( properties == null ) 
 		{
             return null;
         }
-        ArrayList<Property> list;
-        list = new ArrayList<Property>();
+        ArrayList<Object> list;
+        list = new ArrayList<Object>();
         
         DBCursor c;
         c = properties.find();
@@ -100,15 +100,17 @@ public class DatabaseMongoConnection
 		{
             DBObject ei = c.next();
             
-            Property p = new Property();
-            p.importMongoFields(ei);
+            /*Property p = new Property();
+            p.importMongoFields(ei);*/
             System.out.println("Agregando: " + i);
-            list.add(p);
+            list.add(ei);
             i++;
         }
         
         return list;
     }
+    
+////MODIFICAR LOS INSERT DE MONGO PARA QUE RECIBAN UN OBJECT    
     
     public void insertPropertyMongo(Property p)
     {
