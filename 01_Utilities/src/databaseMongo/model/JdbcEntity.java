@@ -5,6 +5,9 @@ package databaseMongo.model;
 //Java basic classes
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
+//import databaseMysqlMongo.model.String;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,12 +18,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
+
 //VSDK classes
 import vsdk.toolkit.common.Entity;
 
 /**
 */
 public class JdbcEntity extends Entity {
+
+	private String _id;
+	
+	public String get_id()
+    {
+        return _id;
+    }
+
+    public void set_id(String id)
+    {
+        this._id = id;
+    }
+	
   @SuppressWarnings("FieldNameHidesFieldInSuperclass")
   public static final long serialVersionUID = 20150425L;
 

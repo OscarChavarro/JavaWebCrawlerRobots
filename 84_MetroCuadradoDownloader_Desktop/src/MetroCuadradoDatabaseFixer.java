@@ -14,14 +14,15 @@ public class MetroCuadradoDatabaseFixer {
 
     static {
         databaseConnection = new MetroCuadradoDatabaseConnection();
-        MetroCuadradoDatabaseConnection.createMongoConnection();
+        //MetroCuadradoDatabaseConnection.createMongoConnection();
+        MetroCuadradoDatabaseConnection.createMongoConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
     }
 
     /**
     Deletes repeated elements. 
     */
     private static void searchRepeatedElements() {
-        ArrayList<Property> list = databaseConnection.fetchAllPropertiesMongo();
+        ArrayList<Property> list = databaseConnection._fetchAllPropertiesMongo();
         HashMap<String, Property> map;
         
         map = new HashMap<String, Property>();
@@ -48,7 +49,7 @@ public class MetroCuadradoDatabaseFixer {
     {
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", 
                 Locale.ENGLISH);
-        ArrayList<Property> list = databaseConnection.fetchAllPropertiesMongo();
+        ArrayList<Property> list = databaseConnection._fetchAllPropertiesMongo();
         HashMap<String, Property> map;
         
         map = new HashMap<String, Property>();

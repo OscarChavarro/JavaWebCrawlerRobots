@@ -1,6 +1,8 @@
 //===========================================================================
 package databaseMysqlMongo.model;
 
+import databaseMongo.model.JdbcEntity;
+
 /**
 */
 public class Property extends JdbcEntity {

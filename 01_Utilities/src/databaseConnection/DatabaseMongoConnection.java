@@ -22,22 +22,18 @@ import org.bson.types.ObjectId;
 import vsdk.toolkit.common.VSDK;
 
 // Application specific classes
-import databaseMongo.model.Property;
-import databaseMongo.model.Resume;
-import databaseMongo.model.ContactData;
-import databaseMongo.model.CamaraDeComercioData;
+import databaseMongo.model.JdbcEntity;
 
 public class DatabaseMongoConnection 
 {
 	private static DB mongoConnection;
     private static DBCollection properties;
-	private static DBCollection properties2;
+
 
     static 
 	{
         mongoConnection = null;
         properties = null;
-		properties2 = null;
     }
 
     public static DB createMongoConnection(String url,int port, String connectionName, String collectionName)
@@ -60,30 +56,24 @@ public class DatabaseMongoConnection
         return mongoConnection;
     }
     
-	public static DB createMongoConnection(String url,int port, String connectionName, String collectionName, String collectionName2)
+    public static DBCollection createMongoCollection(DB connectionName, String collectionName)
     {
-        try 
-		{
-            MongoClient mongoClient;
-            mongoClient = new MongoClient(url, port);
-            mongoConnection = mongoClient.getDB(connectionName);
-            properties = 
-                mongoConnection.getCollection(collectionName);
-            properties2 = 
-                mongoConnection.getCollection(collectionName2);
-        }
-        catch ( UnknownHostException ex ) 
-		{
-            VSDK.reportMessageWithException(
-                null, 
-                VSDK.FATAL_ERROR, 
-                "createMongoConnection", 
-                "Error connecting", 
-                ex);
-        }
-        return mongoConnection;
+    	try
+    	{
+    		properties = connectionName.getCollection(collectionName);
+    	}
+    	catch ( MongoException ex)
+    	{
+    		VSDK.reportMessageWithException(
+    				null, 
+    				VSDK.FATAL_ERROR, 
+    				"createMongoCollection", 
+    				"Error connecting", 
+    				ex);
+    	}
+        return properties;
     }
-	
+    
     public ArrayList<Object> fetchAllPropertiesMongo()
     {
         if ( properties == null ) 
@@ -108,11 +98,9 @@ public class DatabaseMongoConnection
         }
         
         return list;
-    }
+    }  
     
-////MODIFICAR LOS INSERT DE MONGO PARA QUE RECIBAN UN OBJECT    
-    
-    public void insertPropertyMongo(Property p)
+    public void insertObject(JdbcEntity p)
     {
         if ( properties == null ) 
 		{
@@ -130,115 +118,8 @@ public class DatabaseMongoConnection
         newDocument.append("importDate", format.format(date));
         properties.insert(newDocument);
     }
-	
-	public static void insertResumeMongo(Resume r)
-    {
-        if ( getProfessionalResume() == null ) 
-		{
-            return;
-        }
-        
-        BasicDBObject newDocument;
-
-        Date date = new Date();
-        ObjectId oid = new ObjectId();
-        r.set_id(oid.toHexString());
-        newDocument = r.exportMongoDocument();
-
-        DateFormat format = new SimpleDateFormat(
-            "yyyy-MM-dd'T'HH:mm:ss'Z'", 
-            Locale.ENGLISH);
-
-        newDocument.append("importDate", format.format(date));
-
-        try 
-		{
-            if ( r.getName() == null || r.getName().equals("null") ) 
-			{
-                System.out.println("    . Saltando hoja de vida vacia");
-            }
-            else 
-			{
-                getProfessionalResume().insert(newDocument);
-            }
-        }
-        catch ( MongoException e ) 
-		{
-            System.out.println("    . Saltando hoja de vida - ya existía "+
-                "(debería actualizarse?)");
-            System.out.println("    . " + r.getSourceUrl());
-
-        }
-    }
-	
-	public static void insertContactMongo(ContactData r)
-    {
-        if ( properties == null ) 
-		{
-            return;
-        }
-        
-        BasicDBObject newDocument;
-
-        Date date = new Date();
-        ObjectId oid = new ObjectId();
-        r.set_id(oid.toHexString());
-        newDocument = r.exportMongoDocument();
-
-        DateFormat format = new SimpleDateFormat(
-            "yyyy-MM-dd'T'HH:mm:ss'Z'", 
-            Locale.ENGLISH);
-
-        newDocument.append("importDate", format.format(date));
-
-        try 
-		{
-            if ( r.getEmail() == null || r.getEmail().equals("null") ) 
-			{
-                System.out.println("    . Saltando contacto vacio");
-            }
-            else 
-			{
-                properties.insert(newDocument);
-            }
-        }
-        catch ( MongoException e ) 
-		{
-            
-        }
-    }
-	
-	public static void insertCompanyContactMongo(CamaraDeComercioData r)
-    {
-        if ( properties2 == null ) 
-		{
-            return;
-        }
-        
-        BasicDBObject newDocument;
-
-        Date date = new Date();
-        ObjectId oid = new ObjectId();
-        r.set_id(oid.toHexString());
-        newDocument = r.exportMongoDocument();
-
-        DateFormat format = new SimpleDateFormat(
-            "yyyy-MM-dd'T'HH:mm:ss'Z'", 
-            Locale.ENGLISH);
-
-        newDocument.append("importDate", format.format(date));
-
-        try 
-		{
-			properties2.insert(newDocument);
-        }
-        catch ( MongoException e ) 
-		{
-
-        }
-    }
-	
-	public boolean existInMongoDatabase(String url) 
+		
+	public boolean existInMongoDatabase(String key,String value) 
 	{
         if ( properties == null ) 
 		{
@@ -247,7 +128,8 @@ public class DatabaseMongoConnection
         }
         
         BasicDBObject filter;
-        filter = new BasicDBObject("url", url);
+        //filter = new BasicDBObject("url", url);
+        filter = new BasicDBObject(key, value);
         DBObject o = properties.findOne(filter);
         
 		if ( o == null ) 
@@ -256,7 +138,7 @@ public class DatabaseMongoConnection
         }
         
         //System.out.println("Encontré un predio para la url " + url);
-        System.out.println("  - El predio ya estaba en la base de datos, con id " + o.get("_id"));
+        System.out.println("  - El Objeto ya estaba en la base de datos, con id " + o.get("_id"));
     
         return true;
     }
@@ -302,25 +184,22 @@ public class DatabaseMongoConnection
             
         }
     }
-	public static DBCollection getProperties() 
+	
+    public static DBCollection getProperties() 
 	{
         return properties;
     }
-	
-	public static DBCollection getProfessionalResume() 
-	{
-        return properties;
-    }
-	
-	public static void checkExistingResumesOnDatabase(TreeSet<String> resumeListAlreadyDownloaded) 
+		
+	public static void checkExistingResumesOnDatabase(TreeSet<String> resumeListAlreadyDownloaded,String key) 
     {
-        System.out.println("5. Importing all URLs loaded in database... ");
+        System.out.println("5. Importing all Objects loaded in database... ");
         BasicDBObject query;
         BasicDBObject options;
         
         query = new BasicDBObject();
         options = new BasicDBObject();
-        options.append("sourceUrl", true);
+        //options.append("sourceUrl", true);
+        options.append(key, true);
         DBCursor c = properties.find(query, options);
 
         System.out.println("  - 5.1. Importing database entries...");
@@ -332,7 +211,8 @@ public class DatabaseMongoConnection
 			{
                 System.out.println("     . " + i);
             }
-            Object o = c.next().get("sourceUrl");
+            //Object o = c.next().get("sourceUrl");
+            Object o = c.next().get(key);
 
             if ( o == null ) 
 			{

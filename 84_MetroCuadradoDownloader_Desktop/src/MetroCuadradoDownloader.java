@@ -15,8 +15,8 @@ import vsdk.toolkit.common.VSDK;
 import vsdk.toolkit.io.PersistenceElement;
 
 // Utilities classes
-import databaseConnection.*;
-import databaseMongo.model.Property;
+import databaseMysqlMongo.MetroCuadradoDatabaseConnection;
+import databaseMysqlMongo.model.Property;
 
 // Toolkit classes
 import webcrawler.TagSegment;
@@ -30,11 +30,11 @@ import webcrawler.TaggedHtml;
 */
 public class MetroCuadradoDownloader {
 //    private static final MetroCuadradoDatabaseConnection databaseConnection;
-	private static final DatabaseMongoConnection databaseConnection;
+	private static final MetroCuadradoDatabaseConnection databaseConnection;
 
     static {
-        databaseConnection = new DatabaseMongoConnection();
-        DatabaseMongoConnection.createMongoConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
+        databaseConnection = new MetroCuadradoDatabaseConnection();
+        MetroCuadradoDatabaseConnection.createMongoConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
     }
 
     /**
@@ -609,7 +609,7 @@ public class MetroCuadradoDownloader {
         System.out.println("URL: " + url);
         TaggedHtml pageProcessor;
 
-        if ( databaseConnection.existInMongoDatabase(url) ) {
+        if ( databaseConnection.existInMongoDatabase("url",url) ) {
             return;
         }
 
