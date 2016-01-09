@@ -19,17 +19,26 @@ import databaseMysqlMongo.model.Property;
 /**
 */
 public class MetroCuadradoDatabaseConnection extends DatabaseMongoConnection{
-    private static DBCollection properties;
+    
+	private static DBCollection properties;
 
     static 
     {
         properties = null;
     }
 
+	
+	public MetroCuadradoDatabaseConnection(String url, int port, String connectionName, String collectionName) {
+		super(url, port, connectionName, collectionName);
+		properties = super.getProperties();
+	}
+
+	    
+    
+
     public void insertPropertyMongo(Property p)
     {
-        if ( properties == null ) 
-        {
+        if ( properties == null ) {
             return;
         }
         

@@ -32,9 +32,9 @@ public class MetroCuadradoDownloader {
 //    private static final MetroCuadradoDatabaseConnection databaseConnection;
 	private static final MetroCuadradoDatabaseConnection databaseConnection;
 
-    static {
-        databaseConnection = new MetroCuadradoDatabaseConnection();
-        MetroCuadradoDatabaseConnection.createMongoConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
+    static 
+    {
+        databaseConnection = new MetroCuadradoDatabaseConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
     }
 
     /**

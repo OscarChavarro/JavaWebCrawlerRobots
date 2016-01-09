@@ -35,6 +35,25 @@ public class DatabaseMongoConnection
         mongoConnection = null;
         properties = null;
     }
+    
+    public DatabaseMongoConnection(String url,int port, String connectionName, String collectionName)
+    {
+        try 
+		{
+            MongoClient mongoClient;
+            mongoClient = new MongoClient(url, port);
+            mongoConnection = mongoClient.getDB(connectionName);
+            properties = mongoConnection.getCollection(collectionName);            
+        }
+        catch ( UnknownHostException ex ) {
+            VSDK.reportMessageWithException(
+                null, 
+                VSDK.FATAL_ERROR, 
+                "createMongoConnection", 
+                "Error connecting", 
+                ex);
+        }
+    }
 
     public static DB createMongoConnection(String url,int port, String connectionName, String collectionName)
     {

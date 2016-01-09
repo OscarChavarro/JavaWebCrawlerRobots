@@ -12,10 +12,9 @@ import java.util.Locale;
 public class MetroCuadradoDatabaseFixer {
     private static final MetroCuadradoDatabaseConnection databaseConnection;
 
-    static {
-        databaseConnection = new MetroCuadradoDatabaseConnection();
-        //MetroCuadradoDatabaseConnection.createMongoConnection();
-        MetroCuadradoDatabaseConnection.createMongoConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
+    static 
+    {
+        databaseConnection = new MetroCuadradoDatabaseConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
     }
 
     /**
