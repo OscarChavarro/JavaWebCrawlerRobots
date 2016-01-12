@@ -29,7 +29,8 @@ public class ComputrabajoCoDownloader {
 
     static 
     {
-        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "domolyRobot", "professionalResume");
+        databaseConnection = new ComputrabajoDatabaseConnection("localhost", 
+            27017, "computrabajoCo", "professionalResume");
     }
 
 
@@ -438,6 +439,7 @@ public class ComputrabajoCoDownloader {
         boolean nextNo = false;
         boolean nextPayment = false;
         boolean nextResume = false;
+        boolean nextDocumentId = false;
         String lastInside = "";
         String lastSpanType = "";
         String htmlContent = "";
@@ -477,6 +479,10 @@ public class ComputrabajoCoDownloader {
                     if ( nextLocation ) {
                         r.setLocation(content);
                         nextLocation = false;
+                    }
+                    if ( nextDocumentId ) {
+                        r.setDocumentId(content);
+                        nextDocumentId = false;
                     }
                     if ( nextAge ) {
                         r.setAge(Integer.parseInt(content));
@@ -638,6 +644,12 @@ public class ComputrabajoCoDownloader {
                     if ( n.equals("class") && insideLeftDiv ) {
                         if ( v.contains("icon email") ) {
                             nextEmail = true;
+                        }
+                        else if ( v.contains("icon defic") ) {
+                            nextDocumentId = true;
+                        }
+                        else if ( v.contains("icon mvl") ) {
+                            nextPhone = true;
                         }
                         else if ( v.contains("icon mvl") ) {
                             nextPhone = true;

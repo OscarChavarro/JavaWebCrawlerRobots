@@ -4,6 +4,7 @@ package databaseMongo.model;
 */
 public class Resume extends JdbcEntity {
     private String _id;
+    private String documentId;
     private String sourceUrl;
     private String name;
     private String profilePictureUrl;
@@ -20,6 +21,7 @@ public class Resume extends JdbcEntity {
     private String resumeLink;    
     private String htmlContent;
     private int age;
+    private int emailStatus;
     private boolean drivingLicense;
     private boolean hasVehicle;
     private boolean availableForTravel;
@@ -29,6 +31,7 @@ public class Resume extends JdbcEntity {
 
     public Resume() {
         this.country = "co";
+        emailStatus = 0;
     }
 
     /**
@@ -369,5 +372,33 @@ public class Resume extends JdbcEntity {
      */
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    /**
+     * @return the documentId
+     */
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    /**
+     * @param documentId the documentId to set
+     */
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
+
+    /**
+     * @return the emailStatus
+     */
+    public int getEmailStatus() {
+        return emailStatus;
+    }
+
+    /**
+     * @param emailStatus the emailStatus to set
+     */
+    public void setEmailStatus(int emailStatus) {
+        this.emailStatus = emailStatus;
     }
 }
