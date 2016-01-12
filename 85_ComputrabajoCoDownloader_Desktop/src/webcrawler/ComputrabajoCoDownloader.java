@@ -15,7 +15,11 @@ import vsdk.toolkit.io.PersistenceElement;
 import databaseMongo.ComputrabajoDatabaseConnection;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
 */
@@ -185,15 +189,19 @@ public class ComputrabajoCoDownloader {
         int i;
         for ( i = 1; i <= (n/20) + 1; i++ ) {
             // Process current page
-            System.out.println("    . Downloading listing page " + i + " of " + (n/20 + 1));
+            Date date = new Date();
+            DateFormat format = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss'Z'", 
+                Locale.ENGLISH);
+
+            System.out.println("    . Downloading listing page " + i + " of " + 
+                (n/20 + 1) + " on time " + format.format(date));
             importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
             
-            /*
             if ( i == 1 ) {
                 System.out.println("***** LISTO, PRUEBA DETENIDA! *****");
                 break;
             }
-            */
 
             // Advance to next
             pageProcessor = new TaggedHtml();
