@@ -21,9 +21,13 @@ import java.util.HashMap;
 */
 public class ComputrabajoCoDownloader {
 
-    static {
-        ComputrabajoDatabaseConnection.createMongoConnection();
+    private static final ComputrabajoDatabaseConnection databaseConnection;
+
+    static 
+    {
+        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "domolyRobot", "professionalResume");
     }
+
 
     /**
     @param login
@@ -392,7 +396,7 @@ public class ComputrabajoCoDownloader {
             pageProcessor.getInternetPage("http://empresa.computrabajo.com.co" + url, cookies, true);
             Resume r;
             r = importResumeFromPage(pageProcessor, "http://empresa.computrabajo.com.co" + url, cookies);
-            ComputrabajoDatabaseConnection.insertResumeMongo(r);
+            databaseConnection.insertResumeMongo(r);
             i++;
         }
     }
@@ -727,7 +731,7 @@ public class ComputrabajoCoDownloader {
         indexPageProcessor = new TaggedHtml();
         analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
 
-        ComputrabajoDatabaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
+        databaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
         removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
         exportList(resumeListToDownload);
         downloadResumes(resumeListToDownload, cookies);

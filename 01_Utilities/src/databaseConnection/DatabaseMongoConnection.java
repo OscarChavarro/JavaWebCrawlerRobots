@@ -75,11 +75,11 @@ public class DatabaseMongoConnection
         return mongoConnection;
     }
     
-    public static DBCollection createMongoCollection(DB connectionName, String collectionName)
+    public DBCollection createMongoCollection(String collectionName)
     {
     	try
     	{
-    		properties = connectionName.getCollection(collectionName);
+    		properties = mongoConnection.getCollection(collectionName);
     	}
     	catch ( MongoException ex)
     	{
@@ -249,5 +249,10 @@ public class DatabaseMongoConnection
 
         System.out.println("  - 5.2. Number of resumes already imported in database: " + i);
     }
+	
+	public String getNameMongoConnection()
+	{
+		return mongoConnection.getName();
+	}
 	
 }

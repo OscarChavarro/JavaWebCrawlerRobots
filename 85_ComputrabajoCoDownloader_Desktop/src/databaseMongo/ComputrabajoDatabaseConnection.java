@@ -2,66 +2,47 @@
 package databaseMongo;
 
 // Java basic classes
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TreeSet;
 
 // Mongo classes
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.MongoClient;
+import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 
-// VSDK classes
-import vsdk.toolkit.common.VSDK;
-
 // Application specific classes
-//import databaseMysql.model.Property;
 import databaseMongo.model.Resume;
+import databaseMongo.model.ResumeTrans;
+import databaseConnection.DatabaseMongoConnection;;
+
 
 /**
 */
-public class ComputrabajoDatabaseConnection {
-    private static DB mongoConnection;
+public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
+
     private static DBCollection professionalResume;
 
-    static {
-        mongoConnection = createMongoConnection();
-//        professionalResume = null;
-    }
-
-    public static DB createMongoConnection()
+    static 
     {
-        try {
-            MongoClient mongoClient;
-            mongoClient = new MongoClient("localhost", 27017);
-            mongoConnection = mongoClient.getDB("computrabajoCo");
-            professionalResume = 
-                mongoConnection.getCollection("professionalResume");            
-        }
-        catch ( UnknownHostException ex ) {
-            VSDK.reportMessageWithException(
-                null, 
-                VSDK.FATAL_ERROR, 
-                "createMongoConnection", 
-                "Error connecting", 
-                ex);
-        }
-        return mongoConnection;
+        professionalResume = null;
     }
+    
+    public ComputrabajoDatabaseConnection(String url, int port, String connectionName, String collectionName) {
+		super(url, port, connectionName, collectionName);
+		professionalResume = super.getProperties();
+	}
 
-    /**
-    @param r
-    */
-    public static void insertResumeMongo(Resume r)
+
+    public void insertResumeMongo(Resume r)
     {
-        if ( getProfessionalResume() == null ) {
+        if ( this.getProfessionalResume() == null ) {
             return;
         }
         
@@ -87,8 +68,49 @@ public class ComputrabajoDatabaseConnection {
             }
         }
         catch ( MongoException e ) {
-            System.out.println("    . Saltando hoja de vida - ya exist√≠a "+
-                "(deber√≠a actualizarse?)");
+            System.out.println("    . Saltando hoja de vida - ya existe "+
+                "(deber· actualizarse?)");
+            System.out.println("    . " + r.getSourceUrl());
+            /*
+            VSDK.reportMessageWithException(
+                null, 
+                VSDK.WARNING, 
+                "insertResumeMongo", 
+                "Hoja de vida ya existente en base de datos", e);
+            */
+        }
+    }
+    
+    public void insertResumeMongo(DBCollection collection, ResumeTrans r)
+    {
+        if ( collection == null ) {
+            return;
+        }
+        
+        BasicDBObject newDocument;
+
+        Date date = new Date();
+        ObjectId oid = new ObjectId();
+        r.set_id(oid.toHexString());
+        newDocument = r.exportMongoDocument();
+
+        DateFormat format = new SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss'Z'", 
+            Locale.ENGLISH);
+
+        newDocument.append("importDate", format.format(date));
+
+        try {
+            if ( r.getName() == null || r.getName().equals("null") ) {
+                System.out.println("    . Saltando hoja de vida vacia");
+            }
+            else {
+                collection.insert(newDocument);
+            }
+        }
+        catch ( MongoException e ) {
+            System.out.println("    . Saltando hoja de vida - ya existe "+
+                "(deber· actualizarse?)");
             System.out.println("    . " + r.getSourceUrl());
             /*
             VSDK.reportMessageWithException(
@@ -100,48 +122,45 @@ public class ComputrabajoDatabaseConnection {
         }
     }
 
+
     /**
      * @return the professionalResume
      */
-    public static DBCollection getProfessionalResume() {
+    public DBCollection getProfessionalResume()
+    {
         return professionalResume;
     }
 
-    public static void checkExistingResumesOnDatabase(
+    public void checkExistingResumesOnDatabase(
         TreeSet<String> resumeListAlreadyDownloaded) 
     {
-        System.out.println("5. Importing all URLs loaded in database... ");
-        BasicDBObject query;
-        BasicDBObject options;
-        
-        query = new BasicDBObject();
-        options = new BasicDBObject();
-        options.append("sourceUrl", true);
-        DBCursor c = professionalResume.find(query, options);
-
-        System.out.println("  - 5.1. Importing database entries...");
-        int i;
-
-        for ( i = 0; c.hasNext(); i++ ) {
-            if ( i % 10000 == 0 ) {
-                System.out.println("     . " + i);
-            }
-            Object o = c.next().get("sourceUrl");
-
-            if ( o == null ) {
-                continue;
-            }
-            
-            String url = o.toString();
-            // Trim "http://empresa.computrabajo.com.ve" out
-            url = url.substring(34);            
-            if ( url != null && !url.equals("null") ) {
-                resumeListAlreadyDownloaded.add(url);
-            }
-        }
-
-        System.out.println("  - 5.2. Number of resumes already imported in database: " + i);
+        super.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded, "sourceUrl");	
     }
+    
+    public ArrayList<Resume> _fetchAllProductsMongo()
+    {
+        if ( professionalResume == null ) 
+		{
+            return null;
+        }
+        ArrayList<Resume> list;
+        list = new ArrayList<Resume>();
+        
+        DBCursor c;
+        c = professionalResume.find();
+        int i = 1;
+        while ( c.hasNext() ) 
+		{
+            DBObject ei = c.next();
+            
+            Resume r = new Resume();
+            r.importMongoFields(ei);
+            list.add(r);
+            i++;
+        }
+        
+        return list;
+    }  
 }
 
 //===========================================================================

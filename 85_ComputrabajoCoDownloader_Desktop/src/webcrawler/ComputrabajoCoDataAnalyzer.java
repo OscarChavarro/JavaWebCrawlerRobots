@@ -30,13 +30,18 @@ import databaseMongo.model.GeographicAdministrativeRegion;
 import databaseMongo.model.HtmlExtraInformation;
 import databaseMongo.model.NameElement;
 
+
 /**
 */
 public class ComputrabajoCoDataAnalyzer {
     private static boolean reportAdvances = false;
-    static {
-        ComputrabajoDatabaseConnection.createMongoConnection();
+    private static final ComputrabajoDatabaseConnection databaseConnection;
+
+    static 
+    {
+        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "domolyRobot", "professionalResume");
     }
+
 
     /**
     Given a database object with a location label, this method performs a 
@@ -52,7 +57,7 @@ public class ComputrabajoCoDataAnalyzer {
         String l = o.get("location").toString();
         if ( l.equals("null") ) {
             if ( reportAdvances ) {
-                System.out.println("    . Currículo vacío ... saltando"); 
+                System.out.println("    . Curriculo vacio ... saltando"); 
             }
             return;
         }
@@ -81,8 +86,8 @@ public class ComputrabajoCoDataAnalyzer {
             return;
         }
         else if ( numberOfSeparators != 1 ) {
-            System.out.println("ERROR: La ubicación " + l + " es inválida:");
-            System.out.println("  - Número incorrecto de separadores");
+            System.out.println("ERROR: La ubicacion " + l + " es invalida:");
+            System.out.println("  - Numero incorrecto de separadores");
             System.out.println("  - ID: " + id);
             return;
         }
@@ -933,7 +938,7 @@ public class ComputrabajoCoDataAnalyzer {
     {
         DBCollection professionalResume;
         professionalResume = 
-            ComputrabajoDatabaseConnection.getProfessionalResume();
+            databaseConnection.getProfessionalResume();
         if ( professionalResume == null ) {
             return;
         }
@@ -975,7 +980,7 @@ public class ComputrabajoCoDataAnalyzer {
                 processHtmlContent(o, i);
             }
             if ( o.containsField("profilePictureUrl") ) {
-                processProfilePictureUrl(o, id, i);
+              //  processProfilePictureUrl(o, id, i);
             }
             //if ( i >= 2000 ) {
             //    break;
