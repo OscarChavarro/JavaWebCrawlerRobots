@@ -706,7 +706,11 @@ public class MetroCuadradoDownloader {
     private static String[][] calculateRegions()
     {
         String m[][] = {
-            /*{"Abrego", "abrego"},
+            {"Bogotá", "bogota"},
+            {"Cali", "cali"},
+            {"Medellín", "medellín"},
+            {"Barranquilla", "barranquilla"},            
+            {"Abrego", "abrego"},
             {"Acacias", "acacias"},
             {"Acandi", "acandi"},
             {"Agua De Dios", "aguadedios"},
@@ -743,7 +747,6 @@ public class MetroCuadradoDownloader {
             {"Barichara", "barichara"},
             {"Barrancabermeja", "barrancabermeja"},
             {"Barranco De Loba", "barrancodeloba"},
-            {"Barranquilla", "barranquilla"},
             {"Barú", "baru"},
             {"Belalcazar", "belalcazar"},
             {"Belen", "belen"},
@@ -753,7 +756,6 @@ public class MetroCuadradoDownloader {
             {"Berbeo", "berbeo"},
             {"Betulia", "betulia"},
             {"Bituima", "bituima"},
-            {"Bogotá", "bogota"},
             {"Bojaca", "bojaca"},
             {"Bojaya", "bojaya"},
             {"Bolivar", "bolivar"},
@@ -775,7 +777,6 @@ public class MetroCuadradoDownloader {
             {"Calarca", "calarca"},
             {"Caldas", "caldas"},
             {"Caldas", "caldas"},
-            {"Cali", "cali"},
             {"Calima", "calima"},
             {"Campo De La Cruz", "campodelacruz"},
             {"Candelaria", "candelaria"},
@@ -939,8 +940,8 @@ public class MetroCuadradoDownloader {
             {"Maicao", "maicao"},
             {"Malambo", "malambo"},
             {"Mamonal", "mamonal"},
-            {"Mani", "mani"},*/
-            {"Manizales", "manizales"}/*,
+            {"Mani", "mani"},
+            {"Manizales", "manizales"},
             {"Manta", "manta"},
             {"Mapiripan", "mapiripan"},
             {"marandua", "marandua"},
@@ -948,7 +949,6 @@ public class MetroCuadradoDownloader {
             {"Mariquita", "mariquita"},
             {"Marsella", "marsella"},
             {"Marulanda", "marulanda"},
-            {"Medellín", "medellín"},
             {"Medina", "medina"},
             {"Melgar", "melgar"},
             {"Meseta", "meseta"},
@@ -1187,7 +1187,7 @@ public class MetroCuadradoDownloader {
             {"Zarzal", "zarzal"},
             {"Zetaquira", "zetaquira"},
             {"Zipacon", "zipacon"},
-            {"Zipaquira", "zipaquira"}*/
+            {"Zipaquira", "zipaquira"}
         };
         return m;
     }

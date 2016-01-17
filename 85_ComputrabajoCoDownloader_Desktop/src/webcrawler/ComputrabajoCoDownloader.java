@@ -15,7 +15,11 @@ import vsdk.toolkit.io.PersistenceElement;
 import databaseMongo.ComputrabajoDatabaseConnection;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
 */
@@ -25,7 +29,8 @@ public class ComputrabajoCoDownloader {
 
     static 
     {
-        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "domolyRobot", "professionalResume");
+        databaseConnection = new ComputrabajoDatabaseConnection("localhost", 
+            27017, "computrabajoCo", "professionalResume");
     }
 
 
@@ -185,15 +190,19 @@ public class ComputrabajoCoDownloader {
         int i;
         for ( i = 1; i <= (n/20) + 1; i++ ) {
             // Process current page
-            System.out.println("    . Downloading listing page " + i + " of " + (n/20 + 1));
+            Date date = new Date();
+            DateFormat format = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss'Z'", 
+                Locale.ENGLISH);
+
+            System.out.println("    . Downloading listing page " + i + " of " + 
+                (n/20 + 1) + " on time " + format.format(date));
             importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
             
-            /*
             if ( i == 1 ) {
                 System.out.println("***** LISTO, PRUEBA DETENIDA! *****");
                 break;
             }
-            */
 
             // Advance to next
             pageProcessor = new TaggedHtml();
@@ -430,6 +439,7 @@ public class ComputrabajoCoDownloader {
         boolean nextNo = false;
         boolean nextPayment = false;
         boolean nextResume = false;
+        boolean nextDocumentId = false;
         String lastInside = "";
         String lastSpanType = "";
         String htmlContent = "";
@@ -469,6 +479,10 @@ public class ComputrabajoCoDownloader {
                     if ( nextLocation ) {
                         r.setLocation(content);
                         nextLocation = false;
+                    }
+                    if ( nextDocumentId ) {
+                        r.setDocumentId(content);
+                        nextDocumentId = false;
                     }
                     if ( nextAge ) {
                         r.setAge(Integer.parseInt(content));
@@ -630,6 +644,12 @@ public class ComputrabajoCoDownloader {
                     if ( n.equals("class") && insideLeftDiv ) {
                         if ( v.contains("icon email") ) {
                             nextEmail = true;
+                        }
+                        else if ( v.contains("icon defic") ) {
+                            nextDocumentId = true;
+                        }
+                        else if ( v.contains("icon mvl") ) {
+                            nextPhone = true;
                         }
                         else if ( v.contains("icon mvl") ) {
                             nextPhone = true;
