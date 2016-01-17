@@ -17,7 +17,8 @@ import databaseConnection.DatabaseMongoConnection;
 import databaseMongo.model.Product;
 
 
-public class IngenioDatabaseConnection extends DatabaseMongoConnection{
+public class IngenioDatabaseConnection extends DatabaseMongoConnection
+{
 
 	public IngenioDatabaseConnection(String url, int port, String connectionName, String collectionName) 
 	{
@@ -30,8 +31,7 @@ public class IngenioDatabaseConnection extends DatabaseMongoConnection{
     {
     	products = null;
     }
-
-	
+    
     public void insertPropertyMongo(Product p)
     {
         if ( products == null ) {

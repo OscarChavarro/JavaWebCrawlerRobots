@@ -1,6 +1,7 @@
 package databaseMongo.model;
 
-public class Product extends JdbcEntity{
+public class Product extends JdbcEntity
+{
 	private String name;
 	private String description;
 	private String material;
@@ -8,6 +9,8 @@ public class Product extends JdbcEntity{
 	private String printArea;
 	private String brand;
 	private String packing;
+	private double price;
+	private String url;
 	
 	
 	
@@ -21,6 +24,7 @@ public class Product extends JdbcEntity{
 		this.printArea = "";
 		this.brand = "";
 		this.packing = "";
+		this.url = "";
 	}
 
 	public String getName() {
@@ -64,6 +68,22 @@ public class Product extends JdbcEntity{
 	}
 	public void setPacking(String packing) {
 		this.packing = packing;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
 	}
 
 }
