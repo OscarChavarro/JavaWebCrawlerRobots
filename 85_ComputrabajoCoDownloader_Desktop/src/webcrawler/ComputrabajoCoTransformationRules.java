@@ -3,12 +3,18 @@ package webcrawler;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.ParseException;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
 
 import databaseMongo.ComputrabajoDatabaseConnection;
 import databaseMongo.model.Resume;
@@ -22,7 +28,7 @@ public class ComputrabajoCoTransformationRules {
 
     static 
     {
-        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "domolyRobot", "professionalResume");
+        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "computrabajoCo", "professionalResume");
         professionalResume = databaseConnection.getProfessionalResume();
         professionalResumeTrans = databaseConnection.createMongoCollection("professionalResumeTrans");
     }
@@ -30,9 +36,10 @@ public class ComputrabajoCoTransformationRules {
     public static String TransformationName(String name)
     {
     	name = name.replaceAll("\\s\\s*"," ");
+    	name = name.toLowerCase();
     	String[] nameAsArray = name.split(" ");
     	String nameTrans="";
-    	Pattern pat = Pattern.compile("^[A-Z].*");
+    	Pattern pat = Pattern.compile("^[A-Z]*");
         Matcher mat;
         
 		 for (int i = 0; i < nameAsArray.length; i++) 
@@ -40,7 +47,7 @@ public class ComputrabajoCoTransformationRules {
 			 mat = pat.matcher(nameAsArray[i].trim());
 		     if (!mat.matches())
 		     {
-		    	 nameAsArray[i] = nameAsArray[i].toUpperCase().substring(0, 1)+nameAsArray[i].substring(1);
+		    	 nameAsArray[i] = nameAsArray[i].toUpperCase().substring(0, 1)+nameAsArray[i].toLowerCase().substring(1);
 		     }
 		     nameTrans=nameTrans+nameAsArray[i]+" ";
 		 }
@@ -118,9 +125,9 @@ public class ComputrabajoCoTransformationRules {
     	return date;
     }
     
-    public static Date TransformationDate(String date)
+    public static String TransformationDate(String date)
     {
-    	 Date dateTrans = null;
+    	 String dateTrans = null;
     	 if(date != null)
     	 {
     		 date=date.replaceAll("\\s\\s*"," ");
@@ -128,14 +135,8 @@ public class ComputrabajoCoTransformationRules {
 	    	 //SimpleDateFormat dateFormat = new SimpleDateFormat("dd 'de' MMMM 'de' yyyy");
 	    	 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 	    	 
-	    	 try 
-	    	 {
-				dateTrans = dateFormat.parse(dateAux);
-	    	 } 
-	    	 catch (java.text.ParseException e) 
-	    	 {
-				e.printStackTrace();
-	    	 }
+	    	 dateTrans = dateAux;
+
     	 }
     	return dateTrans;
     }
@@ -161,6 +162,22 @@ public class ComputrabajoCoTransformationRules {
     	return dateTrans;
     }
     
+    public static String TransformationProfession(String html)
+    {
+    	String profession = "";
+    	
+    	
+    	String[] stringAux = html.split("</H2></LI>");
+    	
+    	profession=stringAux[0].trim().replace("<UL><LI><H2>", "");
+    	
+    	profession= profession.replaceAll("\\s\\s*"," ");
+    	
+    	profession = profession.toUpperCase().substring(0, 1) + profession.toLowerCase().substring(1);
+    	
+    	return profession.trim();
+    }
+    
     public static Double TransformationPayment(String _pay)
     {
 		Pattern pat = Pattern.compile("^[0-9.,]*");
@@ -173,7 +190,8 @@ public class ComputrabajoCoTransformationRules {
 		        mat = pat.matcher(payAsArray[i]);
 		        if (mat.matches())
 		        {
-		        	payAsArray[i]=payAsArray[i].replace(",", "");
+		        	payAsArray[i]=payAsArray[i].replace(".", "");
+		        	payAsArray[i]=payAsArray[i].replace(",", ".");
 		        	pay = Double.parseDouble(payAsArray[i]);
 		        	return pay;
 		        }
@@ -181,46 +199,15 @@ public class ComputrabajoCoTransformationRules {
 		return pay;
 	}
 
-    public static ResumeTrans TransformationResume(DBCursor cursor)
-    {
-    	String auxString;
-   	 	Double auxDouble;
-   	 	int auxInt;
-   	 	Date auxDate;
-   	 	ResumeTrans resume = new ResumeTrans();
-   	 	
-	   	 while(cursor.hasNext())
-	   	 {
-	   		 try
-	   		 {
-	   			 auxString = TransformationName((String) cursor.next().get("name"));
-	   			 resume.setName(auxString);
-	   			 
-	   			auxDate = TransformationDate((String) cursor.next().get("lastUpdateDate"));
-	   			resume.setLastUpdateDate(auxDate);
-	   			
-	   			auxInt = (int)cursor.next().get("age");
-	   			resume.setAge(auxInt);
-	   			 
-	   			databaseConnection.insertResumeMongo(professionalResumeTrans, resume);
-	   			 
-	   			 System.out.println("String: "+resume.getName());
-	   			 System.out.println("Date: "+resume.getLastUpdateDate()+"\n");
-	   		 }
-	   		 catch(Exception e)
-	   		 {
-	   			System.out.println("Ocurrio una excepcion"); 
-	   		 }
-	   	 }
 
-	   	 return null;
-    }
     
     public static void main(String args[])
     {
     	DBCollection professionalResume,professionalResumeTrans;
         professionalResume = databaseConnection.getProfessionalResume();
         professionalResumeTrans = databaseConnection.createMongoCollection("professionalResumeTrans");
+        SimpleDateFormat date = new SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH);
+        Date transformationName = new Date();
         
         if ( professionalResume == null ) 
         {
@@ -228,45 +215,45 @@ public class ComputrabajoCoTransformationRules {
         }    
         
         ArrayList<Resume> listResume =  databaseConnection._fetchAllProductsMongo();
-        //ArrayList<ResumeTrans> listResumeTrans = new ArrayList<ResumeTrans>();
-        ResumeTrans var = new ResumeTrans();
         
+        BasicDBObject searchQuery = new BasicDBObject();
         for(int i = 0; i<listResume.size(); i++)
         {
-        	var.setName(TransformationName(listResume.get(i).getName()));
-        	
-        	//Pendiente por transformacion
-        	var.setLocation(listResume.get(i).getLocation());
-        	//Pendiente por transformacion
-        	
-        	var.setAge(listResume.get(i).getAge());
-        	var.setLastUpdateDate((TransformationDate(listResume.get(i).getLastUpdateDate())));
-        	var.setProfilePictureUrl(listResume.get(i).getProfilePictureUrl());
-        	var.setJobSearchStatus(listResume.get(i).getJobSearchStatus());
-        	var.setWantedPayment(TransformationPayment(listResume.get(i).getWantedPayment()));
-        	var.setDescriptionTitle(listResume.get(i).getDescriptionTitle());
-        	var.setResumeLink(listResume.get(i).getResumeLink());
-        	
-        	//Pendiente por transformacion
-        	var.setProfesion("");
-        	//Pendiente por transformacion
-        	
-        	var.setRegistrationDate((TransformationDate(listResume.get(i).getRegistrationDate())));
-        	var.setLastLoginDate((TransformationDate(listResume.get(i).getLastLoginDate())));
-        	var.setPair(listResume.get(i).getPair());
-        	var.setSourceUrl(listResume.get(i).getSourceUrl());
-        	var.setPhone(listResume.get(i).getPhone());
-        	var.setEmail(ValidateEmail(listResume.get(i).getEmail()));
-        	//var.setExtractionDate((TransformationDateSimple(listResume.get(i).geti
-        	
-        	
-        	databaseConnection.insertResumeMongo(professionalResumeTrans, var);
-
-        	
-        	System.out.println(var.getRegistrationDate());
-        	System.out.println(var.getAge());
+	        try 
+	        {
+	        	searchQuery.append("_id", listResume.get(i).get_id());
+	        	searchQuery.append("name", TransformationName(listResume.get(i).getName()));
+	        	searchQuery.append("location", listResume.get(i).getLocation());
+	        	searchQuery.append("country", listResume.get(i).getCountry());
+	        	searchQuery.append("email", ValidateEmail(listResume.get(i).getEmail()));
+	        	searchQuery.append("phone", listResume.get(i).getPhone());
+	        	searchQuery.append("lastUpdateDate", date.parse(TransformationDate(listResume.get(i).getLastUpdateDate())));
+	        	searchQuery.append("profilePictureUrl", listResume.get(i).getProfilePictureUrl());
+	        	searchQuery.append("age", listResume.get(i).getAge());
+	        	searchQuery.append("pair", listResume.get(i).getPair());
+	        	searchQuery.append("jobSearchStatus", listResume.get(i).getJobSearchStatus());
+	        	searchQuery.append("wantedPayment", TransformationPayment(listResume.get(i).getWantedPayment()));
+	        	searchQuery.append("descriptionTitle", listResume.get(i).getDescriptionTitle());
+	        	searchQuery.append("resumeLink", listResume.get(i).getResumeLink());
+	        	searchQuery.append("profession", TransformationProfession(listResume.get(i).getHtmlContent()));
+	        	searchQuery.append("registrationDate", date.parse(TransformationDate(listResume.get(i).getRegistrationDate())));
+	        	searchQuery.append("lastLoginDate", date.parse(TransformationDate(listResume.get(i).getLastLoginDate())));
+	        	searchQuery.append("sourceUrl", listResume.get(i).getSourceUrl());
+	        	searchQuery.append("transformationDate", transformationName);
+	        	
+	        	if(professionalResumeTrans.findOne(listResume.get(i).get_id()) == null)
+	        	{
+	        		professionalResumeTrans.insert(searchQuery);
+	        	}
+	        } 
+	        catch (ParseException e) 
+	        {
+	                e.printStackTrace();
+	        } 
+	        catch (java.text.ParseException e) 
+	        {
+	        	e.printStackTrace();
+			}       
         }
-        
     }
-
 }

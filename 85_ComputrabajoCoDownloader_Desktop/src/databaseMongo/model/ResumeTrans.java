@@ -10,9 +10,9 @@ public class ResumeTrans extends JdbcEntity
     private String sourceUrl;
     private String name;
     private String profilePictureUrl;
-    private Date lastLoginDate;
-    private Date lastUpdateDate;
-    private Date registrationDate;
+    private String lastLoginDate;
+    private String lastUpdateDate;
+    private String registrationDate;
     private String email;    
     private String phone;
     private String location;
@@ -29,7 +29,7 @@ public class ResumeTrans extends JdbcEntity
     private boolean availableForRelocation;
     private boolean currentlyWorking;
     private String country;
-    private Date extractionDate;
+    private String extractionDate;
 
     public ResumeTrans() 
     {
@@ -68,27 +68,27 @@ public class ResumeTrans extends JdbcEntity
 		this.profilePictureUrl = profilePictureUrl;
 	}
 
-	public Date getLastLoginDate() {
+	public String getLastLoginDate() {
 		return lastLoginDate;
 	}
 
-	public void setLastLoginDate(Date lastLoginDate) {
+	public void setLastLoginDate(String lastLoginDate) {
 		this.lastLoginDate = lastLoginDate;
 	}
 
-	public Date getLastUpdateDate() {
+	public String getLastUpdateDate() {
 		return lastUpdateDate;
 	}
 
-	public void setLastUpdateDate(Date lastUpdateDate) {
+	public void setLastUpdateDate(String lastUpdateDate) {
 		this.lastUpdateDate = lastUpdateDate;
 	}
 
-	public Date getRegistrationDate() {
+	public String getRegistrationDate() {
 		return registrationDate;
 	}
 
-	public void setRegistrationDate(Date registrationDate) {
+	public void setRegistrationDate(String registrationDate) {
 		this.registrationDate = registrationDate;
 	}
 
@@ -220,11 +220,11 @@ public class ResumeTrans extends JdbcEntity
 		this.country = country;
 	}
 
-	public Date getExtractionDate() {
+	public String getExtractionDate() {
 		return extractionDate;
 	}
 
-	public void setExtractionDate(Date extractionDate) {
+	public void setExtractionDate(String extractionDate) {
 		this.extractionDate = extractionDate;
 	}
 }

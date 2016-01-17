@@ -34,7 +34,8 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         professionalResume = null;
     }
     
-    public ComputrabajoDatabaseConnection(String url, int port, String connectionName, String collectionName) {
+    public ComputrabajoDatabaseConnection(String url, int port, String connectionName, String collectionName) 
+    {
 		super(url, port, connectionName, collectionName);
 		professionalResume = super.getProperties();
 	}
@@ -71,13 +72,6 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
             System.out.println("    . Saltando hoja de vida - ya existe "+
                 "(deberá actualizarse?)");
             System.out.println("    . " + r.getSourceUrl());
-            /*
-            VSDK.reportMessageWithException(
-                null, 
-                VSDK.WARNING, 
-                "insertResumeMongo", 
-                "Hoja de vida ya existente en base de datos", e);
-            */
         }
     }
     
@@ -88,7 +82,7 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         }
         
         BasicDBObject newDocument;
-
+        
         Date date = new Date();
         ObjectId oid = new ObjectId();
         r.set_id(oid.toHexString());
@@ -149,11 +143,13 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         DBCursor c;
         c = professionalResume.find();
         int i = 1;
-        while ( c.hasNext() ) 
+        Resume r = new Resume();
+        DBObject ei;
+        //while ( c.hasNext() )
+        while ( i<100 )
 		{
-            DBObject ei = c.next();
-            
-            Resume r = new Resume();
+            ei = c.next();
+            r = new Resume();
             r.importMongoFields(ei);
             list.add(r);
             i++;

@@ -30,7 +30,7 @@ public class Resume extends JdbcEntity {
     public Resume() {
         this.country = "co";
     }
-
+    
     /**
      * @return the lastUpdateDate
      */
