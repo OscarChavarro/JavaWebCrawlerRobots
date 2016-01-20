@@ -206,7 +206,9 @@ public class ComputrabajoCoTransformationRules {
         int count = 1;
         
         while ( c.hasNext() ) {
-            System.out.println("  - Processing registry " + count);
+            if ( count % 1000 == 1 ) {
+                System.out.println("  - Processing registry " + count);
+            }
             count++;
             
             ei = c.next();

@@ -396,8 +396,20 @@ public class JdbcEntity extends Entity {
                       m.invoke(this, (long)o);
                   }
                   else if ( t.equals("int") ) {
-                      m = this.getClass().getMethod(name, int.class);
-                      m.invoke(this, (int)o);
+                        m = this.getClass().getMethod(name, int.class);
+                        int internalVal = 0;
+                        try {
+                            if ( o instanceof java.lang.Integer ) {
+                                internalVal = (int)o;
+                            }
+                        } 
+                        catch (Exception e) {
+                            System.out.println("ERROR DE DATO: ");
+                            System.out.println("  - Metodo: " + name);
+                            System.out.println("  - Valor: " + o.toString());
+                            System.out.println("  - Tipo de param: " + o.getClass().getName());
+                        }
+                        m.invoke(this, internalVal);
                   }
                   else if ( t.equals("float") ) {
                       m = this.getClass().getMethod(name, float.class);
@@ -405,7 +417,15 @@ public class JdbcEntity extends Entity {
                   }
                   else if ( t.equals("double") ) {
                       m = this.getClass().getMethod(name, double.class);
-                      m.invoke(this, (double)o);
+                      //try {
+                          m.invoke(this, (double)o);
+                      /*} catch ( Exception e ) {
+                          System.out.println("ERROR DE DATO: ");
+                          System.out.println("  - Metodo: " + name);
+                          System.out.println("  - Valor: " + o.toString());
+                          System.out.println("  - Tipo de param: " + o.getClass().getName());
+                          System.exit(9);
+                      }*/
                   }
                   else if ( t.equals("byte") ) {
                       m = this.getClass().getMethod(name, byte.class);

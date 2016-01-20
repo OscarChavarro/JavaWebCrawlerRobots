@@ -21,7 +21,7 @@ public class Resume extends JdbcEntity {
     private String resumeLink;    
     private String htmlContent;
     private int age;
-    private double emailStatus;
+    private int emailStatus;
     private boolean drivingLicense;
     private boolean hasVehicle;
     private boolean availableForTravel;
@@ -392,14 +392,14 @@ public class Resume extends JdbcEntity {
     /**
      * @return the emailStatus
      */
-    public double getEmailStatus() {
+    public int getEmailStatus() {
         return emailStatus;
     }
 
     /**
      * @param emailStatus the emailStatus to set
      */
-    public void setEmailStatus(double emailStatus) {
+    public void setEmailStatus(int emailStatus) {
         this.emailStatus = emailStatus;
     }
 }
