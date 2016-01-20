@@ -70,7 +70,7 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         }
         catch ( MongoException e ) {
             System.out.println("    . Saltando hoja de vida - ya existe "+
-                "(deberá actualizarse?)");
+                "(deberia actualizarse?)");
             System.out.println("    . " + r.getSourceUrl());
         }
     }
@@ -104,7 +104,7 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         }
         catch ( MongoException e ) {
             System.out.println("    . Saltando hoja de vida - ya existe "+
-                "(deberá actualizarse?)");
+                "(deberia actualizarse?)");
             System.out.println("    . " + r.getSourceUrl());
             /*
             VSDK.reportMessageWithException(
