@@ -74,50 +74,57 @@ public class ComputrabajoCoTransformationRules {
     	String date=null;
     	String[] dateAux = _date.split(" de ");
     	
-    	dateAux[1] = dateAux[1].toLowerCase();
-    	
-    	switch(dateAux[1])
+    	if(dateAux.length>2)
     	{
-	    	case "enero":
-	    		dateAux[1] = "01";
-	    		break;
-	    	case "febrero":
-	    		dateAux[1] = "02";
-	    		break;
-	    	case "marzo":
-	    		dateAux[1] = "03";
-	    		break;
-	    	case "abril":
-	    		dateAux[1] = "04";
-	    		break;
-	    	case "mayo":
-	    		dateAux[1] = "05";
-	    		break;
-	    	case "junio":
-	    		dateAux[1] = "06";
-	    		break;
-	    	case "julio":
-	    		dateAux[1] = "07";
-	    		break;
-	    	case "agosto":
-	    		dateAux[1] = "08";
-	    		break;
-	    	case "septiembre":
-	    		dateAux[1] = "09";
-	    		break;
-	    	case "octubre":
-	    		dateAux[1] = "10";
-	    		break;
-	    	case "noviembre":
-	    		dateAux[1] = "11";
-	    		break;
-	    	case "diciembre":
-	    		dateAux[1] = "12";
-	    		break;
-	    	default:
-	    		dateAux[1] = "01";
-	    		break;
     	
+	    	dateAux[1] = dateAux[1].toLowerCase();
+	    	
+	    	switch(dateAux[1])
+	    	{
+		    	case "enero":
+		    		dateAux[1] = "01";
+		    		break;
+		    	case "febrero":
+		    		dateAux[1] = "02";
+		    		break;
+		    	case "marzo":
+		    		dateAux[1] = "03";
+		    		break;
+		    	case "abril":
+		    		dateAux[1] = "04";
+		    		break;
+		    	case "mayo":
+		    		dateAux[1] = "05";
+		    		break;
+		    	case "junio":
+		    		dateAux[1] = "06";
+		    		break;
+		    	case "julio":
+		    		dateAux[1] = "07";
+		    		break;
+		    	case "agosto":
+		    		dateAux[1] = "08";
+		    		break;
+		    	case "septiembre":
+		    		dateAux[1] = "09";
+		    		break;
+		    	case "octubre":
+		    		dateAux[1] = "10";
+		    		break;
+		    	case "noviembre":
+		    		dateAux[1] = "11";
+		    		break;
+		    	case "diciembre":
+		    		dateAux[1] = "12";
+		    		break;
+		    	default:
+		    		dateAux[1] = "01";
+		    		break;
+	    	}
+    	}
+    	else
+    	{
+    		return null;
     	}
     	
     	date = dateAux[0]+"-"+dateAux[1]+"-"+dateAux[2];
@@ -131,11 +138,12 @@ public class ComputrabajoCoTransformationRules {
     	 if(date != null)
     	 {
     		 date=date.replaceAll("\\s\\s*"," ");
-	    	 String dateAux=TransformationMonth(date.trim());
-	    	 //SimpleDateFormat dateFormat = new SimpleDateFormat("dd 'de' MMMM 'de' yyyy");
-	    	 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			 String dateAux=TransformationMonth(date.trim());
 	    	 
-	    	 dateTrans = dateAux;
+			 if(dateAux!=null)
+				 dateTrans = dateAux;
+			 else
+				 dateTrans = "01-01-1900";
 
     	 }
     	return dateTrans;
@@ -148,7 +156,7 @@ public class ComputrabajoCoTransformationRules {
     	 {
 	    	 date=date.trim();
 	    	 //SimpleDateFormat dateFormat = new SimpleDateFormat("dd 'de' MMMM 'de' yyyy");
-	    	 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	    	 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss");
 	    	 
 	    	 try 
 	    	 {
@@ -198,50 +206,51 @@ public class ComputrabajoCoTransformationRules {
 		 }
 		return pay;
 	}
-
-
     
-    public static void main(String args[])
+    public static void InsertMongo(DBCursor c)
     {
-    	DBCollection professionalResume,professionalResumeTrans;
-        professionalResume = databaseConnection.getProfessionalResume();
-        professionalResumeTrans = databaseConnection.createMongoCollection("professionalResumeTrans");
-        SimpleDateFormat date = new SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH);
-        Date transformationName = new Date();
-        
-        if ( professionalResume == null ) 
-        {
-            return;
-        }    
-        
-        ArrayList<Resume> listResume =  databaseConnection._fetchAllProductsMongo();
-        
+    	SimpleDateFormat date = new SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH);
+        Date transformationDate = new Date();
+        Resume r = new Resume();
+        DBObject ei;
         BasicDBObject searchQuery = new BasicDBObject();
-        for(int i = 0; i<listResume.size(); i++)
-        {
-	        try 
+        while (c.hasNext())
+		{
+            ei = c.next();
+            r.importMongoFields(ei);
+            
+            try 
 	        {
-	        	searchQuery.append("_id", listResume.get(i).get_id());
-	        	searchQuery.append("name", TransformationName(listResume.get(i).getName()));
-	        	searchQuery.append("location", listResume.get(i).getLocation());
-	        	searchQuery.append("country", listResume.get(i).getCountry());
-	        	searchQuery.append("email", ValidateEmail(listResume.get(i).getEmail()));
-	        	searchQuery.append("phone", listResume.get(i).getPhone());
-	        	searchQuery.append("lastUpdateDate", date.parse(TransformationDate(listResume.get(i).getLastUpdateDate())));
-	        	searchQuery.append("profilePictureUrl", listResume.get(i).getProfilePictureUrl());
-	        	searchQuery.append("age", listResume.get(i).getAge());
-	        	searchQuery.append("pair", listResume.get(i).getPair());
-	        	searchQuery.append("jobSearchStatus", listResume.get(i).getJobSearchStatus());
-	        	searchQuery.append("wantedPayment", TransformationPayment(listResume.get(i).getWantedPayment()));
-	        	searchQuery.append("descriptionTitle", listResume.get(i).getDescriptionTitle());
-	        	searchQuery.append("resumeLink", listResume.get(i).getResumeLink());
-	        	searchQuery.append("profession", TransformationProfession(listResume.get(i).getHtmlContent()));
-	        	searchQuery.append("registrationDate", date.parse(TransformationDate(listResume.get(i).getRegistrationDate())));
-	        	searchQuery.append("lastLoginDate", date.parse(TransformationDate(listResume.get(i).getLastLoginDate())));
-	        	searchQuery.append("sourceUrl", listResume.get(i).getSourceUrl());
-	        	searchQuery.append("transformationDate", transformationName);
+	        	searchQuery.append("_id", r.get_id());
+	        	searchQuery.append("name", TransformationName(r.getName()));
+	        	searchQuery.append("documentId", r.getDocumentId());
+	        	searchQuery.append("location", r.getLocation());
+	        	searchQuery.append("country", r.getCountry());
+	        	searchQuery.append("email", ValidateEmail(r.getEmail()));
+	        	searchQuery.append("emailStatus", r.getEmailStatus());
+	        	searchQuery.append("phone", r.getPhone());
+	        	try
+	        	{
+	        		searchQuery.append("lastUpdateDate", date.parse(TransformationDate(r.getLastUpdateDate())));
+	        	}
+	        	catch(Exception e)
+	        	{
+	        		System.out.println(r.get_id());	
+	        	}
+	        	searchQuery.append("profilePictureUrl", r.getProfilePictureUrl());
+	        	searchQuery.append("age", r.getAge());
+	        	searchQuery.append("pair", r.getPair());
+	        	searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
+	        	searchQuery.append("wantedPayment", TransformationPayment(r.getWantedPayment()));
+	        	searchQuery.append("descriptionTitle", r.getDescriptionTitle());
+	        	searchQuery.append("resumeLink", r.getResumeLink());
+	        	searchQuery.append("profession", TransformationProfession(r.getHtmlContent()));
+	        	searchQuery.append("registrationDate", date.parse(TransformationDate(r.getRegistrationDate())));
+	        	searchQuery.append("lastLoginDate", date.parse(TransformationDate(r.getLastLoginDate())));
+	        	searchQuery.append("sourceUrl", r.getSourceUrl());
+	        	searchQuery.append("transformationDate", transformationDate);
 	        	
-	        	if(professionalResumeTrans.findOne(listResume.get(i).get_id()) == null)
+	        	if(professionalResumeTrans.findOne(r.get_id()) == null)
 	        	{
 	        		professionalResumeTrans.insert(searchQuery);
 	        	}
@@ -253,7 +262,22 @@ public class ComputrabajoCoTransformationRules {
 	        catch (java.text.ParseException e) 
 	        {
 	        	e.printStackTrace();
-			}       
+			}
+		}
+    }
+
+    public static void main(String args[])
+    {
+    	DBCursor c;
+        c = professionalResume.find();
+        
+        if ( c == null ) 
+        {
+            return;
+        }
+        else
+        {
+        	InsertMongo(c);
         }
     }
 }

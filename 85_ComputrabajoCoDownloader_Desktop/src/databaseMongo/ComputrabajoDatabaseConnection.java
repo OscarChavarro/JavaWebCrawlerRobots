@@ -145,16 +145,20 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         int i = 1;
         Resume r = new Resume();
         DBObject ei;
-        //while ( c.hasNext() )
-        while ( i<100 )
+        while (c.hasNext())
+//        while ( i < 1000 )
 		{
             ei = c.next();
-            r = new Resume();
             r.importMongoFields(ei);
             list.add(r);
+            r = new Resume();
             i++;
         }
         
+        System.out.println(list.get(0).getName());
+        System.out.println(list.get(1).getName());
+        System.out.println(list.get(2).getName());
+        System.out.println(list.get(3).getName());
         return list;
     }  
 }

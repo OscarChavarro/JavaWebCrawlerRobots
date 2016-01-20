@@ -384,14 +384,14 @@ public class JdbcEntity extends Entity {
               if ( o == null ) {
                   continue;
               }
-              
+                           
               String first = varname.substring(0, 1).toUpperCase();
               String name = "set" + first + varname.substring(1);
-
+              
               Method m;
 
               try {
-                  if ( t.equals("long") ) {
+            	  if ( t.equals("long") ) {
                       m = this.getClass().getMethod(name, long.class);
                       m.invoke(this, (long)o);
                   }
@@ -448,4 +448,3 @@ public class JdbcEntity extends Entity {
 //===========================================================================
 //= EOF                                                                     =
 //===========================================================================
-
