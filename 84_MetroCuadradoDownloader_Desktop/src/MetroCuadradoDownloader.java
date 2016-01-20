@@ -401,7 +401,7 @@ public class MetroCuadradoDownloader {
                 if ( doPriceAdmin ) {
                     String dataSegment = ts.content.replace("\">", "");
                     dataSegment = TaggedHtml.trimSpaces(dataSegment);
-                    if ( dataSegment.contains("$") && lastPriceType.contains("Valor Administrac:") ) {
+                    if ( dataSegment.contains("$") && lastPriceType.contains("Valor Administrac") ) {
                         lastPriceType = "Done";
                         p.setBusinessPriceAdmin(doubleNumber(dataSegment));
                     }
