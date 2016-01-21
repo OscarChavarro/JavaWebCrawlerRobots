@@ -21,7 +21,7 @@ import vsdk.toolkit.common.VSDK;
  * This program reads records from "professionalResume" Mongo collection and
  * writes a transformed version to "professionalResumeTrans".
  */
-public class ComputrabajoCoTransformationRules {
+public class Tool03_TransformationFromRawData2CleanData {
 
     private static final ComputrabajoDatabaseConnection databaseConnection;
     private static final DBCollection professionalResume;
@@ -249,7 +249,7 @@ public class ComputrabajoCoTransformationRules {
                     r.getDescriptionTitle());
                 searchQuery.append("resumeLink", 
                     r.getResumeLink());
-                searchQuery.append("profession", 
+                searchQuery.append("professionHint", 
                     transformProfession(r.getHtmlContent()));
                 searchQuery.append("sourceUrl", r.getSourceUrl());
                 searchQuery.append("transformationDate", transformationDate);

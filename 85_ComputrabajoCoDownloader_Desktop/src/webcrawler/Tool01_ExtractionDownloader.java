@@ -23,7 +23,7 @@ import java.util.Locale;
 
 /**
 */
-public class ComputrabajoCoDownloader {
+public class Tool01_ExtractionDownloader {
 
     private static final ComputrabajoDatabaseConnection databaseConnection;
 

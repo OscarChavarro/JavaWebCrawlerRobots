@@ -30,16 +30,16 @@ import databaseMongo.model.GeographicAdministrativeRegion;
 import databaseMongo.model.HtmlExtraInformation;
 import databaseMongo.model.NameElement;
 
-
 /**
 */
-public class ComputrabajoCoDataAnalyzer {
+public class Tool02_AnalizerForRawExtractedData {
     private static boolean reportAdvances = false;
     private static final ComputrabajoDatabaseConnection databaseConnection;
 
-    static 
+    static
     {
-        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 27017, "domolyRobot", "professionalResume");
+        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 
+            27017, "computrabajoCo", "professionalResume");
     }
 
 
@@ -94,9 +94,8 @@ public class ComputrabajoCoDataAnalyzer {
         
         //- 2. Get first and second parts -------------------------------------
         String subarea = null;
-        
         StringTokenizer parser = new StringTokenizer(l, "/");
-        
+
         try {
             area = parser.nextToken();
             subarea = parser.nextToken();
@@ -930,7 +929,7 @@ public class ComputrabajoCoDataAnalyzer {
             String filename = "./output/profilePictures/" + id + "." + ext;
             downloadImage(p, filename);
         } catch ( Exception ex ) {
-            Logger.getLogger(ComputrabajoCoDataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Tool02_AnalizerForRawExtractedData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -1007,7 +1006,7 @@ public class ComputrabajoCoDataAnalyzer {
             p = Runtime.getRuntime().exec(arr); 
             p.waitFor();
         } catch ( Exception ex ) {
-            Logger.getLogger(ComputrabajoCoDataAnalyzer.class.getName()).
+            Logger.getLogger(Tool02_AnalizerForRawExtractedData.class.getName()).
                 log(Level.SEVERE, null, ex);
         }
         
