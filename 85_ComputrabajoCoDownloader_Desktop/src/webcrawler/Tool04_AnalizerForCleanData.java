@@ -6,6 +6,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 import databaseMongo.ComputrabajoDatabaseConnection;
+import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,13 +33,18 @@ public class Tool04_AnalizerForCleanData {
         }
         
         DBObject filter = new BasicDBObject();
-        BasicDBObject options = new BasicDBObject("profilePictureUrl", true);
-        //options.append("sort", new BasicDBObject("name", 1));
+        //BasicDBObject options = new BasicDBObject("profilePictureUrl", true);
         DBCursor c = professionalResume.find(filter /*, options */);
+
+        // Temporary datastructures for analysis and report generation
+        HashMap<String, NameElement> nameElements;
+        nameElements = new HashMap<String, NameElement>();
         
-        int i;
         HashMap <String, ProfessionHint> professions;
         professions = new HashMap<String, ProfessionHint>();
+        
+        // Main loop
+        int i;
         for ( i = 0; c.hasNext(); i++ ) {
             DBObject o = c.next();
             
@@ -56,7 +62,8 @@ public class Tool04_AnalizerForCleanData {
                     "  - (" + (i+1) + " of " + c.count() + "): " + id); 
             }
 
-            boolean considerThis = false;
+            boolean considerThis = true;
+            /*
             if ( o.containsField("location") ) {
                 //processLocation(o, i, c.count(), regions);
                 String l = o.get("location").toString();
@@ -64,13 +71,14 @@ public class Tool04_AnalizerForCleanData {
                     considerThis = true;
                 }
             }
+            */
 
             if ( considerThis && o.containsField("professionHint") ) {
-                processProfessionHint(o, i, c.count(), professions);
+                //processProfessionHint(o, i, c.count(), professions);
             }
 
             if ( o.containsField("name") ) {
-                //processName(o, i, c.count(), nameElements);
+                NameProcessor.processName(o, i, c.count(), nameElements, reportAdvances);
             }
             if ( o.containsField("htmlContent") ) {
                 //processHtmlContent(o, i);
@@ -83,6 +91,7 @@ public class Tool04_AnalizerForCleanData {
             //}
             reportAdvances = false;
         }
+        NameProcessor.reportNameElements(nameElements);        
         reportResultingProfessionHints(professions);
     }    
 
