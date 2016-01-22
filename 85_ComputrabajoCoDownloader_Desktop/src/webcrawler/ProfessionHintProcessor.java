@@ -92,6 +92,7 @@ public class ProfessionHintProcessor {
         profession = profession.replace("administrador empresas", "administrador");
         profession = profession.replace("fisioterapia", "fisioterapeuta");
         profession = profession.replace("atencion", "atención");
+        profession = profession.replace("enefermeria", "enfermería");
         profession = profession.replace("enfermera", "enfermería");
         profession = profession.replace("enfermero", "enfermería");
         profession = profession.replace("comunicador", "comunicación");
@@ -142,6 +143,9 @@ public class ProfessionHintProcessor {
         profession = profession.replace("fonoaudióloga", "fonoaudiología");
         profession = profession.replace("fonoaudiólogo", "fonoaudiología");
         profession = profession.replace("publica", "pública");
+        profession = profession.replace("construccion", "construcción");
+        profession = profession.replace("tesoreria", "tesorería");
+        profession = profession.replace("almacen", "almacén");
 
         // Normalización de género
         profession = profession.replace("antropóloga", "antropólogo");
@@ -231,6 +235,7 @@ public class ProfessionHintProcessor {
             }
             profession = profession.replace("químico farmacéutico", "[PROFESIONAL] comunicación");
             profession = profession.replace("comunicación", "[PROFESIONAL] comunicación");
+            profession = profession.replace("comunicacióna", "[PROFESIONAL] comunicación");
             profession = profession.replace("profesional", "[PROFESIONAL]");
             profession = profession.replace("nutricionista", "[PROFESIONAL] nutricionista");
             profession = profession.replace("diseñador industrial", "[PROFESIONAL] diseñador industrial");
@@ -285,12 +290,14 @@ public class ProfessionHintProcessor {
             profession = profession.replace("cocinero", "[NO_CALIFICADO] cocinero");
             profession = profession.replace("carpintero", "[NO_CALIFICADO] carpintero");
             profession = profession.replace("todero", "[NO_CALIFICADO]");
+            profession = profession.replace("no tengo", "[NO_CALIFICADO]");
             profession = profession.replace("ama casa", "[NO_CALIFICADO] ama de casa");
             profession = profession.replace("recreacionista", "[NO_CALIFICADO] recreacionista");
             profession = profession.replace("impulso", "[NO_CALIFICADO] impulso");
             profession = profession.replace("bartender", "[NO_CALIFICADO] bartender");
             profession = profession.replace("mesa bar", "[NO_CALIFICADO] bartender");
             profession = profession.replace("estilista", "[NO_CALIFICADO] estilista");
+            profession = profession.replace("pizzero", "[NO_CALIFICADO] pizzero");
         }
         return profession;
     }

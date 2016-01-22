@@ -56,13 +56,19 @@ public class Tool04_AnalizerForCleanData {
                     "  - (" + (i+1) + " of " + c.count() + "): " + id); 
             }
 
-            if ( o.containsField("professionHint") ) {
+            boolean considerThis = false;
+            if ( o.containsField("location") ) {
+                //processLocation(o, i, c.count(), regions);
+                String l = o.get("location").toString();
+                if ( l.contains("ogot") ) {
+                    considerThis = true;
+                }
+            }
+
+            if ( considerThis && o.containsField("professionHint") ) {
                 processProfessionHint(o, i, c.count(), professions);
             }
 
-            if ( o.containsField("location") ) {
-                //processLocation(o, i, c.count(), regions);
-            }
             if ( o.containsField("name") ) {
                 //processName(o, i, c.count(), nameElements);
             }
@@ -104,7 +110,7 @@ public class Tool04_AnalizerForCleanData {
         ArrayList<ProfessionHint> orderedSet;
         orderedSet = new ArrayList<>();
         int rareProfessions = 0;
-        int threshold = 2;
+        int threshold = 10;
         for ( String si : professionHints.keySet() ) {
             ProfessionHint ph = professionHints.get(si);
             if ( ph.getApareancesCount() >= threshold ) {
