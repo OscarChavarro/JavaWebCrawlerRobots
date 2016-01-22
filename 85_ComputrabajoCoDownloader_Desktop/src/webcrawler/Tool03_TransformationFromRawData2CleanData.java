@@ -175,6 +175,7 @@ public class Tool03_TransformationFromRawData2CleanData {
         profession = profession.toUpperCase().substring(0, 1) + 
             profession.toLowerCase().substring(1);
 
+        profession = ProfessionHintProcessor.normalizeProfessionHint(profession);
         return profession.trim();
     }
 

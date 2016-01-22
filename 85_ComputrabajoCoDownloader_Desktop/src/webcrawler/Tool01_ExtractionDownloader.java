@@ -46,11 +46,11 @@ public class Tool01_ExtractionDownloader {
     {
         System.out.println("1. Downloading initial main/front-end page");
         String initialPage = "http://empresa.computrabajo.com.co/Login.aspx";
+
         TaggedHtml pageProcessor;
         pageProcessor = new TaggedHtml();
         pageProcessor.getInternetPage(initialPage, cookies, false);
-
-        printCookies(cookies);
+        //printCookies(cookies);
 
         if ( pageProcessor.segmentList == null ) {
             System.out.println("Warning: empty page A");
@@ -188,7 +188,7 @@ public class Tool01_ExtractionDownloader {
         System.out.println("  - 4.1. Preparing for downloading " + n + " resumes from "  + (n/20) + " listing pages:" );
         
         int i;
-        for ( i = 1; i <= (n/20) + 1; i++ ) {
+        for ( i = 40746; i <= (n/20) + 1; i++ ) {
             // Process current page
             Date date = new Date();
             DateFormat format = new SimpleDateFormat(

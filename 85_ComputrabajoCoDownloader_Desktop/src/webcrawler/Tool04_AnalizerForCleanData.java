@@ -1,13 +1,15 @@
 package webcrawler;
 
-import java.util.TreeSet;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 import databaseMongo.ComputrabajoDatabaseConnection;
+import databaseMongo.model.ProfessionHint;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 /**
 */
@@ -35,8 +37,8 @@ public class Tool04_AnalizerForCleanData {
         DBCursor c = professionalResume.find(filter /*, options */);
         
         int i;
-        TreeSet <String> professions;
-        professions = new TreeSet<String>();
+        HashMap <String, ProfessionHint> professions;
+        professions = new HashMap<String, ProfessionHint>();
         for ( i = 0; c.hasNext(); i++ ) {
             DBObject o = c.next();
             
@@ -79,18 +81,50 @@ public class Tool04_AnalizerForCleanData {
     }    
 
     private static void processProfessionHint(
-        DBObject o, int i, int count, TreeSet<String> professions) {
+        DBObject o, int i, int count, HashMap<String, ProfessionHint> professions) {
         String p = o.get("professionHint").toString();
         
-        if ( !professions.contains(p) ) {
-            professions.add(p);
+        if ( !professions.containsKey(p) ) {
+            ProfessionHint pv;
+            pv = new ProfessionHint();
+            pv.setApareancesCount(1);
+            pv.setContent(p);
+            professions.put(p, pv);
+        }
+        else {
+            professions.get(p).incrementCount();
         }
     }
 
-    private static void reportResultingProfessionHints(TreeSet<String> professionHints) {
-        System.out.println("Number of professions found: " + professionHints.size());
-        for ( String si : professionHints ) {
-            System.out.println("  - " + si);            
+    private static void reportResultingProfessionHints(
+        HashMap<String, ProfessionHint> professionHints) 
+    {
+        System.out.println("Cantidad de profesiones encontradas: " + 
+            professionHints.size());
+        ArrayList<ProfessionHint> orderedSet;
+        orderedSet = new ArrayList<>();
+        int rareProfessions = 0;
+        int threshold = 2;
+        for ( String si : professionHints.keySet() ) {
+            ProfessionHint ph = professionHints.get(si);
+            if ( ph.getApareancesCount() >= threshold ) {
+                orderedSet.add(ph);
+            }
+            else {
+                rareProfessions++;
+            }
+        }
+        
+        Collections.sort(orderedSet);
+        int i;
+        System.out.println("  - Profesiones extrañas, con menos de " + threshold + " personas en cada una (no mostradas): " + rareProfessions);
+        int n = 0;
+        for ( i = 0; i < orderedSet.size(); i++ ) {
+            n += orderedSet.get(i).getApareancesCount();
+        }
+        System.out.println("  - Profesiones comunes, con " + threshold + " o más personas en cada una (mostradas a continuación): " + n);
+        for ( i = 0; i < orderedSet.size(); i++ ) {
+            System.out.println("  - " + orderedSet.get(i));
         }
     }
 
