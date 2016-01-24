@@ -1,4 +1,4 @@
-package webcrawler;
+package webcrawler.processors;
 
 import com.mongodb.DBObject;
 import databaseMongo.model.GeographicAdministrativeRegion;
@@ -13,12 +13,15 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import webcrawler.TagSegment;
+import webcrawler.TaggedHtml;
+import webcrawler.Tool02_AnalizerForRawExtractedData;
 
 /**
 */
 public class FieldProcessors {
 
-    static void reportResultingAreas(HashMap<String, GeographicAdministrativeRegion> regions) {
+    public static void reportResultingAreas(HashMap<String, GeographicAdministrativeRegion> regions) {
         Collection<GeographicAdministrativeRegion> s = regions.values();
         System.out.println("- ENCOUNTERED REGIONS: " + regions.size() + " -");
         ArrayList<GeographicAdministrativeRegion> sorted;

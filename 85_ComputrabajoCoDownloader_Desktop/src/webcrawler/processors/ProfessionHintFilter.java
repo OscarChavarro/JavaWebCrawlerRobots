@@ -1,8 +1,8 @@
-package webcrawler;
+package webcrawler.processors;
 
 /**
 */
-public class ProfessionHintProcessor {
+public class ProfessionHintFilter {
     public static String normalizeProfessionHint(String profession) {
         // Reglas base: elementos comunes que no aportan información
         profession = profession.replace(".", "");

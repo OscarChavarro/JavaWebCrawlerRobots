@@ -1,12 +1,12 @@
 package webcrawler;
 
+import webcrawler.processors.NameProcessor;
+import webcrawler.processors.EmailProcessor;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 import com.mongodb.BasicDBObject;
@@ -18,8 +18,10 @@ import databaseMongo.ComputrabajoDatabaseConnection;
 import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import databaseMongo.model.EmailElement;
+import java.io.IOException;
 
 import vsdk.toolkit.io.PersistenceElement;
+import webcrawler.processors.ProfessionHintProcessor;
 
 /**
 This tool also updates emailStatus to -10 for emails on invalid domains.
@@ -33,66 +35,14 @@ public class Tool04_AnalizerForCleanData {
     {
 	emailMarkFos = null;
         databaseConnection = new ComputrabajoDatabaseConnection(
-            "localhost" , 27017, "computrabajoCo", "professionalResumeTransformed");
-    }
-    
-    private static void processProfessionHint(
-        DBObject o,
-	int i,
-	int count,
-	HashMap<String, ProfessionHint> professions)
-    {
-        String p = o.get("professionHint").toString();
-        
-        if ( !professions.containsKey(p) ) {
-            ProfessionHint pv;
-            pv = new ProfessionHint();
-            pv.setApareancesCount(1);
-            pv.setContent(p);
-            professions.put(p, pv);
-        }
-        else {
-            professions.get(p).incrementCount();
-        }
-    }
-
-    private static void reportResultingProfessionHints(
-        HashMap<String, ProfessionHint> professionHints) 
-    {
-        System.out.println("Cantidad de profesiones encontradas: " + 
-            professionHints.size());
-        ArrayList<ProfessionHint> orderedSet;
-        orderedSet = new ArrayList<>();
-        int rareProfessions = 0;
-        int threshold = 10;
-        for ( String si : professionHints.keySet() ) {
-            ProfessionHint ph = professionHints.get(si);
-            if ( ph.getApareancesCount() >= threshold ) {
-                orderedSet.add(ph);
-            }
-            else {
-                rareProfessions++;
-            }
-        }
-        
-        Collections.sort(orderedSet);
-        int i;
-        System.out.println("  - Profesiones extrañas, con menos de " + threshold + " personas en cada una (no mostradas): " + rareProfessions);
-        int n = 0;
-        for ( i = 0; i < orderedSet.size(); i++ ) {
-            n += orderedSet.get(i).getApareancesCount();
-        }
-        System.out.println("  - Profesiones comunes, con " + threshold + " o más personas en cada una (mostradas a continuación): " + n);
-        for ( i = 0; i < orderedSet.size(); i++ ) {
-            System.out.println("  - " + orderedSet.get(i));
-        }
+            "localhost" , 27017, "computrabajoCo", 
+            "professionalResumeTransformed");
     }
 
     private static HashMap<String, EmailElement> loadEmailElementCache()
     {
-	HashMap<String, EmailElement> e = null;
-
 	try {	    
+            HashMap<String, EmailElement> e;
    	    File fd = new File("./etc/emailDomainsCache.bin");
 	    if ( fd.exists() ) {
                 FileInputStream fis;
@@ -104,12 +54,15 @@ public class Tool04_AnalizerForCleanData {
 	    else {
 		e = new HashMap<String, EmailElement>();
 	    }
+            return e;
 	}
-	catch ( Exception ex ) {
-	    ex.printStackTrace();
+	catch ( IOException ex ) {
+	    System.exit(1);
+        }
+        catch ( ClassNotFoundException ex ) {
 	    System.exit(1);
 	}
-        return e;
+        return null;
     }
 
     private static void saveEmailElementCache(
@@ -143,7 +96,7 @@ public class Tool04_AnalizerForCleanData {
 	catch ( Exception e ) {
 	}
     }
-    
+
     private static void updateEmailStatusForInvalidDomains(
         DBCollection professionalResume,
         HashMap<String, EmailElement> emailElements)
@@ -272,7 +225,7 @@ public class Tool04_AnalizerForCleanData {
 	
         NameProcessor.reportNameElements(nameElements);        
         EmailProcessor.reportEmailElements(emailElements);        
-        reportResultingProfessionHints(professions);
+        ProfessionHintProcessor.reportResultingProfessionHints(professions);
 
 	updateEmailStatusForInvalidDomains(professionalResume, emailElements);
     }

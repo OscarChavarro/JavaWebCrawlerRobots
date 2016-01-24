@@ -1,6 +1,8 @@
 package webcrawler;
 
 // Java basic classes
+import webcrawler.processors.NameProcessor;
+import webcrawler.processors.FieldProcessors;
 import java.util.HashMap;
 
 // Mongo classes
