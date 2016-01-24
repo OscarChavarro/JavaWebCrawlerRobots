@@ -362,86 +362,99 @@ public class JdbcEntity extends Entity {
       }
   }
 
-  public void importMongoFields(DBObject ei) {
-      ArrayList<String> encapsulatedFields;
+    /**
+     * @param ei
+     * @return true if successful
+     */
+    public boolean importMongoFields(DBObject ei) {
+        ArrayList<String> encapsulatedFields;
 
-      encapsulatedFields = this.getEncapsulatedVariables();
+        encapsulatedFields = this.getEncapsulatedVariables();
 
-      int i;
-      for ( i = 0; i < encapsulatedFields.size(); i++ ) {
-          String l = encapsulatedFields.get(i);
-          StringTokenizer parser;
-          parser = new StringTokenizer(l, ":");
+        int i;
+        for (i = 0; i < encapsulatedFields.size(); i++) {
+            String l = encapsulatedFields.get(i);
+            StringTokenizer parser;
+            parser = new StringTokenizer(l, ":");
 
-          String t = parser.nextToken();
-          String varname = parser.nextToken();
-          
-          Object o;
-          
-          if ( ei.containsField(varname) ) {
-              o = ei.get(varname);
-              
-              if ( o == null ) {
-                  continue;
-              }
-                           
-              String first = varname.substring(0, 1).toUpperCase();
-              String name = "set" + first + varname.substring(1);
-              
-              Method m;
+            String t = parser.nextToken();
+            String varname = parser.nextToken();
 
-              try {
-            	  if ( t.equals("long") ) {
-                      m = this.getClass().getMethod(name, long.class);
-                      m.invoke(this, (long)o);
-                  }
-                  else if ( t.equals("int") ) {
-                      m = this.getClass().getMethod(name, int.class);
-                      m.invoke(this, (int)o);
-                  }
-                  else if ( t.equals("float") ) {
-                      m = this.getClass().getMethod(name, float.class);
-                      m.invoke(this, (float)o);
-                  }
-                  else if ( t.equals("double") ) {
-                      m = this.getClass().getMethod(name, double.class);
-                      m.invoke(this, (double)o);
-                  }
-                  else if ( t.equals("byte") ) {
-                      m = this.getClass().getMethod(name, byte.class);
-                      m.invoke(this, (byte)o);
-                  }
-                  else if ( t.equals("boolean") ) {
-                      m = this.getClass().getMethod(name, boolean.class);
-                      m.invoke(this, (boolean)o);
-                  }
-                  else if ( t.equals("char") ) {
-                      m = this.getClass().getMethod(name, char.class);
-                      m.invoke(this, (char)o);
-                  }
-                  else if ( t.equals("short") ) {
-                      m = this.getClass().getMethod(name, short.class);
-                      m.invoke(this, (short)o);
-                  }
-                  else if ( t.equals("java.lang.String") ) {
-                      m = this.getClass().getMethod(name, String.class);
-                      m.invoke(this, o.toString());
-                  }
-              }
-              catch ( NoSuchMethodException ex ) {
-              }
-              catch ( SecurityException ex ) {
-              }
-              catch ( IllegalArgumentException ex ) {
-              }
-              catch ( InvocationTargetException ex ) {
-              } 
-              catch ( IllegalAccessException ex ) {
-              }
-      
-          }
-      }
-  }
+            Object o;
+
+            if (ei.containsField(varname)) {
+                o = ei.get(varname);
+
+                if (o == null) {
+                    continue;
+                }
+
+                String first = varname.substring(0, 1).toUpperCase();
+                String name = "set" + first + varname.substring(1);
+
+                Method m;
+
+                try {
+                    if (t.equals("long")) {
+                        m = this.getClass().getMethod(name, long.class);
+                        m.invoke(this, (long) o);
+                    } else if (t.equals("int")) {
+                        m = this.getClass().getMethod(name, int.class);
+                        int internalVal = 0;
+                        try {
+                            if (o instanceof java.lang.Integer) {
+                                internalVal = (int) o;
+                            } else if (o instanceof java.lang.Double) {
+                                Double d = (Double) o;
+                                internalVal = (int) d.intValue();
+                            } else {
+                                System.out.println("Error de tipo: " + o.getClass().getName());
+                                System.exit(1);
+                            }
+                        } catch (Exception e) {
+                            System.out.println("ERROR DE DATO: ");
+                            System.out.println("  - Metodo: " + name);
+                            System.out.println("  - Valor: " + o.toString());
+                            System.out.println("  - Tipo de param: " + o.getClass().getName());
+                        }
+                        m.invoke(this, internalVal);
+                    } else if (t.equals("float")) {
+                        m = this.getClass().getMethod(name, float.class);
+                        m.invoke(this, (float) o);
+                    } else if (t.equals("double")) {
+                        m = this.getClass().getMethod(name, double.class);
+                        m.invoke(this, (double) o);
+                    } else if (t.equals("byte")) {
+                        m = this.getClass().getMethod(name, byte.class);
+                        m.invoke(this, (byte) o);
+                    } else if (t.equals("boolean")) {
+                        m = this.getClass().getMethod(name, boolean.class);
+                        m.invoke(this, (boolean) o);
+                    } else if (t.equals("char")) {
+                        m = this.getClass().getMethod(name, char.class);
+                        m.invoke(this, (char) o);
+                    } else if (t.equals("short")) {
+                        m = this.getClass().getMethod(name, short.class);
+                        m.invoke(this, (short) o);
+                    } else if (t.equals("java.lang.String")) {
+                        m = this.getClass().getMethod(name, String.class);
+                        m.invoke(this, o.toString());
+                    }
+                } catch (NoSuchMethodException ex) {
+                    return false;
+                } catch (SecurityException ex) {
+                    return false;
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                } catch (InvocationTargetException ex) {
+                    return false;
+                } catch (IllegalAccessException ex) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
 }
 

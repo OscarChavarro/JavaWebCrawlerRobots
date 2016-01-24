@@ -206,7 +206,9 @@ public class TaggedHtml
     @param withRedirect true if used in the login phase with redirects
     */
     public void getInternetPage(
-        String pageUrl, ArrayList<String> cookies, boolean withRedirect)
+        String pageUrl, 
+        ArrayList<String> cookies, 
+        boolean withRedirect)
     {
         //----------------------------------------------------------------- 
         CloseableHttpClient httpclient;

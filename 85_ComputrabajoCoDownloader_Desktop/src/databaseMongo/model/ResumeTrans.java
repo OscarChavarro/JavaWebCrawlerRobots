@@ -30,6 +30,7 @@ public class ResumeTrans extends JdbcEntity
     private boolean currentlyWorking;
     private String country;
     private String extractionDate;
+    private int emailStatus;
 
     public ResumeTrans() 
     {
@@ -227,5 +228,19 @@ public class ResumeTrans extends JdbcEntity
 	public void setExtractionDate(String extractionDate) {
 		this.extractionDate = extractionDate;
 	}
+
+    /**
+     * @return the emailStatus
+     */
+    public int getEmailStatus() {
+        return emailStatus;
+    }
+
+    /**
+     * @param emailStatus the emailStatus to set
+     */
+    public void setEmailStatus(int emailStatus) {
+        this.emailStatus = emailStatus;
+    }
 }
 
