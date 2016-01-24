@@ -1,5 +1,14 @@
 package webcrawler;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -8,9 +17,7 @@ import com.mongodb.DBObject;
 import databaseMongo.ComputrabajoDatabaseConnection;
 import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import databaseMongo.model.EmailElement;
 
 /**
 */
@@ -37,6 +44,9 @@ public class Tool04_AnalizerForCleanData {
         DBCursor c = professionalResume.find(filter /*, options */);
 
         // Temporary datastructures for analysis and report generation
+        HashMap<String, EmailElement> emailElements;
+        emailElements = loadEmailElementCache();
+
         HashMap<String, NameElement> nameElements;
         nameElements = new HashMap<String, NameElement>();
         
@@ -78,7 +88,12 @@ public class Tool04_AnalizerForCleanData {
             }
 
             if ( o.containsField("name") ) {
-                NameProcessor.processName(o, i, c.count(), nameElements, reportAdvances);
+                NameProcessor.processName(
+		    o, i, c.count(), nameElements, reportAdvances);
+            }
+            if ( o.containsField("email") ) {
+                EmailProcessor.processEmail(
+		    o, i, c.count(), emailElements, reportAdvances);
             }
             if ( o.containsField("htmlContent") ) {
                 //processHtmlContent(o, i);
@@ -91,7 +106,11 @@ public class Tool04_AnalizerForCleanData {
             //}
             reportAdvances = false;
         }
+
+        saveEmailElementCache(emailElements);
+	
         NameProcessor.reportNameElements(nameElements);        
+        EmailProcessor.reportEmailElements(emailElements);        
         reportResultingProfessionHints(professions);
     }    
 
@@ -143,4 +162,40 @@ public class Tool04_AnalizerForCleanData {
         }
     }
 
+    private static HashMap<String, EmailElement> loadEmailElementCache()
+    {
+	HashMap<String, EmailElement> e = null;
+
+	try {	    
+   	    File fd = new File("./etc/emailDomainsCache.bin");
+	    if ( fd.exists() ) {
+                FileInputStream fis;
+                fis = new FileInputStream(fd);
+                ObjectInputStream ois;
+                ois = new ObjectInputStream(fis);
+                e = (HashMap<String, EmailElement>)ois.readObject();
+	    }
+	    else {
+		e = new HashMap<String, EmailElement>();
+	    }
+	}
+	catch ( Exception ex ) {
+	}
+        return e;
+    }
+
+    private static void saveEmailElementCache(
+        HashMap<String, EmailElement> emailElements)
+    {
+	try {
+	    File fd = new File("./etc/emailDomainsCache.bin");
+	    FileOutputStream fos;
+	    fos = new FileOutputStream(fd);
+	    ObjectOutputStream oos = new ObjectOutputStream(fos);
+	    oos.writeObject(emailElements);
+	    fos.close();
+	}
+	catch ( Exception e ) {
+	}
+    }
 }

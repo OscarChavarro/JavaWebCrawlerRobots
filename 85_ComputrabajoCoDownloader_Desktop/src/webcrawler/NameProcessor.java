@@ -1,7 +1,5 @@
 package webcrawler;
 
-import com.mongodb.DBObject;
-import databaseMongo.model.NameElement;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,8 +8,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+
+import com.mongodb.DBObject;
+
 import vsdk.toolkit.common.VSDK;
 import vsdk.toolkit.io.PersistenceElement;
+
+import databaseMongo.model.NameElement;
 
 /**
 */
@@ -60,10 +63,6 @@ public class NameProcessor {
     private static String normalizeName(String input) {
         String ni = input.toLowerCase();
 
-        if ( input.contains("Lemes") ) {
-            System.out.println("*******TUNTUN");
-        }
-        
         ni = ni.replace(".", " ");
         ni = ni.replace(",", " ");
         ni = ni.replace("-", " ");
@@ -143,7 +142,13 @@ public class NameProcessor {
         return nn;
     }
 
-    public static void processName(DBObject o, int index, int n, HashMap<String, NameElement> elements, boolean reportAdvances) {
+    public static void processName(
+        DBObject o,
+	int index,
+	int n,
+	HashMap<String, NameElement> elements,
+	boolean reportAdvances)
+    {
         String name = o.get("name").toString();
         String id = o.get("_id").toString();
         
