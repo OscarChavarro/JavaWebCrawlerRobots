@@ -55,6 +55,24 @@ public class EmailProcessor
         }
     }
     
+    public static String getDomainFromEmail(String email)
+    {
+	String l = email.toLowerCase();
+        if ( !l.contains("@") ) {
+	    return null;
+	}
+
+	StringTokenizer parser = new StringTokenizer(l, "@");
+	String token;
+	token = parser.nextToken();
+	token = parser.nextToken();
+
+	if ( token == null || token.length() < 1 ) {
+	    return null;
+	}
+	return token;
+    }
+
     public static void processEmail(
         DBObject o,
 	int index,
@@ -74,17 +92,8 @@ public class EmailProcessor
             System.out.println("    . Emails: [" + email + "]");
         }
 
-	String l = email.toLowerCase();
-        if ( !l.contains("@") ) {
-	    return;
-	}
-
-	StringTokenizer parser = new StringTokenizer(l, "@");
-	String token;
-	token = parser.nextToken();
-	token = parser.nextToken();
-
-	if ( token == null || token.length() < 1 ) {
+        String token = getDomainFromEmail(email);
+	if ( token == null ) {
 	    return;
 	}
 

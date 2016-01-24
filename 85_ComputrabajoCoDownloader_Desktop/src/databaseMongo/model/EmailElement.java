@@ -2,7 +2,7 @@ package databaseMongo.model;
 
 import java.net.InetAddress;
 
-public class EmailElement implements Comparable<EmailElement>
+public class EmailElement implements Comparable<EmailElement>, Serializable
 {
     private String domainName;
     private long count;
