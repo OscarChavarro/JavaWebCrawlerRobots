@@ -19,15 +19,19 @@ import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import databaseMongo.model.EmailElement;
 
+import vsdk.toolkit.io.PersistenceElement;
+
 /**
 This tool also updates emailStatus to -10 for emails on invalid domains.
 */
 public class Tool04_AnalizerForCleanData {
     private static boolean reportAdvances = false;
     private static final ComputrabajoDatabaseConnection databaseConnection;
+    private static FileOutputStream emailMarkFos;
 
     static 
     {
+	emailMarkFos = null;
         databaseConnection = new ComputrabajoDatabaseConnection(
             "localhost" , 27017, "computrabajoCo", "professionalResumeTransformed");
     }
@@ -123,6 +127,23 @@ public class Tool04_AnalizerForCleanData {
 	}
     }
 
+    private static void addInvalidEmailMark(DBObject o)
+    {
+	try {
+	    if ( emailMarkFos == null ) {
+		File fd = new File("./output/markInvalidEmails.mongo");
+		emailMarkFos = new FileOutputStream(fd);
+	    }
+	    String l;
+	    l = "db.professionalResumeTransformed.update({_id: \"";
+	    l += o.get("_id").toString();
+	    l += "\"}, {$set: {emailStatus: -10}});";
+	    PersistenceElement.writeAsciiLine(emailMarkFos, l);
+	}
+	catch ( Exception e ) {
+	}
+    }
+    
     private static void updateEmailStatusForInvalidDomains(
         DBCollection professionalResume,
         HashMap<String, EmailElement> emailElements)
@@ -131,6 +152,7 @@ public class Tool04_AnalizerForCleanData {
         DBCursor c = professionalResume.find(filter);
 
         int i;
+	int invalidCount = 0;
 	System.out.println("Marking invalid emails... ");
         for ( i = 0; c.hasNext(); i++ ) {
             DBObject o = c.next();
@@ -143,8 +165,31 @@ public class Tool04_AnalizerForCleanData {
             }
 	    String email = o.get("email").toString();
 	    String domain = EmailProcessor.getDomainFromEmail(email);
+
+	    boolean isInvalid = false;
+	    if ( !emailElements.containsKey(domain) ) {
+		isInvalid = true;
+	    }
+	    else {
+		EmailElement ee;
+		ee = emailElements.get(domain);
+		if ( !ee.getValid() ) {
+		    isInvalid = true;
+		}
+	    }
+
+	    if ( isInvalid ) {
+		addInvalidEmailMark(o);
+		invalidCount++;
+	    }
 	}
-	System.out.println("Invalid emails: " + i);
+	try {
+  	    emailMarkFos.flush();
+	    emailMarkFos.close();
+	}
+	catch ( Exception e ) {
+	}
+	System.out.println("Invalid emails: " + invalidCount + " of " + i);
     }
 
     public static void main(String args[]) {

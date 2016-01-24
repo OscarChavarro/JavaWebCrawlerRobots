@@ -1,6 +1,7 @@
 package databaseMongo.model;
 
 import java.net.InetAddress;
+import java.io.Serializable;
 
 public class EmailElement implements Comparable<EmailElement>, Serializable
 {
