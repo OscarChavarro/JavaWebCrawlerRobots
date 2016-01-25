@@ -204,7 +204,7 @@ public class DatabaseMongoConnection
         }
     }
 	
-    public static DBCollection getProperties() 
+    public DBCollection getProperties() 
 	{
         return properties;
     }
