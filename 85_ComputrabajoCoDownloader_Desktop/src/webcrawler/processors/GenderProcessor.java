@@ -1,18 +1,25 @@
 package webcrawler.processors;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import databaseMongo.model.EmailElement;
-import databaseMongo.model.NameElement;
+// Basic Java classes
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+
+// MongoDB driver classes
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+
+// VSDK classes
 import vsdk.toolkit.io.PersistenceElement;
+
+// Application classes
+import databaseMongo.model.NameElement;
+import vsdk.toolkit.common.VSDK;
 
 /**
 */
@@ -55,16 +62,24 @@ public class GenderProcessor {
                 int hint;
                 hint = processNameForGender(
                     id, name, nameElements, maleNames, femaleNames);
-                
+
+                String gender = "?";
                 if ( hint == 0 ) {
                     unknownCounter++;
                 }
                 else if ( hint == 1 ) {
+                    gender = "m";
                     maleCounter++;
                 }
                 else if ( hint == 2 ) {
+                    gender = "f";
                     femaleCounter++;
                 }
+                
+                String l = "db.professionalResumeTransformed.update({_id: \"";
+                l += id;
+                l += "\"}, {$set: {gender: \"" + gender + "\"}});";
+                PersistenceElement.writeAsciiLine(fos, l);
             }
             
             System.out.println("Ok, gender generated done.");
@@ -74,7 +89,9 @@ public class GenderProcessor {
             System.out.println("  - Unknown: " + unknownCounter);
         }
         catch ( Exception e ) {
-            e.printStackTrace();
+            VSDK.reportMessageWithException(
+                null, VSDK.FATAL_ERROR, 
+                "GenderProcessor.calculateGender", "error on process", e);
         }
     }
 
