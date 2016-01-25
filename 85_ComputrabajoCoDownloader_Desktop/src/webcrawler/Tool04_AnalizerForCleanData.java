@@ -1,27 +1,32 @@
 package webcrawler;
 
-import webcrawler.processors.NameProcessor;
-import webcrawler.processors.EmailProcessor;
+// Java basic classes
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 
+// MongoDB driver classes
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+// VSDK classes
+import vsdk.toolkit.io.PersistenceElement;
+
+// Application specific classes
 import databaseMongo.ComputrabajoDatabaseConnection;
 import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import databaseMongo.model.EmailElement;
-import java.io.IOException;
-
-import vsdk.toolkit.io.PersistenceElement;
+import webcrawler.processors.GenderProcessor;
 import webcrawler.processors.ProfessionHintProcessor;
+import webcrawler.processors.NameProcessor;
+import webcrawler.processors.EmailProcessor;
 
 /**
 This tool also updates emailStatus to -10 for emails on invalid domains.
@@ -41,7 +46,7 @@ public class Tool04_AnalizerForCleanData {
 
     private static HashMap<String, EmailElement> loadEmailElementCache()
     {
-	try {	    
+	try {
             HashMap<String, EmailElement> e;
    	    File fd = new File("./etc/emailDomainsCache.bin");
 	    if ( fd.exists() ) {
@@ -198,7 +203,7 @@ public class Tool04_AnalizerForCleanData {
             */
 
             if ( considerThis && o.containsField("professionHint") ) {
-                //processProfessionHint(o, i, c.count(), professions);
+                ProfessionHintProcessor.processProfessionHint(o, i, c.count(), professions);
             }
 
             if ( o.containsField("name") ) {
@@ -222,11 +227,10 @@ public class Tool04_AnalizerForCleanData {
         }
 
         saveEmailElementCache(emailElements);
-	
         NameProcessor.reportNameElements(nameElements);        
         EmailProcessor.reportEmailElements(emailElements);        
         ProfessionHintProcessor.reportResultingProfessionHints(professions);
-
+        GenderProcessor.calculateGender(professionalResume, nameElements);
 	updateEmailStatusForInvalidDomains(professionalResume, emailElements);
     }
 }
