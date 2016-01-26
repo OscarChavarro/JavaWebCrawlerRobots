@@ -244,7 +244,7 @@ public class Tool03_TransformationFromRawData2CleanData {
                     r.getProfilePictureUrl());
                 searchQuery.append("age", r.getAge());
                 searchQuery.append("pair", r.getPair());
-                searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
+                //searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
                 searchQuery.append("wantedPayment", 
                     trasnsformPayment(r.getWantedPayment()));
                 searchQuery.append("descriptionTitle", 
@@ -263,7 +263,7 @@ public class Tool03_TransformationFromRawData2CleanData {
             catch ( ParseException e ) {
                 System.out.println(
                     "Warning: Error importing object with _id: " + r.get_id());
-            } 
+            }
         }
     }
 

@@ -123,7 +123,22 @@ public class Resume extends JdbcEntity {
      * @return the pair
      */
     public String getPair() {
-        return pair;
+        String source = pair;
+        String status = "?";
+        if ( source.contains("Solt") ) {
+            status = "s";
+        }
+        else if ( source.contains("Casa") ) {
+            status = "c";
+        }
+        else if ( source.contains("Divo") ) {
+            status = "d";
+        }
+        else if ( source.contains("Viud") ) {
+            status = "v";
+        }
+
+        return status;
     }
 
     /**

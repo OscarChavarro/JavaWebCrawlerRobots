@@ -81,7 +81,7 @@ public class GenderProcessor {
                 l += "\"}, {$set: {gender: \"" + gender + "\"}});";
                 PersistenceElement.writeAsciiLine(fos, l);
             }
-            
+
             System.out.println("Ok, gender generated done.");
             System.out.println("  - Total registers: " + i);
             System.out.println("  - Males: " + maleCounter);
