@@ -28,7 +28,7 @@ import webcrawler.processors.GenderProcessor;
 import webcrawler.processors.ProfessionHintProcessor;
 import webcrawler.processors.NameProcessor;
 import webcrawler.processors.EmailProcessor;
-import webcrawler.processors.RelationshipStatusProcessor;
+//import webcrawler.processors.RelationshipStatusProcessor;
 
 /**
 This tool also updates emailStatus to -10 for emails on invalid domains.
@@ -212,10 +212,11 @@ public class Tool04_AnalizerForCleanData {
                     o, i, c.count(), professions);
             }
 
-            if ( considerThis && o.containsField("pair") ) {
-                RelationshipStatusProcessor.processRelationshipStatus(
-                    o, i, c.count(), relations, reportAdvances);
-            }
+            //if ( considerThis && o.containsField("pair") ) {
+                // Already done at stage Tool03_TransformationFromRawData2CleanData
+                //RelationshipStatusProcessor.processRelationshipStatus(
+                //    o, i, c.count(), relations, reportAdvances);
+            //}
 
             if ( o.containsField("name") ) {
                 NameProcessor.processName(
@@ -241,9 +242,9 @@ public class Tool04_AnalizerForCleanData {
         NameProcessor.reportNameElements(nameElements);        
         EmailProcessor.reportEmailElements(emailElements);        
         ProfessionHintProcessor.reportResultingProfessionHints(professions);
-        RelationshipStatusProcessor.reportResultingRelationshipStatuses(relations);
+        //RelationshipStatusProcessor.reportResultingRelationshipStatuses(relations);
         GenderProcessor.calculateGender(professionalResume, nameElements);
-        RelationshipStatusProcessor.calculateRelationshipStatus(professionalResume);
+        //RelationshipStatusProcessor.calculateRelationshipStatus(professionalResume);
 	updateEmailStatusForInvalidDomains(professionalResume, emailElements);
     }
 }

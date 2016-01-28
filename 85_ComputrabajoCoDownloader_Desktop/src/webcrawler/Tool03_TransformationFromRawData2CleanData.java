@@ -191,7 +191,12 @@ public class Tool03_TransformationFromRawData2CleanData {
             if (mat.matches()) {
                 payAsArray[i] = payAsArray[i].replace(".", "");
                 payAsArray[i] = payAsArray[i].replace(",", ".");
-                pay = Double.parseDouble(payAsArray[i]);
+                try {
+                    pay = Double.parseDouble(payAsArray[i]);
+                }
+                catch ( Exception e ) {
+                    pay = 0.0;
+                }
                 return pay;
             }
         }
@@ -249,8 +254,8 @@ public class Tool03_TransformationFromRawData2CleanData {
                     trasnsformPayment(r.getWantedPayment()));
                 searchQuery.append("descriptionTitle", 
                     r.getDescriptionTitle());
-                searchQuery.append("resumeLink", 
-                    r.getResumeLink());
+                //searchQuery.append("resumeLink", 
+                //    r.getResumeLink());
                 searchQuery.append("professionHint", 
                     transformProfession(r.getHtmlContent()));
                 searchQuery.append("sourceUrl", r.getSourceUrl());
