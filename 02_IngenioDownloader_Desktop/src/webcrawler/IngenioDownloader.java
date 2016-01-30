@@ -34,23 +34,24 @@ public class IngenioDownloader
     
     private static void takeUrl(String url)
     {
-    	url = "http://www.mppromocionales.com/"+url;
+    	if(!url.contains("http://"))
+    		url = "http://www.mppromocionales.com/"+url;
         TaggedHtml pageProcessor;
         
         searchLink.append("_id", url);
         
         if(linkProducts.findOne(searchLink)!=null)
         {
-        	return;
+        	pageProcessor = new TaggedHtml();
+            pageProcessor.getInternetPage(url);
+            FindHref(pageProcessor);
         }
-        
-        linkProducts.insert(searchLink);
-        
+        else
+        {
+        	linkProducts.insert(searchLink);
+        	System.out.println(searchLink);
+        }
         searchLink.clear();
-
-        pageProcessor = new TaggedHtml();
-        pageProcessor.getInternetPage(url);
-        FindHref(pageProcessor);
     }
     
     private static void processUrl()
@@ -150,8 +151,6 @@ public class IngenioDownloader
 	        
 	        if(p.getName() != null && p.getName() != "")
 	        {
-//	        	BasicDBObject searchQuery = new BasicDBObject();
-	        	
 	            try 
     	        {
 	            	searchQuery.append("_id", p.getUrl());
@@ -186,8 +185,8 @@ public class IngenioDownloader
     
     private static void takeImage(String nameProduct,ArrayList<String> listUrlImg) throws IOException
     {
-       	nameProduct=nameProduct.replace(".","");
-       	nameProduct = nameProduct.trim();
+       	nameProduct=nameProduct.replaceAll("([^\\w\\.@-])", "");
+       	
     	File route = new File("images/"+nameProduct);
     	URL url;
     	URLConnection urlCon;
@@ -254,9 +253,9 @@ public class IngenioDownloader
 	                	{
 	                		break;
 	                	}
+	                	v=v.replaceAll(" ", "%20");
 	                	if(!listUrlImg.contains("http://www.mppromocionales.com/"+v))
 	                	{
-	                		v=v.replaceAll(" ", "%20");
 	                		listUrlImg.add("http://www.mppromocionales.com/"+v);
 	                	}
 	                }
@@ -265,7 +264,6 @@ public class IngenioDownloader
         }
         try 
         {
-        	nameProduct = nameProduct.replaceAll("([^\\w\\.@-])", "");
 			takeImage(nameProduct,listUrlImg);
 		} 
         catch (IOException e) 
@@ -303,10 +301,13 @@ public class IngenioDownloader
 	                	searchLink.append("_id","http://www.mppromocionales.com/"+v);
 	                	if(linkProducts.findOne(searchLink)==null)
 	                	{
+	                		linkProducts.insert(searchLink);
 	                		searchLink.clear();
-	                		takeUrl(v);
 	                	}
-	                	searchLink.clear();
+	                	else
+	                	{
+	                		searchLink.clear();
+	                	}
 	                }
 	            }
 	        }
@@ -320,8 +321,22 @@ public class IngenioDownloader
 		
 		System.out.println("add to list a link products...\nplease wait");
 		takeUrl(url);
-		System.out.println("completed");
 		
+		
+		DBCursor c = linkProducts.find();
+    	DBObject ei;
+     	
+    	while(c.hasNext())
+    	{
+    		ei = c.next();
+    		url = ei.get("_id").toString();
+			if(url.contains("productos.php"))
+			{
+				takeUrl(url);
+			}
+    	}
+    	System.out.println("completed");
+				
 		System.out.println("processing url's...\nplease wait");
 		processUrl();
 		System.out.println("completed");
