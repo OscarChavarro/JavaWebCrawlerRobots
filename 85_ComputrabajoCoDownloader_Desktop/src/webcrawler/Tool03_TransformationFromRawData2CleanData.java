@@ -229,7 +229,12 @@ public class Tool03_TransformationFromRawData2CleanData {
                 searchQuery.append("name", transformName(r.getName()));
                 searchQuery.append("documentId", r.getDocumentId());
                 searchQuery.append("location", r.getLocation());
-                searchQuery.append("country", r.getCountry());
+                if ( r.getCountry().equals("co") ) {
+                    searchQuery.append("country", "co");
+                }
+                else {
+                    searchQuery.append("country", "ve");
+                }
                 searchQuery.append("email", validateEmail(r.getEmail()));
                 searchQuery.append("emailStatus", r.getEmailStatus());
                 
@@ -252,8 +257,8 @@ public class Tool03_TransformationFromRawData2CleanData {
                 //searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
                 searchQuery.append("wantedPayment", 
                     trasnsformPayment(r.getWantedPayment()));
-                searchQuery.append("descriptionTitle", 
-                    r.getDescriptionTitle());
+                //searchQuery.append("descriptionTitle", 
+                //    r.getDescriptionTitle());
                 //searchQuery.append("resumeLink", 
                 //    r.getResumeLink());
                 searchQuery.append("professionHint", 
