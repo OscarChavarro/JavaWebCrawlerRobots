@@ -7,12 +7,14 @@ public class Franchise extends JdbcEntity
 	private String url;
 	private String name;
 	private String category;
-	private Double minimumOrder;
+	private String minimumOrder;
 	private String homeCost;
 	private ArrayList<String> paymentMethod;
-	private int rating;
+	private String rating;
 	private int commentsNum;
-	private Product product;
+	private boolean isFranchise;
+	private boolean orderOnline;
+	private ArrayList<Product> product;
 	
 	public Franchise() 
 	{
@@ -43,11 +45,11 @@ public class Franchise extends JdbcEntity
 		this.category = category;
 	}
 
-	public Double getMinimumOrder() {
+	public String getMinimumOrder() {
 		return minimumOrder;
 	}
 
-	public void setMinimumOrder(Double minimumOrder) {
+	public void setMinimumOrder(String minimumOrder) {
 		this.minimumOrder = minimumOrder;
 	}
 
@@ -63,15 +65,16 @@ public class Franchise extends JdbcEntity
 		return paymentMethod;
 	}
 
-	public void setPaymentMethod(ArrayList<String> paymentMethod) {
+	public void setPaymentMethod(ArrayList<String> paymentMethod) 
+	{
 		this.paymentMethod = paymentMethod;
 	}
-
-	public int getRating() {
+	
+	public String getRating() {
 		return rating;
 	}
 
-	public void setRating(int rating) {
+	public void setRating(String rating) {
 		this.rating = rating;
 	}
 
@@ -83,11 +86,33 @@ public class Franchise extends JdbcEntity
 		this.commentsNum = commentsNum;
 	}
 
-	public Product getProduct() {
+	public boolean getIsFranchise() {
+		return isFranchise;
+	}
+
+	public void setIsFranchise(String isFranchise) {
+		if(isFranchise.contains("false"))
+			this.isFranchise = false;
+		else
+			this.isFranchise = true;
+	}
+
+	public boolean getOrderOnline() {
+		return orderOnline;
+	}
+
+	public void setOrderOnline(String orderOnline) {
+		if(orderOnline.contains("false"))
+			this.orderOnline = false;
+		else
+			this.orderOnline = true;
+	}
+
+	public ArrayList<Product> getProduct() {
 		return product;
 	}
 
-	public void setProduct(Product product) {
+	public void setProduct(ArrayList<Product> product) {
 		this.product = product;
 	}
 	
