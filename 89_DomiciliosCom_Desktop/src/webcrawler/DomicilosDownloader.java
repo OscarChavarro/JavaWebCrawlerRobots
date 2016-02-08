@@ -128,7 +128,7 @@ public class DomicilosDownloader {
                     VSDK.reportMessageWithException(null, VSDK.WARNING, "takeUrlImage", "Error in substring", e);
                 }
 
-                //downloadImage(franchiseName, title, link);
+                downloadImage(franchiseName, title, link);
 
                 link = null;
             }
@@ -223,6 +223,7 @@ public class DomicilosDownloader {
                         String nn;
                         nn = ts.content.trim();
                         nn = nn.replace(",", "");
+                        nn = nn.replace("$", "");
                         f.setCommentsNum(Integer.parseInt(nn));
                         doCommentsNum = false;
                     }
