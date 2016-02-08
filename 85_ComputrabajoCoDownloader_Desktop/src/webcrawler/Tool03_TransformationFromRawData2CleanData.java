@@ -173,14 +173,16 @@ public class Tool03_TransformationFromRawData2CleanData {
 
         profession = profession.replaceAll("\\s\\s*", " ");
 
-        profession = profession.toUpperCase().substring(0, 1) + 
-            profession.toLowerCase().substring(1);
+        if ( profession.length() > 1 ) {
+            profession = profession.toUpperCase().substring(0, 1) + 
+                profession.toLowerCase().substring(1);
+        }
 
         profession = ProfessionHintFilter.normalizeProfessionHint(profession);
         return profession.trim();
     }
 
-    public static Double trasnsformPayment(String _pay) {
+    public static Double transformPayment(String _pay) {
         Pattern pat = Pattern.compile("^[0-9.,]*");
         String[] payAsArray = _pay.split(" ");
         Double pay = 0.0;
@@ -256,7 +258,7 @@ public class Tool03_TransformationFromRawData2CleanData {
                 searchQuery.append("pair", r.getPair());
                 //searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
                 searchQuery.append("wantedPayment", 
-                    trasnsformPayment(r.getWantedPayment()));
+                    transformPayment(r.getWantedPayment()));
                 //searchQuery.append("descriptionTitle", 
                 //    r.getDescriptionTitle());
                 //searchQuery.append("resumeLink", 
