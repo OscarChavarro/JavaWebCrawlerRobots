@@ -216,10 +216,14 @@ public class DomicilosDownloader {
                         }
                         doHomeCost = false;
                     }
-                    if (ts.content.contains("Comentarios")) {
+                    if ( ts.content.contains("Comentarios") ) {
                         doCommentsNum = true;
-                    } else if (doCommentsNum) {
-                        f.setCommentsNum(Integer.parseInt(ts.content.trim()));
+                    } 
+                    else if (doCommentsNum) {
+                        String nn;
+                        nn = ts.content.trim();
+                        nn = nn.replace(",", "");
+                        f.setCommentsNum(Integer.parseInt(nn));
                         doCommentsNum = false;
                     }
                 }
