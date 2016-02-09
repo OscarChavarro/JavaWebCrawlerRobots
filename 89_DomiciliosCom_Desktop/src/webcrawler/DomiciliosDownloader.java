@@ -21,14 +21,15 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
 
+// VSDK classes
+import vsdk.toolkit.common.VSDK;
+
 // Application specific classes
 import databaseMongo.DomiciliosDatabaseConnection;
 import databaseMongo.model.Franchise;
 import databaseMongo.model.Product;
-import vsdk.toolkit.common.VSDK;
 
-public class DomicilosDownloader {
-
+public class DomiciliosDownloader {
     private static final DomiciliosDatabaseConnection databaseConnection;
     private static final DBCollection franchise;
     private static final DBCollection linkFranchise;
@@ -40,7 +41,7 @@ public class DomicilosDownloader {
         databaseConnection = new DomiciliosDatabaseConnection(
             "localhost", 
             27017, 
-            "domicilosRobot", 
+            "domiciliosRobot", 
             "franchiseList");
         franchise = databaseConnection.getProperties();
         linkFranchise = databaseConnection.createMongoCollection("linkFranchise");
@@ -112,18 +113,23 @@ public class DomicilosDownloader {
         int posIn;
         int posEnd;
         int i;
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++) {
+        for ( 
+            i = 0; 
+            pageProcessor != null &&
+            pageProcessor.segmentList != null && 
+                i < pageProcessor.segmentList.size(); 
+            i++) {
             url = pageProcessor.segmentList.get(i).content;
             if ((url.contains("data-src=") && url.contains("/timthumb?src") && url.contains("jpg&"))) {
                 link = url;
             }
-            if (url.contains("class=\"title") && link != null) {
+            if ( url.contains("class=\"title") && link != null ) {
                 title = pageProcessor.segmentList.get(i + 1).content;
                 posIn = link.indexOf("/timthumb?src");
                 posEnd = link.indexOf("jpg&");
                 try {
                     link = "http://www.domicilios.com" + link.substring(posIn, posEnd + 3) + "&q=100&a=c&zc=1&ct=1&w=440&h=217";
-                } 
+                }
                 catch (Exception e) {
                     VSDK.reportMessageWithException(null, VSDK.WARNING, "takeUrlImage", "Error in substring", e);
                 }
@@ -139,7 +145,7 @@ public class DomicilosDownloader {
     }
 
     private static void downloadUrls() {
-        TaggedHtml pageProcessor = new TaggedHtml();
+        TaggedHtml pageProcessor;
 
         DBCursor c = linkFranchise.find();
         DBObject ei;
@@ -149,23 +155,24 @@ public class DomicilosDownloader {
         int i;
         for ( i = 1; c.hasNext(); i++ ) {
             System.out.println("  - " + i + " / " + c.size());
+            pageProcessor = new TaggedHtml();
             ei = c.next();
             url = ei.get("sourceUrl").toString();
             city = ei.get("city").toString();
             pageProcessor.getInternetPage(url);
-            buildEntryFromPage(pageProcessor, url, city);
-            pageProcessor = new TaggedHtml();
+            buildRestaurantFromPage(pageProcessor, url, city);
         }
     }
 
-    private static void buildEntryFromPage(
+    private static void buildRestaurantFromPage(
         TaggedHtml pageProcessor, String url, String city) 
     {
-        if (pageProcessor.segmentList == null) {
+        if ( pageProcessor.segmentList == null ) {
             System.out.println("Warning: empty page");
-        } 
+        }
         else {
             Franchise f = new Franchise();
+            f.setCity(city);
             TagSegment ts;
             int i;
             String aux;
@@ -191,10 +198,11 @@ public class DomicilosDownloader {
                 ts = pageProcessor.segmentList.get(i);
 
                 if (!ts.insideTag) {
-
+                    ts.content = cleanString(ts.content);
                     if (ts.content.contains("Visita")) {
                         doCategory = true;
-                    } else if (doCategory) {
+                    } 
+                    else if ( doCategory ) {
                         f.setCategory(ts.content);
                         doCategory = false;
                     }
@@ -274,7 +282,15 @@ public class DomicilosDownloader {
                     if ((n.equals("establecimiento_nombre"))) {
                         aux = ts.getTagParameters().get(j + 1).name.replaceAll("\"", "");
                         aux = aux.replace(";", "");
-                        f.setName(aux);
+                        aux = aux.replace("\n", "");
+                        aux = aux.trim();
+                        try {
+                            String unicode = new String(aux.getBytes(), "UTF-8");
+                            f.setName(unicode);
+                        }
+                        catch ( Exception ee ) {
+                            f.setName(aux);
+                        }
                     }
                     if ((n.equals("establecimiento_rating"))) {
                         aux = ts.getTagParameters().get(j + 1).name.replaceAll("\"", "");
@@ -303,6 +319,7 @@ public class DomicilosDownloader {
                 try {
                     positiveComm = numPositveComm(f.getRating(), f.getCommentsNum());
                     negativeComm = f.getCommentsNum() - positiveComm;
+                    searchQuery.append("city", f.getCity());
                     searchQuery.append("sourceUrl", f.getUrl());
                     searchQuery.append("name", f.getName());
                     searchQuery.append("category", f.getCategory());
@@ -410,7 +427,7 @@ public class DomicilosDownloader {
     
     public static void main(String[] args) {
         System.out.println("Adding urls to list:");
-        
+
         String cities[] = {
             "cali",
             "medellin",
@@ -443,8 +460,17 @@ public class DomicilosDownloader {
         for ( i = 0; i < cities.length; i++ ) {
             downloadByCity(cities[i]);
         }
-        
         System.out.println("Processing url's...");
         downloadUrls();
+    }
+
+    private static String cleanString(String input) {
+        String output;
+
+        output = input.replace("\n", "");
+        output = output.replace("\r", "");
+        output = output.trim();
+        
+        return output;
     }
 }

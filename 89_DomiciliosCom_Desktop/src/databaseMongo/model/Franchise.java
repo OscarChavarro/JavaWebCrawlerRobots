@@ -14,6 +14,7 @@ public class Franchise extends JdbcEntity
 	private int commentsNum;
 	private boolean isFranchise;
 	private boolean orderOnline;
+        private String city;
 	private ArrayList<Product> product;
 	
 	public Franchise() 
@@ -115,5 +116,19 @@ public class Franchise extends JdbcEntity
 	public void setProduct(ArrayList<Product> product) {
 		this.product = product;
 	}
+
+    /**
+     * @return the city
+     */
+    public String getCity() {
+        return city;
+    }
+
+    /**
+     * @param city the city to set
+     */
+    public void setCity(String city) {
+        this.city = city;
+    }
 	
 }
