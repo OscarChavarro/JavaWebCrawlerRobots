@@ -43,10 +43,6 @@ public class NameElement implements Comparable<NameElement> {
         positionCount += position;
         positionAverage = ((double)positionCount) / ((double)apareancesCount);
         
-        //System.out.println("    . Agregando elemento " + name);
-        //System.out.println("    . Nueva posición: " + position);
-        //System.out.println("    . Nuevo promedio: " + positionAverage);
-        //System.out.println("    . Repeticiones: " + apareancesCount);
     }
 
     /**
