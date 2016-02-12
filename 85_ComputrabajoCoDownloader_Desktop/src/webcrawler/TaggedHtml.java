@@ -218,7 +218,7 @@ public class TaggedHtml
 
         connection.setProtocolVersion(HttpVersion.HTTP_1_1);
         connection.setHeader("Host", getHostFromURL(pageUrl));
-        connection.setHeader("Connection", "keep-alive");
+        //connection.setHeader("Connection", "keep-alive");
         //connection.setHeader("Cache-Control", "max-age=0");
         connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
         connection.setHeader("Upgrade-Insecure-Requests", "1");
@@ -256,6 +256,8 @@ public class TaggedHtml
             System.out.println("HTTP redirect error");
         }
         catch ( IOException e ) {
+            System.out.println("ERROR BAJANDO ARCHIVO!");
+            e.printStackTrace();
             try {
                 Thread.sleep(5000);
             } 
@@ -284,6 +286,8 @@ public class TaggedHtml
 
                 //-----------------------------------------------------------------
                 addRecievedCookies(response, cookies);        
+                is.close();
+                response.close();
             }
         }
         catch ( IOException e ) {
@@ -295,6 +299,11 @@ public class TaggedHtml
         }
 
         //-----------------------------------------------------------------
+        try {
+            httpclient.close();
+        }
+        catch ( Exception e ) {
+	}
     }
 
     /**
@@ -320,7 +329,7 @@ public class TaggedHtml
             prepareExistingCookies(cookies, connection);
 
             connection.setHeader("Host", "empresa.computrabajo.com.co");
-            connection.setHeader("Connection", "keep-alive");
+            //connection.setHeader("Connection", "keep-alive");
             connection.setHeader("Cache-Control", "max-age=0");
             connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             connection.setHeader("Origin", "http://empresa.computrabajo.com.co");
