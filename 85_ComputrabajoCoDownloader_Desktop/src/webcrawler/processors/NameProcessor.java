@@ -40,18 +40,56 @@ public class NameProcessor {
         int i;
         try {
             File fd = new File("./output/reports/nameElements.csv");
+            File fdn = new File("./output/reports/nameHints.csv");
+            File fdln = new File("./output/reports/lastnameHints.csv");
+            File fdmale = new File("./output/reports/nameMaleHints.csv");
+            File fdfemale = new File("./output/reports/nameFemaleHints.csv");
+            File fdneutral = new File("./output/reports/nameNeutralHints.csv");
+
             FileOutputStream fos;
+            FileOutputStream fosn;
+            FileOutputStream fosln;
+            FileOutputStream fosmale;
+            FileOutputStream fosfemale;
+            FileOutputStream fosneutral;
             fos = new FileOutputStream(fd);
-            BufferedOutputStream bos;
-            bos = new BufferedOutputStream(fos);
+            fosn = new FileOutputStream(fdn);
+            fosln = new FileOutputStream(fdln);
+            fosmale = new FileOutputStream(fdmale);
+            fosfemale = new FileOutputStream(fdfemale);
+            fosneutral = new FileOutputStream(fdneutral);
+            
             for (i = 0; i < sorted.size(); i++) {
                 String l;
                 NameElement n = sorted.get(i);
-                l = n.getName() + "\t" + n.getApareancesCount() + "\t" + VSDK.formatDouble(n.getPositionAverage(), 5);
-                PersistenceElement.writeAsciiLine(bos, l);
+                double f = n.getPositionAverage();
+                l = n.getName() + "\t" + n.getApareancesCount() + "\t" + VSDK.formatDouble(f, 5);
+                PersistenceElement.writeAsciiLine(fos, l);
+                if ( f < 0.45 ) {
+                    PersistenceElement.writeAsciiLine(fosn, l);
+                    int h = genreHint(n.getName());
+                    switch ( h ) {
+                      case NameElement.GENRE_MALE:
+                        PersistenceElement.writeAsciiLine(fosmale, n.getName());
+                        break;
+                      case NameElement.GENRE_FEMALE:
+                        PersistenceElement.writeAsciiLine(fosfemale, n.getName());
+                        break;
+                      case NameElement.GENRE_UNKNOWN: default:
+                        PersistenceElement.writeAsciiLine(fosneutral, n.getName());
+                        break;
+                    }
+                }
+                if ( f > 0.45 ) {
+                    PersistenceElement.writeAsciiLine(fosln, l);
+                }
             }
-            bos.close();
             fos.close();
+            fosn.close();
+            fosln.close();
+            fosmale.close();
+            fosfemale.close();
+            fosneutral.close();
         } 
         catch (Exception ex) {
         }
@@ -60,7 +98,7 @@ public class NameProcessor {
         System.out.println("Longest name in elements: " + maxNumberOfElements);
     }
 
-    private static String normalizeName(String input) {
+    public static String normalizeName(String input) {
         String ni = input.toLowerCase();
 
         ni = ni.replace(".", " ");
@@ -100,11 +138,15 @@ public class NameProcessor {
         ni = ni.replace("Ù", "u");
         ni = ni.trim();
         
-        if ( ni.length() < 1 ) {
+        if ( ni.length() <= 1 ) {
             return null;
         }
 
         if ( ni.equals("de") ) {
+            return null;
+        }
+
+        if ( ni.equals("del") ) {
             return null;
         }
 
@@ -208,5 +250,16 @@ public class NameProcessor {
             }
         }
         return true;
+    }
+
+    private static int genreHint(String name) {
+        int n = name.length();
+        if ( name.charAt(n - 1) == 'o' ) {
+            return NameElement.GENRE_MALE;
+        }
+        else if ( name.charAt(n - 1) == 'a' ) {
+            return NameElement.GENRE_FEMALE;
+        }
+        return NameElement.GENRE_UNKNOWN;
     }
 }

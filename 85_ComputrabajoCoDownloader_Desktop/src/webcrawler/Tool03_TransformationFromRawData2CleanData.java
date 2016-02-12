@@ -173,14 +173,16 @@ public class Tool03_TransformationFromRawData2CleanData {
 
         profession = profession.replaceAll("\\s\\s*", " ");
 
-        profession = profession.toUpperCase().substring(0, 1) + 
-            profession.toLowerCase().substring(1);
+        if ( profession.length() > 1 ) {
+            profession = profession.toUpperCase().substring(0, 1) + 
+                profession.toLowerCase().substring(1);
+        }
 
         profession = ProfessionHintFilter.normalizeProfessionHint(profession);
         return profession.trim();
     }
 
-    public static Double trasnsformPayment(String _pay) {
+    public static Double transformPayment(String _pay) {
         Pattern pat = Pattern.compile("^[0-9.,]*");
         String[] payAsArray = _pay.split(" ");
         Double pay = 0.0;
@@ -191,7 +193,12 @@ public class Tool03_TransformationFromRawData2CleanData {
             if (mat.matches()) {
                 payAsArray[i] = payAsArray[i].replace(".", "");
                 payAsArray[i] = payAsArray[i].replace(",", ".");
-                pay = Double.parseDouble(payAsArray[i]);
+                try {
+                    pay = Double.parseDouble(payAsArray[i]);
+                }
+                catch ( Exception e ) {
+                    pay = 0.0;
+                }
                 return pay;
             }
         }
@@ -224,7 +231,12 @@ public class Tool03_TransformationFromRawData2CleanData {
                 searchQuery.append("name", transformName(r.getName()));
                 searchQuery.append("documentId", r.getDocumentId());
                 searchQuery.append("location", r.getLocation());
-                searchQuery.append("country", r.getCountry());
+                if ( r.getCountry().equals("co") ) {
+                    searchQuery.append("country", "co");
+                }
+                else {
+                    searchQuery.append("country", "ve");
+                }
                 searchQuery.append("email", validateEmail(r.getEmail()));
                 searchQuery.append("emailStatus", r.getEmailStatus());
                 
@@ -244,13 +256,13 @@ public class Tool03_TransformationFromRawData2CleanData {
                     r.getProfilePictureUrl());
                 searchQuery.append("age", r.getAge());
                 searchQuery.append("pair", r.getPair());
-                searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
+                //searchQuery.append("jobSearchStatus", r.getJobSearchStatus());
                 searchQuery.append("wantedPayment", 
-                    trasnsformPayment(r.getWantedPayment()));
-                searchQuery.append("descriptionTitle", 
-                    r.getDescriptionTitle());
-                searchQuery.append("resumeLink", 
-                    r.getResumeLink());
+                    transformPayment(r.getWantedPayment()));
+                //searchQuery.append("descriptionTitle", 
+                //    r.getDescriptionTitle());
+                //searchQuery.append("resumeLink", 
+                //    r.getResumeLink());
                 searchQuery.append("professionHint", 
                     transformProfession(r.getHtmlContent()));
                 searchQuery.append("sourceUrl", r.getSourceUrl());
@@ -263,7 +275,7 @@ public class Tool03_TransformationFromRawData2CleanData {
             catch ( ParseException e ) {
                 System.out.println(
                     "Warning: Error importing object with _id: " + r.get_id());
-            } 
+            }
         }
     }
 

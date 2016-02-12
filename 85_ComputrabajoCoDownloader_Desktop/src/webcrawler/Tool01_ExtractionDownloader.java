@@ -362,7 +362,9 @@ public class Tool01_ExtractionDownloader {
                     }
                     ll += c;
                 }
-                list.add(ll);
+                if ( ll.charAt(0) == '/' ) {
+                    list.add(ll);
+                }
             }
             bis.close();
         }

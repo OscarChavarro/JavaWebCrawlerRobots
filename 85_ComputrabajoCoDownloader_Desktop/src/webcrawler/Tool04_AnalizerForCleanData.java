@@ -1,27 +1,34 @@
 package webcrawler;
 
-import webcrawler.processors.NameProcessor;
-import webcrawler.processors.EmailProcessor;
+// Java basic classes
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 
+// MongoDB driver classes
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+// VSDK classes
+import vsdk.toolkit.io.PersistenceElement;
+
+// Application specific classes
 import databaseMongo.ComputrabajoDatabaseConnection;
 import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import databaseMongo.model.EmailElement;
-import java.io.IOException;
-
-import vsdk.toolkit.io.PersistenceElement;
+import java.util.TreeSet;
+import webcrawler.processors.GenderProcessor;
 import webcrawler.processors.ProfessionHintProcessor;
+import webcrawler.processors.NameProcessor;
+import webcrawler.processors.EmailProcessor;
+//import webcrawler.processors.RelationshipStatusProcessor;
 
 /**
 This tool also updates emailStatus to -10 for emails on invalid domains.
@@ -41,7 +48,7 @@ public class Tool04_AnalizerForCleanData {
 
     private static HashMap<String, EmailElement> loadEmailElementCache()
     {
-	try {	    
+	try {
             HashMap<String, EmailElement> e;
    	    File fd = new File("./etc/emailDomainsCache.bin");
 	    if ( fd.exists() ) {
@@ -167,6 +174,9 @@ public class Tool04_AnalizerForCleanData {
         HashMap <String, ProfessionHint> professions;
         professions = new HashMap<String, ProfessionHint>();
         
+        TreeSet <String> relations;
+        relations = new TreeSet<String>();
+        
         // Main loop
         int i;
         for ( i = 0; c.hasNext(); i++ ) {
@@ -198,8 +208,15 @@ public class Tool04_AnalizerForCleanData {
             */
 
             if ( considerThis && o.containsField("professionHint") ) {
-                //processProfessionHint(o, i, c.count(), professions);
+                ProfessionHintProcessor.processProfessionHint(
+                    o, i, c.count(), professions);
             }
+
+            //if ( considerThis && o.containsField("pair") ) {
+                // Already done at stage Tool03_TransformationFromRawData2CleanData
+                //RelationshipStatusProcessor.processRelationshipStatus(
+                //    o, i, c.count(), relations, reportAdvances);
+            //}
 
             if ( o.containsField("name") ) {
                 NameProcessor.processName(
@@ -222,11 +239,12 @@ public class Tool04_AnalizerForCleanData {
         }
 
         saveEmailElementCache(emailElements);
-	
         NameProcessor.reportNameElements(nameElements);        
         EmailProcessor.reportEmailElements(emailElements);        
         ProfessionHintProcessor.reportResultingProfessionHints(professions);
-
+        //RelationshipStatusProcessor.reportResultingRelationshipStatuses(relations);
+        GenderProcessor.calculateGender(professionalResume, nameElements);
+        //RelationshipStatusProcessor.calculateRelationshipStatus(professionalResume);
 	updateEmailStatusForInvalidDomains(professionalResume, emailElements);
     }
 }

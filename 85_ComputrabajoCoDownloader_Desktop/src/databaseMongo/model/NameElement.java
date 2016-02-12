@@ -1,26 +1,25 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package databaseMongo.model;
 
 import vsdk.toolkit.common.VSDK;
 
 /**
- *
- * @author oscar
- */
+*/
 public class NameElement implements Comparable<NameElement> {
     private String name;
     private long apareancesCount;
     private double positionAverage;
     private double positionCount;
+    private int knownToBe; // 0: unknown, 1: male, 2: female, 3: lastname
+    public static final int GENRE_UNKNOWN = 0;
+    public static final int GENRE_MALE = 1;
+    public static final int GENRE_FEMALE = 2;
+    public static final int GENRE_LASTNAME = 3;
 
     public NameElement() {
         apareancesCount = 0;
         positionAverage = 0;
         positionCount = 0;
+        knownToBe = 0;
     }
     
     /**
@@ -90,5 +89,19 @@ public class NameElement implements Comparable<NameElement> {
         
         return this.name.compareTo(o.name);        
         */
+    }
+
+    /**
+     * @return the knownToBe
+     */
+    public int getKnownToBe() {
+        return knownToBe;
+    }
+
+    /**
+     * @param knownToBe the knownToBe to set
+     */
+    public void setKnownToBe(int knownToBe) {
+        this.knownToBe = knownToBe;
     }
 }
