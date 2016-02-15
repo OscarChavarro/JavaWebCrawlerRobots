@@ -4,25 +4,25 @@ package webcrawler;
 import java.util.ArrayList;
 import java.net.URLEncoder;
 
-class FormInput
+class ComputrabajoFormInput
 {
     public String name;
     public String value;
-    public FormInput() {
+    public ComputrabajoFormInput() {
 	name = null;
 	value = null;
     }
 }
 
-public class HtmlForm
+public class ComputrabajoHtmlForm
 {
     public String actionUrl;
     public String method;
-    ArrayList<FormInput> inputs;
+    ArrayList<ComputrabajoFormInput> inputs;
 
-    public HtmlForm()
+    public ComputrabajoHtmlForm()
     {
-        inputs = new ArrayList<FormInput>();
+        inputs = new ArrayList<ComputrabajoFormInput>();
     }
 
     public String exportAsUrlQueryString()
@@ -30,7 +30,7 @@ public class HtmlForm
         int i = 0;
         //String cad = new String("[" + method + "] - " + actionUrl + "?");
 	String cad = "";
-        FormInput f = null;
+        ComputrabajoFormInput f = null;
 
 	try {
         for ( i = 0; i < inputs.size(); i++ ) {
@@ -52,31 +52,31 @@ public class HtmlForm
         return cad;
     }
 
-    public void configure(ArrayList<TagParameter> tag)
+    public void configure(ArrayList<ComputrabajoTagParameter> tag)
     {
 	int i;
-        TagParameter t;
+        ComputrabajoTagParameter t;
         String name;
 
         for ( i = 0; i < tag.size(); i++ ) {
             t = tag.get(i);
             name = t.name.toUpperCase();
 	    if ( name.equals("METHOD") ) {
-                method = TaggedHtml.trimQuotes(t.value.toUpperCase());
+                method = ComputrabajoTaggedHtml.trimQuotes(t.value.toUpperCase());
 	    }
 	    if ( name.equals("ACTION") ) {
-                actionUrl = TaggedHtml.trimQuotes(t.value);
+                actionUrl = ComputrabajoTaggedHtml.trimQuotes(t.value);
 	    }
         }
     }
 
-    public void addInputFromTag(ArrayList<TagParameter> tag)
+    public void addInputFromTag(ArrayList<ComputrabajoTagParameter> tag)
     {
         int i;
-        TagParameter p;
+        ComputrabajoTagParameter p;
         String name;
         boolean activeTag = false;
-        FormInput input = new FormInput();
+        ComputrabajoFormInput input = new ComputrabajoFormInput();
 
         for ( i = 0; i < tag.size(); i++ ) {
             p = tag.get(i);
@@ -85,11 +85,11 @@ public class HtmlForm
                 return;
             }
             if ( name.equals("NAME") ) {
-                input.name = TaggedHtml.trimQuotes(p.value);
+                input.name = ComputrabajoTaggedHtml.trimQuotes(p.value);
                 activeTag = true;
             }
             if ( name.equals("VALUE") ) {
-                input.value = TaggedHtml.trimQuotes(p.value);
+                input.value = ComputrabajoTaggedHtml.trimQuotes(p.value);
             }
         }
         if ( activeTag ) {
@@ -100,7 +100,7 @@ public class HtmlForm
     public void elimEntry(String key)
     {
         int i;
-        FormInput f;
+        ComputrabajoFormInput f;
         
         for ( i = 0; i < inputs.size(); i++ ) {
             f = inputs.get(i);
@@ -126,7 +126,7 @@ public class HtmlForm
     public void setValue(String var, String val)
     {
         int i;
-        FormInput f;
+        ComputrabajoFormInput f;
         
         for ( i = 0; i < inputs.size(); i++ ) {
             f = inputs.get(i);
@@ -135,7 +135,7 @@ public class HtmlForm
 		return;
 	    }
 	}
-	f = new FormInput();
+	f = new ComputrabajoFormInput();
 	f.name = var;
 	f.value = val;
         inputs.add(f);

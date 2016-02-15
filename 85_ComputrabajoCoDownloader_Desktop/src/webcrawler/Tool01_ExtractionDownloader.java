@@ -47,9 +47,10 @@ public class Tool01_ExtractionDownloader {
         System.out.println("1. Downloading initial main/front-end page");
         String initialPage = "http://empresa.computrabajo.com.co/Login.aspx";
 
-        TaggedHtml pageProcessor;
-        pageProcessor = new TaggedHtml();
+        ComputrabajoTaggedHtml pageProcessor;
+        pageProcessor = new ComputrabajoTaggedHtml();
         pageProcessor.getInternetPage(initialPage, cookies, false);
+        
         //printCookies(cookies);
 
         if ( pageProcessor.segmentList == null ) {
@@ -62,7 +63,7 @@ public class Tool01_ExtractionDownloader {
 
         System.out.println("2. Sending user login credentials");
         String loginJsonPage = "http://empresa.computrabajo.com.co/Login.aspx";
-        pageProcessor = new TaggedHtml();
+        pageProcessor = new ComputrabajoTaggedHtml();
         
         return pageProcessor.postInternetPageForLogin(
             loginJsonPage, cookies, login, password, initialIdentifiers);
@@ -71,14 +72,14 @@ public class Tool01_ExtractionDownloader {
     /**
     @param pageProcessor
     */
-    public static void listTagsFromPage(TaggedHtml pageProcessor)
+    public static void listTagsFromPage(ComputrabajoTaggedHtml pageProcessor)
     {
         if ( pageProcessor.segmentList == null ) {
             System.out.println("Warning: empty page B");
             return;
         }
 
-        TagSegment ts;
+        ComputrabajoTagSegment ts;
         int i;
         int j;
         String n;
@@ -109,7 +110,7 @@ public class Tool01_ExtractionDownloader {
     @param identifiers
     */
     public static void extractIdentifiers(
-        TaggedHtml pageProcessor,
+        ComputrabajoTaggedHtml pageProcessor,
         HashMap<String, String> identifiers)
     {
         if ( pageProcessor.segmentList == null ) {
@@ -117,7 +118,7 @@ public class Tool01_ExtractionDownloader {
             return;
         }
 
-        TagSegment ts;
+        ComputrabajoTagSegment ts;
         int i;
         int j;
         String n;
@@ -147,10 +148,10 @@ public class Tool01_ExtractionDownloader {
                     v = ts.getTagParameters().get(j).value;
 
                     if ( n.equals("name") ) {
-                        elementName = TaggedHtml.trimQuotes(v);
+                        elementName = ComputrabajoTaggedHtml.trimQuotes(v);
                     }
                     if ( n.equals("value") ) {
-                        elementValue = TaggedHtml.trimQuotes(v);
+                        elementValue = ComputrabajoTaggedHtml.trimQuotes(v);
                     }
                 }
 
@@ -176,11 +177,11 @@ public class Tool01_ExtractionDownloader {
 
     private static void analizeIndexPages(
         TreeSet<String> listOfResumeLinks,
-        TaggedHtml parentPageProcessor, ArrayList<String> cookies) 
+        ComputrabajoTaggedHtml parentPageProcessor, ArrayList<String> cookies) 
     {
         System.out.println("4. Accesing resume lists");
-        TaggedHtml pageProcessor;
-        pageProcessor = new TaggedHtml();
+        ComputrabajoTaggedHtml pageProcessor;
+        pageProcessor = new ComputrabajoTaggedHtml();
         pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/Company/Cvs", cookies, false);
                 
         int n;
@@ -188,7 +189,7 @@ public class Tool01_ExtractionDownloader {
         System.out.println("  - 4.1. Preparing for downloading " + n + " resumes from "  + (n/20) + " listing pages:" );
         
         int i;
-        for ( i = 40746; i <= (n/20) + 1; i++ ) {
+        for ( i = 1; i <= (n/20) + 1; i++ ) {
             // Process current page
             Date date = new Date();
             DateFormat format = new SimpleDateFormat(
@@ -199,20 +200,20 @@ public class Tool01_ExtractionDownloader {
                 (n/20 + 1) + " on time " + format.format(date));
             importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
             
-            if ( i == 1 ) {
+            if ( i == 10 ) {
                 System.out.println("***** LISTO, PRUEBA DETENIDA! *****");
                 break;
             }
 
             // Advance to next
-            pageProcessor = new TaggedHtml();
+            pageProcessor = new ComputrabajoTaggedHtml();
             pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/Company/Cvs/?p=" + (i+1), cookies, false);
             
         }
     }
 
-    private static int getNumberOfResumes(TaggedHtml pageProcessor) {
-        TagSegment ts;
+    private static int getNumberOfResumes(ComputrabajoTaggedHtml pageProcessor) {
+        ComputrabajoTagSegment ts;
         int i;
         int j;
         String n;
@@ -272,10 +273,10 @@ public class Tool01_ExtractionDownloader {
     /**
     */
     private static void importResumeLinksFromListPage(
-        TaggedHtml pageProcessor, 
+        ComputrabajoTaggedHtml pageProcessor, 
         TreeSet<String> resumeLinks) 
     {
-        TagSegment ts;
+        ComputrabajoTagSegment ts;
         int i;
         int j;
         String n;
@@ -321,7 +322,7 @@ public class Tool01_ExtractionDownloader {
                 return;
             }
             
-            url = TaggedHtml.trimQuotes(url);
+            url = ComputrabajoTaggedHtml.trimQuotes(url);
             
             resumeLinks.add(url);
             File fd;
@@ -402,8 +403,8 @@ public class Tool01_ExtractionDownloader {
         System.out.println("7. Analizing individual resumes");
         for ( String url : resumeList ) {
             System.out.println("  - Downloading resume " + i + " of " + n);
-            TaggedHtml pageProcessor;
-            pageProcessor = new TaggedHtml();
+            ComputrabajoTaggedHtml pageProcessor;
+            pageProcessor = new ComputrabajoTaggedHtml();
             pageProcessor.getInternetPage("http://empresa.computrabajo.com.co" + url, cookies, true);
             Resume r;
             r = importResumeFromPage(pageProcessor, "http://empresa.computrabajo.com.co" + url, cookies);
@@ -413,13 +414,13 @@ public class Tool01_ExtractionDownloader {
     }
 
     private static Resume importResumeFromPage(
-        TaggedHtml pageProcessor, 
+        ComputrabajoTaggedHtml pageProcessor, 
         String originUrl,
         ArrayList<String> cookies) 
     {
         Resume r = new Resume();
         r.setSourceUrl(originUrl);
-        TagSegment ts;
+        ComputrabajoTagSegment ts;
         int i;
         int j;
         String n;
@@ -518,7 +519,7 @@ public class Tool01_ExtractionDownloader {
             }
             
             String tn = ts.getTagName();
-            ArrayList<TagParameter> tp = ts.getTagParameters();
+            ArrayList<ComputrabajoTagParameter> tp = ts.getTagParameters();
             
             if ( tn == null ) {
                 continue;
@@ -536,14 +537,14 @@ public class Tool01_ExtractionDownloader {
                 }
             }
             if ( tn.equals("A") && redirectWarning ) {
-                TaggedHtml ntp = new TaggedHtml();
+                ComputrabajoTaggedHtml ntp = new ComputrabajoTaggedHtml();
 
                 for ( j = 0; j < tp.size(); j++ ) {
                     n = ts.getTagParameters().get(j).name;
                     v = ts.getTagParameters().get(j).value;
                     if ( n.equals("href") ) {
                         System.out.println("JUMPING TO PAGE REDIRECT!");
-                        v = TaggedHtml.trimQuotes(v);
+                        v = ComputrabajoTaggedHtml.trimQuotes(v);
                         ntp.getInternetPage(
                             "http://empresa.computrabajo.com.co" + v, 
                             cookies, true);
@@ -633,7 +634,7 @@ public class Tool01_ExtractionDownloader {
                     if ( n.equals("src") ) {
                         String vv;
                         vv = fixStringForUtf(v);
-                        vv = TaggedHtml.trimQuotes(vv);
+                        vv = ComputrabajoTaggedHtml.trimQuotes(vv);
                         r.setProfilePictureUrl(vv);
                     }
                 }   
@@ -726,7 +727,7 @@ public class Tool01_ExtractionDownloader {
     */
     public static void main(String args [])
     {
-        TaggedHtml indexPageProcessor;
+        ComputrabajoTaggedHtml indexPageProcessor;
         ArrayList<String> cookies;
         cookies = new ArrayList<String>();
 
@@ -750,7 +751,7 @@ public class Tool01_ExtractionDownloader {
         if ( fd.exists() ) {
             importListFromCache(resumeListToDownload, filename);
         }
-        indexPageProcessor = new TaggedHtml();
+        indexPageProcessor = new ComputrabajoTaggedHtml();
         analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
 
         databaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);

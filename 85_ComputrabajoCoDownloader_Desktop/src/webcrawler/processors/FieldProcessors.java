@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import webcrawler.TagSegment;
-import webcrawler.TaggedHtml;
+import webcrawler.ComputrabajoTagSegment;
+import webcrawler.ComputrabajoTaggedHtml;
 import webcrawler.Tool02_AnalizerForRawExtractedData;
 
 /**
@@ -42,12 +42,12 @@ public class FieldProcessors {
     @param elementCount
     @param id
      */
-    public static void processHtmlStructure(TaggedHtml pageProcessor, HtmlExtraInformation h, int elementCount, String id) {
+    public static void processHtmlStructure(ComputrabajoTaggedHtml pageProcessor, HtmlExtraInformation h, int elementCount, String id) {
         if (pageProcessor.segmentList == null) {
             System.out.println("Warning: empty page");
             return;
         }
-        TagSegment ts;
+        ComputrabajoTagSegment ts;
         int i;
         int j;
         String n;
@@ -59,7 +59,7 @@ public class FieldProcessors {
                 continue;
             }
             if (!ts.insideTag) {
-                String trimmedContent = TaggedHtml.trimSpaces(ts.getContent());
+                String trimmedContent = ComputrabajoTaggedHtml.trimSpaces(ts.getContent());
                 if (nextH2) {
                     nextH2 = false;
                     h.processH2(trimmedContent);
@@ -322,8 +322,8 @@ public class FieldProcessors {
         try {
             area = parser.nextToken();
             subarea = parser.nextToken();
-            area = TaggedHtml.trimSpaces(area);
-            subarea = TaggedHtml.trimSpaces(subarea);
+            area = ComputrabajoTaggedHtml.trimSpaces(area);
+            subarea = ComputrabajoTaggedHtml.trimSpaces(subarea);
             if (reportAdvances) {
                 System.out.println("    . Location: [" + area + "] / [" + subarea + "]");
             }
@@ -403,8 +403,8 @@ public class FieldProcessors {
             System.out.println("Empty HTML - skipping id " + id);
             return;
         }
-        TaggedHtml page;
-        page = new TaggedHtml();
+        ComputrabajoTaggedHtml page;
+        page = new ComputrabajoTaggedHtml();
         InputStream is;
         is = new ByteArrayInputStream(html.getBytes());
         page.importDataFromHtml(is);

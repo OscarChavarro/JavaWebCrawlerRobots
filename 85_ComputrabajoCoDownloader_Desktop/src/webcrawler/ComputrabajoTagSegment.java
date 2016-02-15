@@ -7,20 +7,20 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-public class TagSegment
+public class ComputrabajoTagSegment
 {
     public boolean insideTag;
     private String content;
     ArrayList<Byte> contentv;
 
-    public TagSegment()
+    public ComputrabajoTagSegment()
     {
         insideTag = false;
         content = "";
         contentv = new ArrayList<Byte>();
     }
 
-    public TagSegment(TagSegment other)
+    public ComputrabajoTagSegment(ComputrabajoTagSegment other)
     {
         this.insideTag = other.insideTag;
         this.content = other.content;
@@ -68,9 +68,9 @@ public class TagSegment
     */
     public String getTagParameterValue(String parameterName)
     {
-        ArrayList<TagParameter> params;
+        ArrayList<ComputrabajoTagParameter> params;
         int i;
-        TagParameter p;
+        ComputrabajoTagParameter p;
         String upperParameter, upperSearch;
 
         upperParameter = parameterName.toUpperCase();
@@ -89,10 +89,10 @@ public class TagSegment
     PRE: content String is previously loaded
     @return 
     */
-    public ArrayList<TagParameter> getTagParameters()
+    public ArrayList<ComputrabajoTagParameter> getTagParameters()
     {
-        ArrayList<TagParameter> list = new ArrayList<TagParameter>();
-        TagParameter novo = null;
+        ArrayList<ComputrabajoTagParameter> list = new ArrayList<ComputrabajoTagParameter>();
+        ComputrabajoTagParameter novo = null;
 
         int i;
         char c;
@@ -120,7 +120,7 @@ public class TagSegment
                 if ( acum.length() <= 0 ) continue;
 
                 if ( prevSituation == 1 ) {
-                    novo = new TagParameter();
+                    novo = new ComputrabajoTagParameter();
                     novo.name = acum;
                     novo.value = "";
                     list.add(novo);
@@ -140,7 +140,7 @@ public class TagSegment
 
         if ( acum.length() > 0 ) {
             if ( prevSituation == 1 ) {
-                novo = new TagParameter();
+                novo = new ComputrabajoTagParameter();
                 novo.name = acum;
                 novo.value = "";
                 list.add(novo);

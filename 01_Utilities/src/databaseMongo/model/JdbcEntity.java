@@ -51,7 +51,7 @@ public class JdbcEntity extends Entity {
           f = Character.toUpperCase(f);
           String name = "get" + f + n.substring(1);
 
-          Method m = c.getMethod(name);
+          Method m = (Method)c.getMethod(name);
 
           Object r;
           r = m.invoke(this);

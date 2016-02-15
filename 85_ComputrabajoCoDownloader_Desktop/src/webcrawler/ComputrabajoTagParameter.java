@@ -1,7 +1,7 @@
 
 package webcrawler;
 
-public class TagParameter
+public class ComputrabajoTagParameter
 {
     public String name;
     public String value;

@@ -49,7 +49,7 @@ public class MyRedirectStrategy implements RedirectStrategy
             Header h[] = intermediateResponse.getAllHeaders();
             intermediateHeaders = h;
             int i;
-            TaggedHtml.addHeadersToCookies(h, cookies);
+            ComputrabajoTaggedHtml.addHeadersToCookies(h, cookies);
 
             for ( i = 0; i < h.length; i++ ) {
                 if ( h[i].getName().equals("Location") ) {
@@ -61,7 +61,7 @@ public class MyRedirectStrategy implements RedirectStrategy
             intermediateParameters = intermediateResponse.getParams();
             // Here we have the intermediate content
             //try {
-                //TaggedHtml intermediatePage = new TaggedHtml();
+                //TaggedHtml intermediatePage = new ComputrabajoTaggedHtml();
                 //intermediatePage.importDataFromHtml(intermediateResponse.getEntity().getContent());
                 //ComputrabajoVeDownloader.listTagsFromPage(intermediatePage);
             //} 
@@ -102,7 +102,7 @@ public class MyRedirectStrategy implements RedirectStrategy
                     //x = new URI("http://support.endlezztheme.com");
                 } 
                 catch ( URISyntaxException ex ) {
-                    Logger.getLogger(TaggedHtml.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ComputrabajoTaggedHtml.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 return x;
             }
@@ -148,7 +148,7 @@ public class MyRedirectStrategy implements RedirectStrategy
                     System.out.println("    . " + h[i].getName() + " = " + h[i].getValue() + ";");
                 }
                 */
-                TaggedHtml.addHeadersToCookies(h, cookies);
+                ComputrabajoTaggedHtml.addHeadersToCookies(h, cookies);
             }
 
             @Override
