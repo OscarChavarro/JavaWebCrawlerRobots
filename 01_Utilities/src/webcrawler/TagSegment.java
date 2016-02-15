@@ -11,11 +11,13 @@ public class TagSegment
 {
     public boolean insideTag;
     public String content;
+    private ArrayList<Byte> contentv;
 
     public TagSegment()
     {
         insideTag = false;
         content = "";
+        contentv = new ArrayList<Byte>();
     }
 
     public TagSegment(TagSegment other)
@@ -28,7 +30,8 @@ public class TagSegment
     {
         byte ab[] = new byte[1];
         ab[0] = b;
-        content += new String(ab, Charset.forName("ISO-8859-1"));
+        content += new String(ab, Charset.forName("UTF-8"));
+        contentv.add(b);
     }
 
     public String getTagName()
@@ -136,6 +139,17 @@ public class TagSegment
         }
         return list;
     }
+
+    public String getContent() {
+        int i;
+        byte arr[] = new byte [contentv.size()];
+        
+        for ( i = 0; i < contentv.size(); i++ ) {
+            arr[i] = contentv.get(i);
+        }
+        return new String(arr, Charset.forName("UTF-8"));
+    }
+
 }
 
 //===========================================================================

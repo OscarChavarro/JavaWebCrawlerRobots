@@ -26,7 +26,7 @@ import databaseMongo.model.JdbcEntity;
 
 public class DatabaseMongoConnection 
 {
-	private static DB mongoConnection;
+    private static DB mongoConnection;
     private static DBCollection properties;
 
 

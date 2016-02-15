@@ -776,7 +776,8 @@ public class TaggedHtml
             '|',
             '}',
             '~',
-	     ' '};
+	    ' ',
+            '\t'};
         String values[] = {
             "%20",
             "%21",
@@ -811,7 +812,8 @@ public class TaggedHtml
             "%7C",
             "%7D",
             "%7E",
-	    "%7F"};
+	    "%7F",
+            ""};
         int i;
         int j;
         
