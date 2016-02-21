@@ -8,52 +8,35 @@ import com.mongodb.DBObject;
 /**
 */
 public class indexProcessor {
+    private static final BasicDBObject searchLink = new BasicDBObject();
+    private static int lastCategoryId;
 
-    public static void downloadAllProductIndexes() 
-    {
-        DBCursor c = IngenioDownloader.productLink.find();
-        int linksBefore = c.count();
-        System.out.println("  * Links before: " + linksBefore);
-
-        String url = "menuproductos.php";
-        downloadIndexLinks(url);
-        c = IngenioDownloader.productLink.find();
-        DBObject ei;
-        
-        while ( c.hasNext() ) {
-            ei = c.next();
-            url = ei.get("sourceUrl").toString();
-            if ( url.contains("productos.php") ) {
-                downloadIndexLinks(url);
-            }
-        }
-
-        c = IngenioDownloader.productLink.find();
-        int linksAfter = c.count();
-        System.out.println("  * Links after: " + linksAfter);
-        if ( linksBefore != linksAfter ) {
-            downloadAllProductIndexes();
-        }
-    }
-
-    private static void downloadIndexLinks(String url) {
+    private static void downloadIndexPage(String url, String linkName) {
         if ( !url.contains("http://") ) {
             url = "http://www.mppromocionales.com/" + url;
         }
         System.out.println("  - " + url);
         TaggedHtml pageProcessor;
-        IngenioDownloader.searchLink.append("sourceUrl", url);
-        if ( IngenioDownloader.productLink.findOne(
-                IngenioDownloader.searchLink) != null ) {
+        searchLink.append("sourceUrl", url);
+        if ( IngenioDownloader.marPicoElementLink.findOne(
+                searchLink) != null ) {
+            // If element exist, analyze its children
             pageProcessor = new TaggedHtml();
             pageProcessor.getInternetPage(url);
             findHref(pageProcessor);
         } 
         else {
-            IngenioDownloader.productLink.insert(IngenioDownloader.searchLink);
-            System.out.println(IngenioDownloader.searchLink);
+            // If element does not exist, insert it
+            IngenioDownloader.marPicoElementLink.insert(searchLink);
+            System.out.println(searchLink);
         }
-        IngenioDownloader.searchLink.clear();
+        
+        if ( url.contains("/productos.php") && linkName != null ) {
+            System.out.println("++++ ADDING TOP");
+            registerNewCategoryOnDatabase(url, linkName, true, 0);
+        }
+
+        searchLink.clear();
     }
 
     private static void findHref(TaggedHtml pageProcessor) {
@@ -64,7 +47,9 @@ public class indexProcessor {
         String v;
         boolean insideLink = false;
         String l = "";
-        
+        boolean insideStrong = false;
+        boolean nextWithStrong = true;
+
         for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
             ts = pageProcessor.segmentList.get(i);
             
@@ -72,42 +57,28 @@ public class indexProcessor {
                 String s;
                 s = ts.getContent().replace("&nbsp;", " ");
                 s = s.trim();
-                IngenioDownloader.searchLink.append(
-                    "sourceLinkName", s);
-                IngenioDownloader.searchLink.append(
-                    "sourceUrl", l);
+                searchLink.append("sourceLinkName", s);
+                searchLink.append("sourceUrl", l);
                 String url = l;
+                String linkName = s;
                 
                 if ( url.contains("/productos.php") ) {
-                    System.out.println("  * Category link:" + s);
-                    BasicDBObject ca = new BasicDBObject();
-                    int id;
-                    if ( !url.contains("cat_id=") ) {
-                        continue;
-                    }
-                    int ni = url.indexOf("cat_id=") + 7;
-                    String nu = url.substring(ni);
-                    id = Integer.parseInt(nu);
-                    ca.append("nameSpa", s);
-                    ca.append("id", id);
+                    System.out.println("*** URL: " + url);
+                    System.out.println("*** TAGMARK: " + nextWithStrong);
+                    registerNewCategoryOnDatabase(
+                        url, linkName, nextWithStrong, lastCategoryId);
+                }
+                if ( IngenioDownloader.marPicoElementLink.findOne(searchLink) 
+                        == null ) {
                     try {
-                        IngenioDownloader.category.insert(ca);
+                        IngenioDownloader.marPicoElementLink.insert(
+                            searchLink);
                     }
                     catch ( Exception e ) {
 
                     }
                 }
-                if ( IngenioDownloader.productLink.findOne(
-                        IngenioDownloader.searchLink) == null ) {
-                    try {
-                        IngenioDownloader.productLink.insert(
-                            IngenioDownloader.searchLink);
-                    }
-                    catch ( Exception e ) {
-
-                    }
-                }
-                IngenioDownloader.searchLink.clear();
+                searchLink.clear();
                 insideLink = false;
             }
             
@@ -124,9 +95,92 @@ public class indexProcessor {
                         }
                         l = "http://www.mppromocionales.com/" + v;
                         insideLink = true;
+                        nextWithStrong = insideStrong;
                     }
+                }
+                else if ( n.equals("strong") ) {
+                    insideStrong = true;
+                    System.out.println("->");
+                }
+                else if ( n.equals("/strong") ) {
+                    insideStrong = false;
+                    System.out.println("<-");
                 }
             }
         }
     }  
+
+    private static void registerNewCategoryOnDatabase(
+        String url, String linkName, boolean isCategory,
+        int parentCategoryId) 
+        throws NumberFormatException 
+    {
+        BasicDBObject ca = new BasicDBObject();
+        int id;
+        if ( !url.contains("cat_id=") ) {
+            return;
+        }
+        int ni = url.indexOf("cat_id=") + 7;
+        String nu = url.substring(ni);
+        id = Integer.parseInt(nu);
+        ca.append("nameSpa", linkName);
+        ca.append("id", id);
+        if ( isCategory ) {
+            lastCategoryId = id;
+        }
+        else {
+            ca.append("parentCategoryId", lastCategoryId);
+        }
+        try {
+            IngenioDownloader.marPicoCategory.insert(ca);
+            System.out.println("  * New category link:" + linkName);
+        }
+        catch ( Exception e ) {
+            if ( parentCategoryId != 0 ) {
+                System.out.println("Updating: ");
+                System.out.println("  - Name: " + linkName);
+                System.out.println("  - New parent category: " + parentCategoryId);
+
+                DBObject searchKey = new BasicDBObject("id", id);
+                DBObject newValues = new BasicDBObject(
+                    new BasicDBObject("$set", 
+                        new BasicDBObject("parentCategoryId", parentCategoryId)));
+                IngenioDownloader.marPicoCategory.update(searchKey, newValues);
+            }
+        }
+    }
+
+    public static void downloadAllProductIndexes() 
+    {
+        DBCursor c = IngenioDownloader.marPicoElementLink.find();
+        int linksBefore = c.count();
+        System.out.println("  * Links before: " + linksBefore);
+
+        String url = "menuproductos.php";
+        downloadIndexPage(url, null);
+
+        c = IngenioDownloader.marPicoElementLink.find();
+        DBObject ei;
+
+        while ( c.hasNext() ) {
+            ei = c.next();
+            url = ei.get("sourceUrl").toString();
+            String n = null;
+            Object sn = ei.get("sourceLinkName");
+            if ( sn != null ) {
+                n = sn.toString();
+            }
+            if ( url.contains("productos.php") ) {
+                downloadIndexPage(url, n);
+            }
+        }
+
+        c = IngenioDownloader.marPicoElementLink.find();
+        int linksAfter = c.count();
+        System.out.println("  * Links after: " + linksAfter);
+        if ( linksBefore != linksAfter ) {
+            downloadAllProductIndexes();
+        }
+    }
+
 }

@@ -10,18 +10,17 @@ import databaseMongo.IngenioDatabaseConnection;
 
 public class IngenioDownloader {
     private static final IngenioDatabaseConnection databaseConnection;
-    public static final DBCollection products;
-    public static final DBCollection productLink;
-    public static final DBCollection category;
+    public static final DBCollection marPicoProduct;
+    public static final DBCollection marPicoElementLink;
+    public static final DBCollection marPicoCategory;
     public static BasicDBObject searchQuery = new BasicDBObject();
-    public static BasicDBObject searchLink = new BasicDBObject();
 
     static {
         databaseConnection = new IngenioDatabaseConnection(
-            "localhost", 27017, "ingenio", "productList");
-        products = databaseConnection.getProperties();
-        productLink = databaseConnection.createMongoCollection("productLink");
-        category = databaseConnection.createMongoCollection("category");
+            "localhost", 27017, "ingenio", "marPicoProduct");
+        marPicoProduct = databaseConnection.getProperties();
+        marPicoElementLink = databaseConnection.createMongoCollection("marPicoElementLink");
+        marPicoCategory = databaseConnection.createMongoCollection("marPicoCategory");
     }
 
     public static void main(String[] args) 
@@ -30,9 +29,9 @@ public class IngenioDownloader {
         indexProcessor.downloadAllProductIndexes();
         System.out.println("done downloading indexes");
 
-        System.out.println("Downloading products");
+        System.out.println("Downloading marPicoProduct");
         productProcessor.downloadProductCategoryPages();
-        System.out.println("done downloading products");
+        System.out.println("done downloading marPicoProduct");
     }
 }
 

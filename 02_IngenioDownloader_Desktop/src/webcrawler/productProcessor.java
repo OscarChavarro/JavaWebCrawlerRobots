@@ -187,7 +187,7 @@ public class productProcessor {
                     IngenioDownloader.searchQuery.append("packing", p.getPacking());
                     IngenioDownloader.searchQuery.append("importDate", importDate);
                     try {
-                        IngenioDownloader.products.insert(IngenioDownloader.searchQuery);
+                        IngenioDownloader.marPicoProduct.insert(IngenioDownloader.searchQuery);
                         IngenioDownloader.searchQuery.clear();
                         FindHrefImage(pageProcessor, p.getName());
                     } catch (DuplicateKeyException e) {
@@ -203,11 +203,11 @@ public class productProcessor {
     }
 
     /**
-    Gets specific products from already links on collection "productLink".
+    Gets specific marPicoProduct from already links on collection "marPicoElementLink".
     Populates collection "productList".
      */
     static void downloadProductCategoryPages() {
-        DBCursor c = IngenioDownloader.productLink.find();
+        DBCursor c = IngenioDownloader.marPicoElementLink.find();
         while (c.hasNext()) {
             DBObject ei;
             String url;
