@@ -193,6 +193,7 @@ public class indexProcessor {
         int linksAfter = c.count();
         //System.out.println("  * Links after: " + linksAfter);
         if ( linksBefore != linksAfter ) {
+            System.out.println("  - 1.2. Downloading product links");
             downloadAllProductIndexes(false);
         }
     }

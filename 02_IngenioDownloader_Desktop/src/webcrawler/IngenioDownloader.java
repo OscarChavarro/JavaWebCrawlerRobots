@@ -13,7 +13,6 @@ public class IngenioDownloader {
     public static final DBCollection marPicoProduct;
     public static final DBCollection marPicoElementLink;
     public static final DBCollection marPicoCategory;
-    public static BasicDBObject searchQuery = new BasicDBObject();
 
     static {
         databaseConnection = new IngenioDatabaseConnection(
@@ -34,7 +33,7 @@ public class IngenioDownloader {
           - Insert all category and product links into marPicoElementLink
             collection for further processing at stage 2
         */
-        System.out.println("Downloading product indexes:");
+        System.out.println("1. Downloading product indexes:");
         indexProcessor.downloadAllProductIndexes(true);
         System.out.println("done downloading indexes");
 
@@ -42,9 +41,9 @@ public class IngenioDownloader {
         Second stage construct marPicoProduct collection:
           - Each product is linked to its respective containing category
         */
-        //System.out.println("Downloading marPicoProduct");
-        //productProcessor.downloadProductCategoryPages();
-        //System.out.println("done downloading marPicoProduct");
+        System.out.println("2. Downloading marPicoProduct");
+        productProcessor.downloadProductCategoryPages();
+        System.out.println("done downloading marPicoProduct");
     }
 }
 

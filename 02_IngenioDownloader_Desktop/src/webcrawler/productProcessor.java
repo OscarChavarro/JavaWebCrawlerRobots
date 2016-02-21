@@ -1,6 +1,7 @@
 package webcrawler;
 
 // Java basic classes
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,12 +25,14 @@ import vsdk.toolkit.common.VSDK;
 
 // Application specific classes
 import databaseMongo.model.Product;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
 */
 public class productProcessor {
 
-    public static void FindHrefImage(
+    private static void findHrefImage(
         TaggedHtml pageProcessor, String nameProduct) 
     {
         TagSegment ts;
@@ -44,7 +47,7 @@ public class productProcessor {
             for ( j = 0; j < ts.getTagParameters().size(); j++ ) {
                 n = ts.getTagParameters().get(j).name;
                 v = ts.getTagParameters().get(j).value;
-                if (n.equals("href")) {
+                if ( n.equals("href") ) {
                     v = v.replaceAll("\"", "");
                     if ( (v.contains(".jpg") && 
                           v.contains("images/grandes/")) && 
@@ -61,12 +64,10 @@ public class productProcessor {
                 }
             }
         }
-        /*
-        takeImage(nameProduct, listUrlImg);
-        */
+        //downloadImage(nameProduct, listUrlImg);
     }
 
-    private static void takeImage(
+    private static void downloadImage(
         String nameProduct, ArrayList<String> listUrlImg) 
     {
         nameProduct = nameProduct.replaceAll("([^\\w\\.@-])", "");
@@ -102,8 +103,13 @@ public class productProcessor {
                     fos.close();
                 }
             } 
-            catch (IOException e) {
-                VSDK.reportMessageWithException(null, VSDK.FATAL_ERROR, "takeImage", "Error downloading individual image", e);
+            catch ( IOException e ) {
+                VSDK.reportMessageWithException(
+                    null, 
+                    VSDK.FATAL_ERROR,
+                    "downloadImage", 
+                    "Error downloading individual image", 
+                    e);
             }
         }
     }
@@ -127,7 +133,7 @@ public class productProcessor {
             boolean doPacking = false;
             Date importDate = new Date();
 
-            for (i = 0; i < pageProcessor.segmentList.size(); i++) {
+            for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
                 ts = pageProcessor.segmentList.get(i);
                 if ( !ts.insideTag ) {
                     if ( ts.content.contains("MATERIAL") ) {
@@ -175,30 +181,145 @@ public class productProcessor {
                 }
             }
             if ( p.getName() != null && !p.getName().isEmpty() ) {
-                try {
-                    IngenioDownloader.searchQuery.append("sourceUrl", p.getUrl());
-                    IngenioDownloader.searchQuery.append("name", p.getName());
-                    IngenioDownloader.searchQuery.append("description", p.getDescription());
-                    IngenioDownloader.searchQuery.append("material", p.getMaterial());
-                    IngenioDownloader.searchQuery.append("brand", p.getBrand());
-                    IngenioDownloader.searchQuery.append("measures", p.getMeasures());
-                    IngenioDownloader.searchQuery.append("printArea", p.getPrintArea());
-                    IngenioDownloader.searchQuery.append("price", p.getPrice());
-                    IngenioDownloader.searchQuery.append("packing", p.getPacking());
-                    IngenioDownloader.searchQuery.append("importDate", importDate);
-                    try {
-                        IngenioDownloader.marPicoProduct.insert(IngenioDownloader.searchQuery);
-                        IngenioDownloader.searchQuery.clear();
-                        FindHrefImage(pageProcessor, p.getName());
-                    } catch (DuplicateKeyException e) {
-                        System.out.println("Url already in use: " + url);
-                    }
-                } 
-                catch (ParseException e) {
-                    VSDK.reportMessageWithException(null, VSDK.FATAL_ERROR, 
-                        "buildProductEntryFromPage", "Parse error", e);
+                int pid = extractProductId(url);
+                if ( !productIsInDatabase(pid) ) {
+                    insertProductInMongoDatabase(p, importDate, pageProcessor, url);
+                }
+                else {
+                    int cid = extractCategoryId(url);
+                    addCategoryToProduct(pid, cid);
                 }
             }
+        }
+    }
+
+    private static void insertProductInMongoDatabase(
+        Product p, Date importDate, TaggedHtml pageProcessor, String url) 
+    {
+        BasicDBObject pdb;
+        pdb = new BasicDBObject();
+        pdb.append("id", extractProductId(p.getUrl()));
+        pdb.append("sourceUrl", p.getUrl());
+        pdb.append("name", p.getName());
+        pdb.append("description", p.getDescription());
+        pdb.append("material", p.getMaterial());
+        pdb.append("markingSupported", p.getBrand());
+        pdb.append("measures", p.getMeasures());
+        pdb.append("printArea", p.getPrintArea());
+        pdb.append("price", p.getPrice());
+        pdb.append("packing", p.getPacking());
+        pdb.append("importDate", importDate);
+        
+        List<Integer> cidArray;
+        cidArray = new ArrayList<Integer>();
+        cidArray.add(extractCategoryId(p.getUrl()));
+        pdb.append("arrayOfparentCategoriesId", cidArray);
+        findHrefImage(pageProcessor, p.getName());
+        try {
+            IngenioDownloader.marPicoProduct.insert(pdb);
+        }
+        catch ( DuplicateKeyException e ) {
+            System.out.println("ERROR: wrong detection schema!");
+            System.exit(0);
+        }
+        catch ( ParseException e ) {
+            VSDK.reportMessageWithException(null, VSDK.FATAL_ERROR,
+                    "buildProductEntryFromPage", "Parse error", e);
+        }
+    }
+
+    private static int extractCategoryId(String url) {
+        try {
+            StringTokenizer parser1;
+            parser1 = new StringTokenizer(url, "&");
+            while ( parser1.hasMoreTokens() ) {
+                String part;
+                part = parser1.nextToken();
+                if ( part.contains("cat_id") ) {
+                    StringTokenizer parser2;
+                    parser2 = new StringTokenizer(part, "=");
+                    String subpart;
+                    parser2.nextToken();
+                    subpart = parser2.nextToken();
+                    return Integer.parseInt(subpart);
+                }
+            }
+        }
+        catch ( Exception e ) {
+            
+        }
+        return 0;
+    }
+
+    private static int extractProductId(String url) {
+        try {
+            StringTokenizer parser1;
+            parser1 = new StringTokenizer(url, "&");
+            while ( parser1.hasMoreTokens() ) {
+                String part;
+                part = parser1.nextToken();
+                if ( part.contains("idprod") ) {
+                    StringTokenizer parser2;
+                    parser2 = new StringTokenizer(part, "=");
+                    String subpart;
+                    parser2.nextToken();
+                    subpart = parser2.nextToken();
+                    return Integer.parseInt(subpart);
+                }
+            }
+        }
+        catch ( Exception e ) {
+            
+        }
+        return 0;
+    }
+
+    private static boolean productIsInDatabase(int pid) {
+        BasicDBObject searchQuery;
+        searchQuery = new BasicDBObject();
+        searchQuery.append("id", pid);
+        BasicDBObject existingProduct;
+        existingProduct = (BasicDBObject)
+            IngenioDownloader.marPicoProduct.findOne(searchQuery);
+        return existingProduct != null;
+    }
+
+    private static void addCategoryToProduct(int pid, int cid) {
+        BasicDBObject searchQuery;
+        searchQuery = new BasicDBObject();
+        searchQuery.append("id", pid);
+        BasicDBObject existingProduct;
+        existingProduct = (BasicDBObject)
+            IngenioDownloader.marPicoProduct.findOne(searchQuery);
+        if ( existingProduct == null ) {
+            return;
+        }
+        Object o = existingProduct.get("arrayOfparentCategoriesId");
+        if ( o == null ) {
+            return;
+        }
+        
+        if ( o instanceof BasicDBList ) {
+            BasicDBList arr;
+            arr = (BasicDBList)o;
+            int i;
+            for ( i = 0; i < arr.size(); i++ ) {
+                Object e;
+                e = arr.get(i);
+                if ( e instanceof Integer ) {
+                    Integer ii = (Integer)e;
+                    if ( ii == cid ) {
+                        return;
+                    }
+                }
+            }
+            
+            arr.add(cid);
+                       
+            DBObject newValues = new BasicDBObject(
+                new BasicDBObject("$set",
+                    new BasicDBObject("arrayOfparentCategoriesId", arr)));
+            IngenioDownloader.marPicoProduct.update(searchQuery, newValues);
         }
     }
 
@@ -206,29 +327,25 @@ public class productProcessor {
     Gets specific marPicoProduct from already links on collection "marPicoElementLink".
     Populates collection "productList".
      */
-    static void downloadProductCategoryPages() {
-        DBCursor c = IngenioDownloader.marPicoElementLink.find();
-        while (c.hasNext()) {
+    public static void downloadProductCategoryPages() {
+        BasicDBObject searchKey = new BasicDBObject();
+        BasicDBObject options = new BasicDBObject("sourceUrl", 1);
+        DBCursor c = IngenioDownloader.marPicoElementLink.find(searchKey, options);
+        
+        while ( c.hasNext() ) {
             DBObject ei;
-            String url;
-            String n;
             ei = c.next();
+
+            String url;
             url = ei.get("sourceUrl").toString();
-            Object nn = ei.get("sourceLinkName");
-            if ( nn != null ) {
-                n = nn.toString();
-            }
-            else {
-                n = "null";
-            }
-            System.out.println("  - " + url);
+            
             if ( url.contains("detallesvar.php") ) {
+                System.out.println("  - Adding product: " + url);
                 TaggedHtml pageProcessor;
                 pageProcessor = new TaggedHtml();
                 pageProcessor.getInternetPage(url);
                 buildProductEntryFromPage(pageProcessor, url);
             } 
         }
-    }
-    
+    }    
 }

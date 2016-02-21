@@ -30,8 +30,13 @@ public class TagSegment
     {
         byte ab[] = new byte[1];
         ab[0] = b;
-        content += new String(ab, Charset.forName("UTF-8"));
         contentv.add(b);
+        byte bytearray[] = new byte[contentv.size()];
+        int i;
+        for ( i = 0; i < contentv.size(); i++ ) {
+            bytearray[i] = contentv.get(i);
+        }
+        content = new String(bytearray, Charset.forName("UTF-8"));
     }
 
     public String getTagName()
