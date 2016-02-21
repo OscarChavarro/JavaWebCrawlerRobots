@@ -36,10 +36,8 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
     
     public ComputrabajoDatabaseConnection(String url, int port, String connectionName, String collectionName) 
     {
-		super(url, port, connectionName, collectionName);
-		professionalResume = super.getProperties();
-	}
-
+        super(url, port, connectionName, collectionName);
+    }
 
     public void insertResumeMongo(Resume r)
     {
@@ -128,7 +126,8 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
     public void checkExistingResumesOnDatabase(
         TreeSet<String> resumeListAlreadyDownloaded) 
     {
-        super.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded, "sourceUrl");	
+        //super.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded, "sourceUrl");	
+        System.out.println("***** ERROR!!! OPERACION NO DISPONIBLE");
     }
     
     public ArrayList<Resume> _fetchAllProductsMongo()

@@ -2,7 +2,6 @@
 package webcrawler;
 
 // MongoDB classes
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
 // Application specific classes
@@ -16,8 +15,8 @@ public class IngenioDownloader {
 
     static {
         databaseConnection = new IngenioDatabaseConnection(
-            "localhost", 27017, "ingenio", "marPicoProduct");
-        marPicoProduct = databaseConnection.getProperties();
+            "localhost", 27017, "ingenio", null);
+        marPicoProduct = databaseConnection.createMongoCollection("marPicoProduct");
         marPicoElementLink = databaseConnection.createMongoCollection("marPicoElementLink");
         marPicoCategory = databaseConnection.createMongoCollection("marPicoCategory");
     }
@@ -34,7 +33,8 @@ public class IngenioDownloader {
             collection for further processing at stage 2
         */
         System.out.println("1. Downloading product indexes:");
-        indexProcessor.downloadAllProductIndexes(true);
+        //indexProcessor.downloadAllProductIndexes(
+        //    marPicoElementLink, marPicoCategory, true);
         System.out.println("done downloading indexes");
 
         /*

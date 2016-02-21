@@ -4,6 +4,7 @@ public class Product extends JdbcEntity {
 
     private String name;
     private String description;
+    private int code;
     private String material;
     private String measures;
     private String printArea;
@@ -95,4 +96,19 @@ public class Product extends JdbcEntity {
     public void setPrice(double price) {
         this.price = price;
     }
+
+    /**
+     * @return the code
+     */
+    public int getCode() {
+        return code;
+    }
+
+    /**
+     * @param code the code to set
+     */
+    public void setCode(int code) {
+        this.code = code;
+    }
+
 }

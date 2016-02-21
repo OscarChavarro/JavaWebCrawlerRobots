@@ -1,3 +1,4 @@
+//==============================================================================
 package webcrawler;
 
 // Java basic classes
@@ -33,7 +34,7 @@ import java.util.StringTokenizer;
 public class productProcessor {
 
     private static void findHrefImage(
-        TaggedHtml pageProcessor, String nameProduct) 
+        TaggedHtml pageProcessor, Product p) 
     {
         TagSegment ts;
         int i;
@@ -49,9 +50,7 @@ public class productProcessor {
                 v = ts.getTagParameters().get(j).value;
                 if ( n.equals("href") ) {
                     v = v.replaceAll("\"", "");
-                    if ( (v.contains(".jpg") && 
-                          v.contains("images/grandes/")) && 
-                         (!v.contains("http")) ) {
+                    if ( v.contains("images/grandes/") ) {
                         if (v.contains("mailto")) {
                             break;
                         }
@@ -64,15 +63,18 @@ public class productProcessor {
                 }
             }
         }
-        //downloadImage(nameProduct, listUrlImg);
+        downloadImage(p, listUrlImg);
     }
 
     private static void downloadImage(
-        String nameProduct, ArrayList<String> listUrlImg) 
+        Product p, 
+        ArrayList<String> listUrlImg) 
     {
-        nameProduct = nameProduct.replaceAll("([^\\w\\.@-])", "");
-        File route;
-        route = new File("images/" + nameProduct);
+        int n;
+        n = p.getCode();
+
+        File path;
+        path = new File("./output/images/" + n);
         URL url;
         URLConnection urlCon;
         InputStream is;
@@ -80,17 +82,21 @@ public class productProcessor {
         int read;
         String urlAux;
         byte[] array = new byte[1000];
-        if ( !route.exists() ) {
-            route.mkdirs();
+        if ( !path.exists() ) {
+            path.mkdirs();
         }
         int i;
-        for (i = 0; i < listUrlImg.size(); i++) {
+        for ( i = 0; i < listUrlImg.size(); i++ ) {
             try {
                 urlAux = listUrlImg.get(i);
-                if (!urlAux.contains("\\s")) {
-                    String filename;
-                    filename = route + "/" + nameProduct + "_" + i + ".jpg";
+                if ( !urlAux.contains("\\s") ) {
                     url = new URL(urlAux);
+                    
+                    System.out.println("    . Image URL: " + urlAux);
+
+                    String filename;
+                    filename = path + "/" + n + "_" + urlPattern(urlAux) + ".jpg";
+                    
                     urlCon = url.openConnection();
                     is = urlCon.getInputStream();
                     fos = new FileOutputStream(filename);
@@ -101,6 +107,9 @@ public class productProcessor {
                     }
                     is.close();
                     fos.close();
+                }
+                else {
+                    System.out.println("Ignoring image url: [" + urlAux + "]");
                 }
             } 
             catch ( IOException e ) {
@@ -124,6 +133,8 @@ public class productProcessor {
             Product p;
             p = new Product();
             p.setUrl(url);
+            p.setCode(extractProductId(url));
+
             TagSegment ts;
             int i;
             boolean doMaterial = false;
@@ -214,9 +225,9 @@ public class productProcessor {
         cidArray = new ArrayList<Integer>();
         cidArray.add(extractCategoryId(p.getUrl()));
         pdb.append("arrayOfparentCategoriesId", cidArray);
-        findHrefImage(pageProcessor, p.getName());
         try {
             IngenioDownloader.marPicoProduct.insert(pdb);
+            findHrefImage(pageProcessor, p);
         }
         catch ( DuplicateKeyException e ) {
             System.out.println("ERROR: wrong detection schema!");
@@ -348,4 +359,23 @@ public class productProcessor {
             } 
         }
     }    
+
+    private static String urlPattern(String url) 
+    {
+        int i;
+        int n = url.length();
+        for ( i = n-1; i >= 0; i-- ) {
+            char c = url.charAt(i);
+            if ( c == '/' ) {
+                break;
+            }
+        }
+        String sub = url.substring(i);
+        StringTokenizer parser = new StringTokenizer(sub, "/.?&");
+        return parser.nextToken();
+    }
 }
+
+//==============================================================================
+//= EOF                                                                        =
+//==============================================================================

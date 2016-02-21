@@ -1,7 +1,9 @@
+//==============================================================================
 package webcrawler;
 
 // MongoDB classes
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
@@ -12,6 +14,8 @@ public class indexProcessor {
     private static int lastCategoryId;
 
     private static void downloadIndexPage(
+        DBCollection marPicoElementLink,
+        DBCollection marPicoCategory,
         String url, String linkName, boolean buildCategories) 
     {
         if ( !url.contains("http://") ) {
@@ -20,28 +24,36 @@ public class indexProcessor {
         System.out.println("  - " + url);
         TaggedHtml pageProcessor;
         searchLink.append("sourceUrl", url);
-        if ( IngenioDownloader.marPicoElementLink.findOne(
+        if ( marPicoElementLink.findOne(
                 searchLink) != null ) {
             // If element exist, analyze its children
             pageProcessor = new TaggedHtml();
             pageProcessor.getInternetPage(url);
-            findHref(pageProcessor, buildCategories);
+            findHref(
+                marPicoElementLink, 
+                marPicoCategory, 
+                pageProcessor, 
+                buildCategories);
         } 
         else {
             // If element does not exist, insert it
-            IngenioDownloader.marPicoElementLink.insert(searchLink);
+            marPicoElementLink.insert(searchLink);
             //System.out.println(searchLink);
         }
 
         if ( buildCategories && 
              url.contains("/productos.php") && linkName != null ) {
-            registerNewCategoryOnDatabase(url, linkName, true, 0);
+            registerNewCategoryOnDatabase(
+                marPicoCategory, url, linkName, true, 0);
         }
         searchLink.clear();
     }
 
     private static void findHref(
-        TaggedHtml pageProcessor, boolean buildCategories) 
+        DBCollection marPicoElementLink,
+        DBCollection marPicoCategory,
+        TaggedHtml pageProcessor,
+        boolean buildCategories) 
     {
         TagSegment ts;
         int i;
@@ -67,13 +79,13 @@ public class indexProcessor {
                 
                 if ( buildCategories && url.contains("/productos.php") ) {
                     registerNewCategoryOnDatabase(
+                        marPicoCategory,
                         url, linkName, nextWithStrong, lastCategoryId);
                 }
-                if ( IngenioDownloader.marPicoElementLink.findOne(searchLink) 
+                if ( marPicoElementLink.findOne(searchLink) 
                         == null ) {
                     try {
-                        IngenioDownloader.marPicoElementLink.insert(
-                            searchLink);
+                        marPicoElementLink.insert(searchLink);
                     }
                     catch ( Exception e ) {
 
@@ -110,6 +122,7 @@ public class indexProcessor {
     }  
 
     private static void registerNewCategoryOnDatabase(
+        DBCollection marPicoCategory,
         String url, 
         String linkName, 
         boolean isCategory,
@@ -128,13 +141,13 @@ public class indexProcessor {
         ca.append("id", id);
                 
         try {
-            IngenioDownloader.marPicoCategory.insert(ca);
+            marPicoCategory.insert(ca);
             System.out.println("  - New category link: " + linkName);
         }
         catch ( Exception e ) {
             //System.out.println("  * Recategorizando a " + linkName);
             DBObject searchKey = new BasicDBObject("id", id);
-            DBObject cc = IngenioDownloader.marPicoCategory.findOne(searchKey);
+            DBObject cc = marPicoCategory.findOne(searchKey);
             if ( cc != null && cc.get("parentCategoryId") != null ) {
                 //System.out.println("* No recategorizo a " + linkName);
             }
@@ -146,13 +159,13 @@ public class indexProcessor {
                     DBObject newValues = new BasicDBObject(
                         new BasicDBObject("$set",
                             new BasicDBObject("parentCategoryId", 0)));
-                    IngenioDownloader.marPicoCategory.update(searchKey, newValues);                    
+                    marPicoCategory.update(searchKey, newValues);                    
                 }
                 else if ( parentCategoryId != 0 ) {
                     DBObject newValues = new BasicDBObject(
                         new BasicDBObject("$set",
                             new BasicDBObject("parentCategoryId", parentCategoryId)));
-                    IngenioDownloader.marPicoCategory.update(searchKey, newValues);
+                    marPicoCategory.update(searchKey, newValues);
                 }
             }
         }
@@ -162,16 +175,24 @@ public class indexProcessor {
         }
     }
 
-    public static void downloadAllProductIndexes(boolean buildCategories) 
+    public static void downloadAllProductIndexes(
+        DBCollection marPicoElementLink,
+        DBCollection marPicoCategory,
+        boolean buildCategories) 
     {
-        DBCursor c = IngenioDownloader.marPicoElementLink.find();
+        DBCursor c = marPicoElementLink.find();
         int linksBefore = c.count();
         //System.out.println("  * Links before: " + linksBefore);
 
         String url = "menuproductos.php";
-        downloadIndexPage(url, null, buildCategories);
+        downloadIndexPage(
+            marPicoElementLink, 
+            marPicoCategory, 
+            url, 
+            null, 
+            buildCategories);
 
-        c = IngenioDownloader.marPicoElementLink.find();
+        c = marPicoElementLink.find();
         DBObject ei;
 
         while ( c.hasNext() ) {
@@ -183,18 +204,28 @@ public class indexProcessor {
                 n = sn.toString();
             }
             if ( url.contains("productos.php") ) {
-                downloadIndexPage(url, n, buildCategories);
+                downloadIndexPage(
+                    marPicoElementLink, 
+                    marPicoCategory, 
+                    url, 
+                    n, 
+                    buildCategories);
             }
         }
 
         // Second level URLs are for getting product elements, not
         // unregistered categories
-        c = IngenioDownloader.marPicoElementLink.find();
+        c = marPicoElementLink.find();
         int linksAfter = c.count();
         //System.out.println("  * Links after: " + linksAfter);
         if ( linksBefore != linksAfter ) {
             System.out.println("  - 1.2. Downloading product links");
-            downloadAllProductIndexes(false);
+            downloadAllProductIndexes(
+                marPicoElementLink, marPicoCategory, false);
         }
     }
 }
+
+//==============================================================================
+//= EOF                                                                        =
+//==============================================================================
