@@ -11,7 +11,8 @@ public class indexProcessor {
     private static final BasicDBObject searchLink = new BasicDBObject();
     private static int lastCategoryId;
 
-    private static void downloadIndexPage(String url, String linkName) {
+    private static void downloadIndexPage(String url, String linkName) 
+    {
         if ( !url.contains("http://") ) {
             url = "http://www.mppromocionales.com/" + url;
         }
@@ -28,18 +29,17 @@ public class indexProcessor {
         else {
             // If element does not exist, insert it
             IngenioDownloader.marPicoElementLink.insert(searchLink);
-            System.out.println(searchLink);
-        }
-        
-        if ( url.contains("/productos.php") && linkName != null ) {
-            System.out.println("++++ ADDING TOP");
-            registerNewCategoryOnDatabase(url, linkName, true, 0);
+            //System.out.println(searchLink);
         }
 
+        if ( url.contains("/productos.php") && linkName != null ) {
+            registerNewCategoryOnDatabase(url, linkName, true, 0);
+        }
         searchLink.clear();
     }
 
-    private static void findHref(TaggedHtml pageProcessor) {
+    private static void findHref(TaggedHtml pageProcessor) 
+    {
         TagSegment ts;
         int i;
         int j;
@@ -63,8 +63,6 @@ public class indexProcessor {
                 String linkName = s;
                 
                 if ( url.contains("/productos.php") ) {
-                    System.out.println("*** URL: " + url);
-                    System.out.println("*** TAGMARK: " + nextWithStrong);
                     registerNewCategoryOnDatabase(
                         url, linkName, nextWithStrong, lastCategoryId);
                 }
@@ -100,18 +98,18 @@ public class indexProcessor {
                 }
                 else if ( n.equals("strong") ) {
                     insideStrong = true;
-                    System.out.println("->");
                 }
                 else if ( n.equals("/strong") ) {
                     insideStrong = false;
-                    System.out.println("<-");
                 }
             }
         }
     }  
 
     private static void registerNewCategoryOnDatabase(
-        String url, String linkName, boolean isCategory,
+        String url, 
+        String linkName, 
+        boolean isCategory,
         int parentCategoryId) 
         throws NumberFormatException 
     {
@@ -125,28 +123,39 @@ public class indexProcessor {
         id = Integer.parseInt(nu);
         ca.append("nameSpa", linkName);
         ca.append("id", id);
-        if ( isCategory ) {
-            lastCategoryId = id;
-        }
-        else {
-            ca.append("parentCategoryId", lastCategoryId);
-        }
+                
         try {
             IngenioDownloader.marPicoCategory.insert(ca);
-            System.out.println("  * New category link:" + linkName);
+            System.out.println("  - New category link: " + linkName);
         }
         catch ( Exception e ) {
-            if ( parentCategoryId != 0 ) {
-                System.out.println("Updating: ");
-                System.out.println("  - Name: " + linkName);
-                System.out.println("  - New parent category: " + parentCategoryId);
-
-                DBObject searchKey = new BasicDBObject("id", id);
-                DBObject newValues = new BasicDBObject(
-                    new BasicDBObject("$set", 
-                        new BasicDBObject("parentCategoryId", parentCategoryId)));
-                IngenioDownloader.marPicoCategory.update(searchKey, newValues);
+            //System.out.println("  * Recategorizando a " + linkName);
+            DBObject searchKey = new BasicDBObject("id", id);
+            DBObject cc = IngenioDownloader.marPicoCategory.findOne(searchKey);
+            if ( cc != null && cc.get("parentCategoryId") != null ) {
+                //System.out.println("* No recategorizo a " + linkName);
             }
+            else {
+                //System.out.println("    . New parent category: " + parentCategoryId);
+                //System.out.println("    . New mark: " + isCategory);
+                
+                if ( isCategory ) {
+                    DBObject newValues = new BasicDBObject(
+                        new BasicDBObject("$set",
+                            new BasicDBObject("parentCategoryId", 0)));
+                    IngenioDownloader.marPicoCategory.update(searchKey, newValues);                    
+                }
+                else if ( parentCategoryId != 0 ) {
+                    DBObject newValues = new BasicDBObject(
+                        new BasicDBObject("$set",
+                            new BasicDBObject("parentCategoryId", parentCategoryId)));
+                    IngenioDownloader.marPicoCategory.update(searchKey, newValues);
+                }
+            }
+        }
+        if ( isCategory ) {
+            //System.out.println("**** IS! --> " + linkName);
+            lastCategoryId = id;
         }
     }
 
@@ -154,7 +163,7 @@ public class indexProcessor {
     {
         DBCursor c = IngenioDownloader.marPicoElementLink.find();
         int linksBefore = c.count();
-        System.out.println("  * Links before: " + linksBefore);
+        //System.out.println("  * Links before: " + linksBefore);
 
         String url = "menuproductos.php";
         downloadIndexPage(url, null);
@@ -177,10 +186,9 @@ public class indexProcessor {
 
         c = IngenioDownloader.marPicoElementLink.find();
         int linksAfter = c.count();
-        System.out.println("  * Links after: " + linksAfter);
+        //System.out.println("  * Links after: " + linksAfter);
         if ( linksBefore != linksAfter ) {
             downloadAllProductIndexes();
         }
     }
-
 }
