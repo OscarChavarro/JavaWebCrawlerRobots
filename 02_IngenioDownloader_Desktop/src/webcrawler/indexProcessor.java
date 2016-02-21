@@ -11,7 +11,8 @@ public class indexProcessor {
     private static final BasicDBObject searchLink = new BasicDBObject();
     private static int lastCategoryId;
 
-    private static void downloadIndexPage(String url, String linkName) 
+    private static void downloadIndexPage(
+        String url, String linkName, boolean buildCategories) 
     {
         if ( !url.contains("http://") ) {
             url = "http://www.mppromocionales.com/" + url;
@@ -24,7 +25,7 @@ public class indexProcessor {
             // If element exist, analyze its children
             pageProcessor = new TaggedHtml();
             pageProcessor.getInternetPage(url);
-            findHref(pageProcessor);
+            findHref(pageProcessor, buildCategories);
         } 
         else {
             // If element does not exist, insert it
@@ -32,13 +33,15 @@ public class indexProcessor {
             //System.out.println(searchLink);
         }
 
-        if ( url.contains("/productos.php") && linkName != null ) {
+        if ( buildCategories && 
+             url.contains("/productos.php") && linkName != null ) {
             registerNewCategoryOnDatabase(url, linkName, true, 0);
         }
         searchLink.clear();
     }
 
-    private static void findHref(TaggedHtml pageProcessor) 
+    private static void findHref(
+        TaggedHtml pageProcessor, boolean buildCategories) 
     {
         TagSegment ts;
         int i;
@@ -62,7 +65,7 @@ public class indexProcessor {
                 String url = l;
                 String linkName = s;
                 
-                if ( url.contains("/productos.php") ) {
+                if ( buildCategories && url.contains("/productos.php") ) {
                     registerNewCategoryOnDatabase(
                         url, linkName, nextWithStrong, lastCategoryId);
                 }
@@ -159,14 +162,14 @@ public class indexProcessor {
         }
     }
 
-    public static void downloadAllProductIndexes() 
+    public static void downloadAllProductIndexes(boolean buildCategories) 
     {
         DBCursor c = IngenioDownloader.marPicoElementLink.find();
         int linksBefore = c.count();
         //System.out.println("  * Links before: " + linksBefore);
 
         String url = "menuproductos.php";
-        downloadIndexPage(url, null);
+        downloadIndexPage(url, null, buildCategories);
 
         c = IngenioDownloader.marPicoElementLink.find();
         DBObject ei;
@@ -180,15 +183,17 @@ public class indexProcessor {
                 n = sn.toString();
             }
             if ( url.contains("productos.php") ) {
-                downloadIndexPage(url, n);
+                downloadIndexPage(url, n, buildCategories);
             }
         }
 
+        // Second level URLs are for getting product elements, not
+        // unregistered categories
         c = IngenioDownloader.marPicoElementLink.find();
         int linksAfter = c.count();
         //System.out.println("  * Links after: " + linksAfter);
         if ( linksBefore != linksAfter ) {
-            downloadAllProductIndexes();
+            downloadAllProductIndexes(false);
         }
     }
 }

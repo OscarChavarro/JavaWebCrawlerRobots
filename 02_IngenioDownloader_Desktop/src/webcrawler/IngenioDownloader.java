@@ -35,7 +35,7 @@ public class IngenioDownloader {
             collection for further processing at stage 2
         */
         System.out.println("Downloading product indexes:");
-        indexProcessor.downloadAllProductIndexes();
+        indexProcessor.downloadAllProductIndexes(true);
         System.out.println("done downloading indexes");
 
         /*
