@@ -228,25 +228,6 @@ public class productProcessor {
                 pageProcessor.getInternetPage(url);
                 buildProductEntryFromPage(pageProcessor, url);
             } 
-            else if ( url.contains("/productos.php") ) {
-                System.out.println("  * Category link:" + n);
-                BasicDBObject ca = new BasicDBObject();
-                int id = 0;
-                if ( !url.contains("cat_id=") ) {
-                    continue;
-                }
-                int ni = url.indexOf("cat_id=") + 7;
-                String nu = url.substring(ni);
-                id = Integer.parseInt(nu);
-                ca.append("nameSpa", n);
-                ca.append("id", id);
-                try {
-                    IngenioDownloader.category.insert(ca);
-                }
-                catch ( Exception e ) {
-                    
-                }
-            }
         }
     }
     

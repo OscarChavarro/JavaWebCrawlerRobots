@@ -1,6 +1,7 @@
 package webcrawler;
 
 // MongoDB classes
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
@@ -75,6 +76,27 @@ public class indexProcessor {
                     "sourceLinkName", s);
                 IngenioDownloader.searchLink.append(
                     "sourceUrl", l);
+                String url = l;
+                
+                if ( url.contains("/productos.php") ) {
+                    System.out.println("  * Category link:" + s);
+                    BasicDBObject ca = new BasicDBObject();
+                    int id;
+                    if ( !url.contains("cat_id=") ) {
+                        continue;
+                    }
+                    int ni = url.indexOf("cat_id=") + 7;
+                    String nu = url.substring(ni);
+                    id = Integer.parseInt(nu);
+                    ca.append("nameSpa", s);
+                    ca.append("id", id);
+                    try {
+                        IngenioDownloader.category.insert(ca);
+                    }
+                    catch ( Exception e ) {
+
+                    }
+                }
                 if ( IngenioDownloader.productLink.findOne(
                         IngenioDownloader.searchLink) == null ) {
                     try {
@@ -82,9 +104,9 @@ public class indexProcessor {
                             IngenioDownloader.searchLink);
                     }
                     catch ( Exception e ) {
-                        
+
                     }
-                } 
+                }
                 IngenioDownloader.searchLink.clear();
                 insideLink = false;
             }
