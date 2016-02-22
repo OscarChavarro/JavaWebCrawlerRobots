@@ -1,5 +1,6 @@
 package webcrawler;
 
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 /**
@@ -118,7 +119,13 @@ public class ProductVariant {
     public void setCompoundString(String content) {
         StringTokenizer parser = new StringTokenizer(content, "/ ");
         setReference(parser.nextToken());
-        setDescription(parser.nextToken());
+        try {
+            setDescription(parser.nextToken());
+        }
+        catch ( NoSuchElementException e ) {
+            System.out.println("Invalid content: " + content);
+            setDescription("[INDEFINIDO]");
+        }
     }
     
     @Override

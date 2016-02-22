@@ -8,21 +8,20 @@ import com.mongodb.DBCollection;
 import databaseMongo.IngenioDatabaseConnection;
 
 public class IngenioDownloader {
-    private static final IngenioDatabaseConnection databaseConnection;
-    public static final DBCollection marPicoProduct;
-    public static final DBCollection marPicoElementLink;
-    public static final DBCollection marPicoCategory;
+    public static void main(String[] args) 
+    {
+        // Init database connections
+        IngenioDatabaseConnection databaseConnection;
+        DBCollection marPicoProduct;
+        DBCollection marPicoElementLink;
+        DBCollection marPicoCategory;
 
-    static {
         databaseConnection = new IngenioDatabaseConnection(
             "localhost", 27017, "ingenio", null);
         marPicoProduct = databaseConnection.createMongoCollection("marPicoProduct");
         marPicoElementLink = databaseConnection.createMongoCollection("marPicoElementLink");
         marPicoCategory = databaseConnection.createMongoCollection("marPicoCategory");
-    }
 
-    public static void main(String[] args) 
-    {
         /*
         First stage does the following:
           - Builds marPicoCategory collection, which contains categories, 
@@ -42,7 +41,8 @@ public class IngenioDownloader {
           - Each product is linked to its respective containing category
         */
         System.out.println("2. Downloading marPicoProduct");
-        productProcessor.downloadProductCategoryPages();
+        productProcessor.downloadProductCategoryPages(
+            marPicoElementLink, marPicoProduct);
         System.out.println("done downloading marPicoProduct");
     }
 }

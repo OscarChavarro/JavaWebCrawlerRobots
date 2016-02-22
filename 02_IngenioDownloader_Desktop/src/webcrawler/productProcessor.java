@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 // MongoDB classes
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
@@ -223,6 +224,7 @@ public class productProcessor {
     }
 
     private static void buildProductEntryFromPage(
+        DBCollection marPicoProduct,
         TaggedHtml pageProcessor, String url) 
     {
         if ( pageProcessor.segmentList == null ) {
@@ -237,16 +239,17 @@ public class productProcessor {
             Date importDate = processProductPageForBasicData(pageProcessor, p);
             if ( p.getName() != null && !p.getName().isEmpty() ) {
                 int pid = extractProductId(url);
-                if ( !productIsInDatabase(pid) ) {
-                    insertProductInMongoDatabase(p, importDate, pageProcessor, url);
+                if ( !productIsInDatabase(marPicoProduct, pid) ) {
+                    insertProductInMongoDatabase(
+                        marPicoProduct, p, importDate, pageProcessor, url);
                 }
                 else {
                     int cid = extractCategoryId(url);
-                    addCategoryToProduct(pid, cid);
+                    addCategoryToProduct(marPicoProduct, pid, cid);
                 }
                 HashMap<String, ProductVariant> variants;
                 variants = processProductPageForVariants(pageProcessor, p);
-                updateVariantsInProduct(p, variants);
+                updateVariantsInProductDatabase(p, variants);
             }
         }
     }
@@ -311,6 +314,7 @@ public class productProcessor {
     }
 
     private static void insertProductInMongoDatabase(
+        DBCollection marPicoProduct,
         Product p, Date importDate, TaggedHtml pageProcessor, String url) 
     {
         BasicDBObject pdb;
@@ -332,7 +336,7 @@ public class productProcessor {
         cidArray.add(extractCategoryId(p.getUrl()));
         pdb.append("arrayOfparentCategoriesId", cidArray);
         try {
-            IngenioDownloader.marPicoProduct.insert(pdb);
+            marPicoProduct.insert(pdb);
             processProductPageForImages(pageProcessor, p);
         }
         catch ( DuplicateKeyException e ) {
@@ -391,23 +395,27 @@ public class productProcessor {
         return 0;
     }
 
-    private static boolean productIsInDatabase(int pid) {
+    private static boolean productIsInDatabase(
+        DBCollection marPicoProduct, int pid) 
+    {
         BasicDBObject searchQuery;
         searchQuery = new BasicDBObject();
         searchQuery.append("id", pid);
         BasicDBObject existingProduct;
         existingProduct = (BasicDBObject)
-            IngenioDownloader.marPicoProduct.findOne(searchQuery);
+            marPicoProduct.findOne(searchQuery);
         return existingProduct != null;
     }
 
-    private static void addCategoryToProduct(int pid, int cid) {
+    private static void addCategoryToProduct(
+        DBCollection marPicoProduct, int pid, int cid) 
+    {
         BasicDBObject searchQuery;
         searchQuery = new BasicDBObject();
         searchQuery.append("id", pid);
         BasicDBObject existingProduct;
         existingProduct = (BasicDBObject)
-            IngenioDownloader.marPicoProduct.findOne(searchQuery);
+            marPicoProduct.findOne(searchQuery);
         if ( existingProduct == null ) {
             return;
         }
@@ -436,18 +444,23 @@ public class productProcessor {
             DBObject newValues = new BasicDBObject(
                 new BasicDBObject("$set",
                     new BasicDBObject("arrayOfparentCategoriesId", arr)));
-            IngenioDownloader.marPicoProduct.update(searchQuery, newValues);
+            marPicoProduct.update(searchQuery, newValues);
         }
     }
 
     /**
     Gets specific marPicoProduct from already links on collection "marPicoElementLink".
     Populates collection "productList".
-     */
-    public static void downloadProductCategoryPages() {
+    @param marPicoElementLink
+    @param marPicoProduct
+    */
+    public static void downloadProductCategoryPages(
+        DBCollection marPicoElementLink,
+        DBCollection marPicoProduct
+    ) {
         BasicDBObject searchKey = new BasicDBObject();
         BasicDBObject options = new BasicDBObject("sourceUrl", 1);
-        DBCursor c = IngenioDownloader.marPicoElementLink.find(searchKey, options);
+        DBCursor c = marPicoElementLink.find(searchKey, options);
         
         while ( c.hasNext() ) {
             DBObject ei;
@@ -461,7 +474,7 @@ public class productProcessor {
                 TaggedHtml pageProcessor;
                 pageProcessor = new TaggedHtml();
                 pageProcessor.getInternetPage(url);
-                buildProductEntryFromPage(pageProcessor, url);
+                buildProductEntryFromPage(marPicoProduct, pageProcessor, url);
             } 
         }
     }    
@@ -481,7 +494,7 @@ public class productProcessor {
         return parser.nextToken();
     }
 
-    private static void updateVariantsInProduct(
+    private static void updateVariantsInProductDatabase(
         Product p, HashMap<String, ProductVariant> variants) 
     {
         int n = variants.size();
@@ -490,7 +503,7 @@ public class productProcessor {
             System.out.println("ERROR: THERE IS NO VARIANTS!");
             System.exit(1);
         }
-        System.out.println("    . Number of variants: " + n);
+        //System.out.println("    . Number of variants: " + n);
     }
 }
 
