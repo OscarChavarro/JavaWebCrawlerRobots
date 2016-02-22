@@ -251,24 +251,6 @@ public class productProcessor {
                 HashMap<String, ProductVariant> variants;
                 variants = processProductPageForVariants(pageProcessor, p);
                 updateVariantsInProductDatabase(marPicoProduct, p, variants);
-                processProductPageForPrice(marPicoProduct, pageProcessor, p);
-            }
-        }
-    }
-
-    private static void processProductPageForPrice(
-        DBCollection marPicoProduct,
-        IngenioTaggedHtml pageProcessor, Product p) 
-    {
-        int i;
-        TagSegment ts;
-
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
-            ts = pageProcessor.segmentList.get(i);
-            if ( !ts.insideTag ) {
-                if ( ts.content.contains("Precio") ) {
-                    System.out.println("YUJU!!! *******: " + ts.content);
-                }
             }
         }
     }
@@ -326,6 +308,10 @@ public class productProcessor {
                     p.setPacking(ts.content);
                     doPacking = false;
                 }
+                if ( ts.content.contains("Precio de") ) {
+                    System.out.println("YUJU!!! *******: " + ts.content);
+                }
+
             }
         }
         return importDate;
