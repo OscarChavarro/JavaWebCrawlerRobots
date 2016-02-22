@@ -1,3 +1,5 @@
+package awt;
+
 
 import java.awt.Robot;
 import java.awt.datatransfer.Clipboard;
@@ -9,19 +11,19 @@ import java.awt.event.KeyEvent;
 /**
 */
 public class RobotUtils {
-    protected static void click(Robot r) {
+    public static void click(Robot r) {
         r.mousePress(InputEvent.BUTTON1_MASK);
         r.delay(200);
         r.mouseRelease(InputEvent.BUTTON1_MASK);
     }
 
-    protected static void click2(Robot r) {
+    public static void click2(Robot r) {
         r.mousePress(InputEvent.BUTTON3_MASK);
         r.delay(200);
         r.mouseRelease(InputEvent.BUTTON3_MASK);
     }
 
-    protected static void writeString(
+    public static void writeString(
         String inputText, 
         Clipboard clipboard, 
         ClipboardOwner clipboardOwner, 
@@ -84,26 +86,42 @@ public class RobotUtils {
             r.delay(10);
         }
     }
-    
-    protected static void writeStringCP(
-        String inputText, 
-        Clipboard clipboard, 
-        ClipboardOwner clipboardOwner, 
-        Robot r) 
+
+    public static void copyMacro(Robot r)
     {
-        
-        StringSelection stringSelection = new StringSelection(inputText);
-        clipboard.setContents(stringSelection, clipboardOwner);
-        
-        r.keyPress(KeyEvent.VK_META);
+        r.keyPress(KeyEvent.VK_CONTROL);
+        r.delay(100);
+        r.keyPress(KeyEvent.VK_C);
+        r.delay(100);
+        r.keyRelease(KeyEvent.VK_C);
+        r.delay(100);
+        r.keyRelease(KeyEvent.VK_CONTROL);
+        r.delay(100);        
+    }
+
+    public static void pasteMacro(Robot r)
+    {
+        r.keyPress(KeyEvent.VK_CONTROL);
         r.delay(100);
         r.keyPress(KeyEvent.VK_V);
         r.delay(100);
         r.keyRelease(KeyEvent.VK_V);
         r.delay(100);
-        r.keyRelease(KeyEvent.VK_META);
-        r.delay(100);
+        r.keyRelease(KeyEvent.VK_CONTROL);
+        r.delay(100);        
+    }
 
+    public static void writeStringCP(
+        String inputText, 
+        Clipboard clipboard, 
+        ClipboardOwner clipboardOwner, 
+        Robot r) 
+    {
+        StringSelection stringSelection = new StringSelection(inputText);
+        clipboard.setContents(stringSelection, clipboardOwner);
+        
+        pasteMacro(r);
+        
         int keycode = KeyEvent.VK_ENTER;
 
         r.keyPress(keycode);
@@ -111,5 +129,4 @@ public class RobotUtils {
         r.keyRelease(keycode);
         r.delay(10);
     }
-    
 }
