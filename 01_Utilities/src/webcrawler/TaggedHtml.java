@@ -19,6 +19,11 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.ParseException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -47,6 +52,155 @@ public class TaggedHtml
         currentSegment = null;
         cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
+    }
+
+    protected String normalizeStringForWeb(String a) {
+        char keys[] = {
+            ' ',
+            '!',
+            '"',
+            '#',
+            '$',
+            '%',
+            '&',
+            '\'',
+            '(',
+            ')',
+            '*',
+            '+',
+            ',',
+            '-',
+            '.',
+            '/',
+            ':',
+            ';',
+            '<',
+            '=',
+            '>',
+            '?',
+            '@',
+            '[',
+            '\\',
+            ']',
+            '^',
+            '_',
+            '`',
+            '{',
+            '|',
+            '}',
+            '~',
+	     ' '};
+        String values[] = {
+            "%20",
+            "%21",
+            "%22",
+            "%23",
+            "%24",
+            "%25",
+            "%26",
+            "%27",
+            "%28",
+            "%29",
+            "%2A",
+            "%2B",
+            "%2C",
+            "%2D",
+            "%2E",
+            "%2F",
+            "%3A",
+            "%3B",
+            "%3C",
+            "%3D",
+            "%3E",
+            "%3F",
+            "%40",
+            "%5B",
+            "%5C",
+            "%5D",
+            "%5E",
+            "%5F",
+            "%60",
+            "%7B",
+            "%7C",
+            "%7D",
+            "%7E",
+	    "%7F"};
+        int i;
+        int j;
+        
+        String b = "";
+        for ( i = 0; i < a.length(); i++ ) {
+            char c = a.charAt(i);
+            String code = "" + c;
+            for ( j = 0; j < keys.length; j++ ) {
+                if ( c == keys[j] ) {
+                    code = values[j];
+                    break;
+                }
+            }
+            b += code;
+        }
+
+        return b;
+    }
+
+        protected void addRecievedCookies(
+        CloseableHttpResponse response, ArrayList<String> cookies) 
+            throws ParseException {
+        //-----------------------------------------------------------------
+        // Append new cookies
+        Header hs[] = response.getAllHeaders();
+
+        if ( hs != null ) {
+            addHeadersToCookies(hs, cookies);
+        }
+    }
+        
+    protected static void addHeadersToCookies(
+        Header[] hs, ArrayList<String> cookies) throws ParseException 
+    {
+        //System.out.println("  - Processing headers in HTTP response: " + hs.length);
+        int i;
+        for ( i = 0; i < hs.length; i++ ) {
+            //System.out.println("    . Header: " + hs[i].getName());
+            if ( hs[i].getName().equals("Set-Cookie") ) {
+                HeaderElement he[] = hs[i].getElements();
+                int j;
+                for ( j = 0; j < he.length; j++ ) {
+                    String cc;
+                    cc = he[j].getName() + "=" + he[j].getValue() + ";";
+                    if ( !containsCookie(cookies, he[j].getName()) ) {
+                        //System.out.println("      -> (*NEW*) " + cc);
+                        cookies.add(cc);
+                    }
+                    else {
+                        //System.out.println("      -> " + cc);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void prepareExistingCookies(
+        List<String> cookies, 
+        HttpRequestBase connection) {
+        //-----------------------------------------------------------------
+        int i;
+        String val = "";
+        for ( i = cookies.size() - 1; i >= 0; i-- ) {
+            String c;
+            c = cookies.get(i);
+            if ( c.contains(";") ) {
+                int x;
+                x = c.indexOf(';');
+                c = c.substring(0, x+1);
+            }
+            val += c + " ";
+        }
+        //val += " _ga=GA1.3.58098705.1450971763; _gat=1";
+        if ( cookies.size() > 0 ) {
+            connection.setHeader("Cookie", val);
+        }
     }
 
     public static boolean justSpaces(String in)
@@ -158,7 +312,7 @@ public class TaggedHtml
             }
             
             
-            JSONObject jsonObject = null;
+            JSONObject jsonObject;
             
             try {
                 jsonObject = new JSONObject(msg);                    
@@ -226,17 +380,16 @@ public class TaggedHtml
     without taking into account any input cookies.
     TODO: Change this to only call another method, one with cookies handling!
     @param pageUrl
+    @param mcookies
     @return cookies
     */
-    public ArrayList<String> getInternetPage(String pageUrl)
+    public ArrayList<String> getInternetPage(
+        String pageUrl, ArrayList<String> mcookies)
     {
         //-----------------------------------------------------------------
         HttpURLConnection connection;
         URL server;
         int code;
-        ArrayList<String> mcookies;
-
-        mcookies = new ArrayList<String>();
         
         try {
             server = new URL(pageUrl);
@@ -542,7 +695,7 @@ public class TaggedHtml
         return cells;
     }
 
-    private boolean containsCookie(List<String> cookies, String name) {
+    protected static boolean containsCookie(List<String> cookies, String name) {
         int i;
                 
         for ( i = 0; i < cookies.size(); i++ ) {

@@ -43,7 +43,7 @@ public class FieldProcessors {
     @param id
      */
     public static void processHtmlStructure(ComputrabajoTaggedHtml pageProcessor, HtmlExtraInformation h, int elementCount, String id) {
-        if (pageProcessor.segmentList == null) {
+        if (pageProcessor.segmentList2 == null) {
             System.out.println("Warning: empty page");
             return;
         }
@@ -53,8 +53,8 @@ public class FieldProcessors {
         String n;
         String v;
         boolean nextH2 = false;
-        for (i = 0; i < pageProcessor.segmentList.size(); i++) {
-            ts = pageProcessor.segmentList.get(i);
+        for (i = 0; i < pageProcessor.segmentList2.size(); i++) {
+            ts = pageProcessor.segmentList2.get(i);
             if (ts == null) {
                 continue;
             }

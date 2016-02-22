@@ -6,6 +6,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import java.util.ArrayList;
 
 /**
 */
@@ -13,7 +14,8 @@ public class indexProcessor {
     private static final BasicDBObject searchLink = new BasicDBObject();
     private static int lastCategoryId;
 
-    private static void downloadIndexPage(
+    private static void downloadIndexPage(    
+        ArrayList<String> cookies,
         DBCollection marPicoElementLink,
         DBCollection marPicoCategory,
         String url, String linkName, boolean buildCategories) 
@@ -22,13 +24,13 @@ public class indexProcessor {
             url = "http://www.mppromocionales.com/" + url;
         }
         System.out.println("  - " + url);
-        TaggedHtml pageProcessor;
+        IngenioTaggedHtml pageProcessor;
         searchLink.append("sourceUrl", url);
         if ( marPicoElementLink.findOne(
                 searchLink) != null ) {
             // If element exist, analyze its children
-            pageProcessor = new TaggedHtml();
-            pageProcessor.getInternetPage(url);
+            pageProcessor = new IngenioTaggedHtml();
+            pageProcessor.getInternetPage(url, cookies);
             findHref(
                 marPicoElementLink, 
                 marPicoCategory, 
@@ -52,7 +54,7 @@ public class indexProcessor {
     private static void findHref(
         DBCollection marPicoElementLink,
         DBCollection marPicoCategory,
-        TaggedHtml pageProcessor,
+        IngenioTaggedHtml pageProcessor,
         boolean buildCategories) 
     {
         TagSegment ts;
@@ -176,6 +178,7 @@ public class indexProcessor {
     }
 
     public static void downloadAllProductIndexes(
+        ArrayList<String> cookies,
         DBCollection marPicoElementLink,
         DBCollection marPicoCategory,
         boolean buildCategories) 
@@ -186,6 +189,7 @@ public class indexProcessor {
 
         String url = "menuproductos.php";
         downloadIndexPage(
+            cookies,
             marPicoElementLink, 
             marPicoCategory, 
             url, 
@@ -205,6 +209,7 @@ public class indexProcessor {
             }
             if ( url.contains("productos.php") ) {
                 downloadIndexPage(
+                    cookies,
                     marPicoElementLink, 
                     marPicoCategory, 
                     url, 
@@ -221,6 +226,7 @@ public class indexProcessor {
         if ( linksBefore != linksAfter ) {
             System.out.println("  - 1.2. Downloading product links");
             downloadAllProductIndexes(
+                cookies,
                 marPicoElementLink, marPicoCategory, false);
         }
     }

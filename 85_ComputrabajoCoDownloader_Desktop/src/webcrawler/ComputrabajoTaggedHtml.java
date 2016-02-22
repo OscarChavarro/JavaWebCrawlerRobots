@@ -48,18 +48,18 @@ original HTML type data:
   - Some tag search/query operations are provided over the structure
   - Original data can be reconstructed from data structure's copy
 */
-public class ComputrabajoTaggedHtml
+public class ComputrabajoTaggedHtml extends TaggedHtml
 {
     private static final int OUTSIDE_TAG = 1;
     private static final int INSIDE_TAG = 2;
     private int currentState = OUTSIDE_TAG;
-    public ArrayList<ComputrabajoTagSegment> segmentList;
+    public ArrayList<ComputrabajoTagSegment> segmentList2;
     private ComputrabajoTagSegment currentSegment;
     private final CookieManager cookieManager;
 
     public ComputrabajoTaggedHtml()
     {
-        segmentList = null;
+        segmentList2 = null;
         currentSegment = null;
         cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
@@ -142,7 +142,7 @@ public class ComputrabajoTaggedHtml
     private String importDataFromJson(
         InputStream is)
     {
-        segmentList = new ArrayList<ComputrabajoTagSegment>();
+        segmentList2 = new ArrayList<ComputrabajoTagSegment>();
 
         try {
             //-----------------------------------------------------------------
@@ -209,7 +209,6 @@ public class ComputrabajoTaggedHtml
         ArrayList<String> cookies, 
         boolean withRedirect)
     {
-        
         //----------------------------------------------------------------- 
         CloseableHttpClient httpclient;
 
@@ -218,24 +217,22 @@ public class ComputrabajoTaggedHtml
 
         connection.setProtocolVersion(HttpVersion.HTTP_1_1);
         connection.setHeader("Host", getHostFromURL(pageUrl));
-        //connection.setHeader("Connection", "keep-alive");
-        //connection.setHeader("Cache-Control", "max-age=0");
         connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
         connection.setHeader("Upgrade-Insecure-Requests", "1");
         connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36");
         connection.setHeader("DNT", "1");
         connection.setHeader("Accept-Encoding", "identity" /*"gzip, deflate, sdch"*/);
         connection.setHeader("Accept-Language", "en-US,en;q=0.8,es;q=0.6");
+        //connection.setHeader("Connection", "keep-alive");
+        //connection.setHeader("Cache-Control", "max-age=0");
         //connection.setHeader("Referer", "http://empresa.computrabajo.com.co/");
         prepareExistingCookies(cookies, connection);
 
         //-----------------------------------------------------------------
         if ( !withRedirect ) {
-            //System.out.println("  - Creating HTTP connection without redirection to URL: " + pageUrl);
             httpclient = HttpClients.createDefault();
         }
         else {
-            //System.out.println("  - Creating HTTP connection with redirection to URL: " + pageUrl);
             DefaultHttpClient dhttpclient;
             dhttpclient = new DefaultHttpClient();
             MyRedirectStrategy rs;
@@ -247,12 +244,8 @@ public class ComputrabajoTaggedHtml
         CloseableHttpResponse response = null;
         try {
             response = httpclient.execute(connection);
-
-            //System.out.println("  - Response code: " + response.getStatusLine());
         }
         catch ( ClientProtocolException e ) {
-            //e.printStackTrace();
-            //e.getCause().printStackTrace();
             System.out.println("HTTP redirect error");
         }
         catch ( IOException e ) {
@@ -418,64 +411,6 @@ public class ComputrabajoTaggedHtml
         return false;
     }
 
-    private void prepareExistingCookies(
-        List<String> cookies, 
-        HttpRequestBase connection) {
-        //-----------------------------------------------------------------
-        int i;
-        String val = "";
-        for ( i = cookies.size() - 1; i >= 0; i-- ) {
-            String c;
-            c = cookies.get(i);
-            if ( c.contains(";") ) {
-                int x;
-                x = c.indexOf(';');
-                c = c.substring(0, x+1);
-            }
-            val += c + " ";
-        }
-        val += " _ga=GA1.3.58098705.1450971763; _gat=1";
-        if ( cookies.size() > 0 ) {
-            connection.setHeader("Cookie", val);
-        }
-    }
-
-    private void addRecievedCookies(
-        CloseableHttpResponse response, ArrayList<String> cookies) 
-            throws ParseException {
-        //-----------------------------------------------------------------
-        // Append new cookies
-        Header hs[] = response.getAllHeaders();
-
-        if ( hs != null ) {
-            addHeadersToCookies(hs, cookies);
-        }
-    }
-
-    public static void addHeadersToCookies(
-        Header[] hs, ArrayList<String> cookies) throws ParseException {
-        //System.out.println("  - Processing headers in HTTP response: " + hs.length);
-        int i;
-        for ( i = 0; i < hs.length; i++ ) {
-            //System.out.println("    . Header: " + hs[i].getName());
-            if ( hs[i].getName().equals("Set-Cookie") ) {
-                HeaderElement he[] = hs[i].getElements();
-                int j;
-                for ( j = 0; j < he.length; j++ ) {
-                    String cc;
-                    cc = he[j].getName() + "=" + he[j].getValue() + ";";
-                    if ( !containsCookie(cookies, he[j].getName()) ) {
-                        //System.out.println("      -> (*NEW*) " + cc);
-                        cookies.add(cc);
-                    }
-                    else {
-                        //System.out.println("      -> " + cc);
-                    }
-                }
-            }
-        }
-    }
-
     private void processByteHtml(byte b)
     {
         String content = currentSegment.getContent();
@@ -490,7 +425,7 @@ public class ComputrabajoTaggedHtml
                  !justSpaces(content) ) {
                 //System.out.println("REMANENTE: " + currentSegment.content);
                 currentSegment.insideTag = false;
-                segmentList.add(currentSegment);
+                segmentList2.add(currentSegment);
             }
 
             currentState = INSIDE_TAG;
@@ -503,7 +438,7 @@ public class ComputrabajoTaggedHtml
                 //System.err.println("Warning: re-exiting tag");
                 //System.err.print("!]");
             }
-            segmentList.add(currentSegment);
+            segmentList2.add(currentSegment);
             currentState = OUTSIDE_TAG;
             currentSegment = new ComputrabajoTagSegment();
             currentSegment.insideTag = false;
@@ -514,17 +449,18 @@ public class ComputrabajoTaggedHtml
     Always erase previous html data, but remember cookies...
     @param is
     */
+    @Override
     public void importDataFromHtml(InputStream is)
     {
         int i;
 
         currentState = OUTSIDE_TAG;
-        if ( segmentList == null ) {
-            segmentList = new ArrayList<ComputrabajoTagSegment>();
+        if ( segmentList2 == null ) {
+            segmentList2 = new ArrayList<ComputrabajoTagSegment>();
         }
         currentSegment = new ComputrabajoTagSegment();
         currentSegment.insideTag = false;
-        segmentList.add(currentSegment);
+        segmentList2.add(currentSegment);
 
         try {
             //-----------------------------------------------------------------
@@ -548,6 +484,7 @@ public class ComputrabajoTaggedHtml
         }
     }
 
+    @Override
     public void exportHtml(OutputStream os)
     {
         ComputrabajoTagSegment elem;
@@ -555,8 +492,8 @@ public class ComputrabajoTaggedHtml
         int i;
         
 
-        for ( i = 0; i < segmentList.size(); i++ ) {
-            elem = segmentList.get(i);
+        for ( i = 0; i < segmentList2.size(); i++ ) {
+            elem = segmentList2.get(i);
             String content = elem.getContent();
             buffer = content.getBytes();
             try {
@@ -568,6 +505,7 @@ public class ComputrabajoTaggedHtml
         }
     }
 
+    @Override
     public void exportHtml(String filename)
     {
         //-----------------------------------------------------------------
@@ -584,19 +522,20 @@ public class ComputrabajoTaggedHtml
         //-----------------------------------------------------------------
     }
 
+    @Override
     public String getUrlFromAHrefContaining(String contentKey)
     {
         int i;
         String tagName;
         String lastUrl = null;
 
-        for ( i = 0; i < segmentList.size(); i++ ) {
-            tagName = segmentList.get(i).getTagName();
+        for ( i = 0; i < segmentList2.size(); i++ ) {
+            tagName = segmentList2.get(i).getTagName();
             if ( tagName != null && tagName.equals("A") ) {
-                lastUrl = segmentList.get(i).getTagParameterValue("HREF");
+                lastUrl = segmentList2.get(i).getTagParameterValue("HREF");
             }
             if ( tagName == null && lastUrl != null ) {
-                if ( segmentList.get(i).getContent().contains(contentKey) ) {
+                if ( segmentList2.get(i).getContent().contains(contentKey) ) {
                     return trimQuotes(lastUrl);
                 }
             }
@@ -604,7 +543,7 @@ public class ComputrabajoTaggedHtml
         return null;
     }
 
-    public ComputrabajoHtmlForm getHtmlForm(int index)
+    public ComputrabajoHtmlForm getHtmlForm2(int index)
     {
         int i;
         String tagName;
@@ -613,20 +552,20 @@ public class ComputrabajoTaggedHtml
         int formNumber = -1;
         boolean insideForm = false;
 
-        for ( i = 0; i < segmentList.size(); i++ ) {
-            tagName = segmentList.get(i).getTagName();
+        for ( i = 0; i < segmentList2.size(); i++ ) {
+            tagName = segmentList2.get(i).getTagName();
 
             if ( tagName != null && tagName.equals("FORM") ) {
                 formNumber++;
                 insideForm = true;
                 ArrayList<ComputrabajoTagParameter> tag;
-                tag = segmentList.get(i).getTagParameters();
+                tag = segmentList2.get(i).getTagParameters();
                 form.configure(tag);
             }
             if ( tagName != null && tagName.equals("INPUT") &&
 		 insideForm && formNumber == index) {
                 ArrayList<ComputrabajoTagParameter> tag;
-                tag = segmentList.get(i).getTagParameters();
+                tag = segmentList2.get(i).getTagParameters();
                 form.addInputFromTag(tag);
             }
             if ( tagName != null && tagName.equals("/FORM") ) {
@@ -644,10 +583,11 @@ public class ComputrabajoTaggedHtml
     @param tableIndex
     @return
     */
+    @Override
     public ComputrabajoTaggedHtml extractTrimmedByTable(int tableIndex)
     {
         ComputrabajoTaggedHtml trimmed = new ComputrabajoTaggedHtml();
-        trimmed.segmentList = new ArrayList<ComputrabajoTagSegment>();
+        trimmed.segmentList2 = new ArrayList<ComputrabajoTagSegment>();
 
         int i;
         ComputrabajoTagSegment segi;
@@ -656,8 +596,8 @@ public class ComputrabajoTaggedHtml
         int count = -1;
         boolean tableTag = false;
 
-        for ( i = 0; i < segmentList.size(); i++ ) {
-            segi = segmentList.get(i);
+        for ( i = 0; i < segmentList2.size(); i++ ) {
+            segi = segmentList2.get(i);
             tagName = segi.getTagName();
             if ( tagName!= null && tagName.equals("TABLE") ) {
                 level++;
@@ -671,7 +611,7 @@ public class ComputrabajoTaggedHtml
             }
 
             if ( level > 0 && count == tableIndex && tableTag == false ) {
-                trimmed.segmentList.add(new ComputrabajoTagSegment(segi));
+                trimmed.segmentList2.add(new ComputrabajoTagSegment(segi));
             }
             tableTag = false;
         }
@@ -679,7 +619,7 @@ public class ComputrabajoTaggedHtml
         return trimmed;
     }
 
-    public ArrayList<ComputrabajoTaggedHtml> extractTableCells()
+    public ArrayList<ComputrabajoTaggedHtml> extractTableCells2()
     {
         ArrayList<ComputrabajoTaggedHtml> cells;
         cells = new ArrayList<ComputrabajoTaggedHtml>();
@@ -690,14 +630,14 @@ public class ComputrabajoTaggedHtml
         int level = 0;
         ComputrabajoTaggedHtml trimmed = null;
 
-        for ( i = 0; i < segmentList.size(); i++ ) {
-            segi = segmentList.get(i);
+        for ( i = 0; i < segmentList2.size(); i++ ) {
+            segi = segmentList2.get(i);
             tagName = segi.getTagName();
             if ( tagName!= null && tagName.equals("TD") ) {
                 level++;
                 if ( level == 1 ) {
                     trimmed = new ComputrabajoTaggedHtml();
-                    trimmed.segmentList = new ArrayList<ComputrabajoTagSegment>();
+                    trimmed.segmentList2 = new ArrayList<ComputrabajoTagSegment>();
                     cells.add(trimmed);
                 }
             }
@@ -706,22 +646,11 @@ public class ComputrabajoTaggedHtml
             }
 
             if ( level > 0 && trimmed != null ) {
-                trimmed.segmentList.add(new ComputrabajoTagSegment(segi));
+                trimmed.segmentList2.add(new ComputrabajoTagSegment(segi));
             }
         }
 
         return cells;
-    }
-
-    private static boolean containsCookie(List<String> cookies, String name) {
-        int i;
-                
-        for ( i = 0; i < cookies.size(); i++ ) {
-            if ( cookies.get(i).contains(name) ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static String getHostFromURL(String pageUrl) {
@@ -738,96 +667,6 @@ public class ComputrabajoTaggedHtml
             System.exit(9);
         }
         return null;
-    }
-
-    private String normalizeStringForWeb(String a) {
-        char keys[] = {
-            ' ',
-            '!',
-            '"',
-            '#',
-            '$',
-            '%',
-            '&',
-            '\'',
-            '(',
-            ')',
-            '*',
-            '+',
-            ',',
-            '-',
-            '.',
-            '/',
-            ':',
-            ';',
-            '<',
-            '=',
-            '>',
-            '?',
-            '@',
-            '[',
-            '\\',
-            ']',
-            '^',
-            '_',
-            '`',
-            '{',
-            '|',
-            '}',
-            '~',
-	     ' '};
-        String values[] = {
-            "%20",
-            "%21",
-            "%22",
-            "%23",
-            "%24",
-            "%25",
-            "%26",
-            "%27",
-            "%28",
-            "%29",
-            "%2A",
-            "%2B",
-            "%2C",
-            "%2D",
-            "%2E",
-            "%2F",
-            "%3A",
-            "%3B",
-            "%3C",
-            "%3D",
-            "%3E",
-            "%3F",
-            "%40",
-            "%5B",
-            "%5C",
-            "%5D",
-            "%5E",
-            "%5F",
-            "%60",
-            "%7B",
-            "%7C",
-            "%7D",
-            "%7E",
-	    "%7F"};
-        int i;
-        int j;
-        
-        String b = "";
-        for ( i = 0; i < a.length(); i++ ) {
-            char c = a.charAt(i);
-            String code = "" + c;
-            for ( j = 0; j < keys.length; j++ ) {
-                if ( c == keys[j] ) {
-                    code = values[j];
-                    break;
-                }
-            }
-            b += code;
-        }
-
-        return b;
     }
 }
 

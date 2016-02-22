@@ -37,7 +37,7 @@ import java.util.Collection;
 public class productProcessor {
 
     private static void processProductPageForImages(
-        TaggedHtml pageProcessor, Product p) 
+        IngenioTaggedHtml pageProcessor, Product p) 
     {
         TagSegment ts;
         int i;
@@ -70,7 +70,7 @@ public class productProcessor {
     }
 
     private static HashMap<String, ProductVariant> processProductPageForVariants(
-        TaggedHtml pageProcessor, Product p) 
+        IngenioTaggedHtml pageProcessor, Product p) 
     {
         TagSegment ts;
         int i;
@@ -226,7 +226,7 @@ public class productProcessor {
 
     private static void buildProductEntryFromPage(
         DBCollection marPicoProduct,
-        TaggedHtml pageProcessor, String url) 
+        IngenioTaggedHtml pageProcessor, String url) 
     {
         if ( pageProcessor.segmentList == null ) {
             System.out.println("Warning: empty page");
@@ -251,11 +251,29 @@ public class productProcessor {
                 HashMap<String, ProductVariant> variants;
                 variants = processProductPageForVariants(pageProcessor, p);
                 updateVariantsInProductDatabase(marPicoProduct, p, variants);
+                processProductPageForPrice(marPicoProduct, pageProcessor, p);
             }
         }
     }
 
-    private static Date processProductPageForBasicData(TaggedHtml pageProcessor, Product p) {
+    private static void processProductPageForPrice(
+        DBCollection marPicoProduct,
+        IngenioTaggedHtml pageProcessor, Product p) 
+    {
+        int i;
+        TagSegment ts;
+
+        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
+            ts = pageProcessor.segmentList.get(i);
+            if ( !ts.insideTag ) {
+                if ( ts.content.contains("Precio") ) {
+                    System.out.println("YUJU!!! *******: " + ts.content);
+                }
+            }
+        }
+    }
+
+    private static Date processProductPageForBasicData(IngenioTaggedHtml pageProcessor, Product p) {
         TagSegment ts;
         int i;
         boolean doMaterial = false;
@@ -306,7 +324,6 @@ public class productProcessor {
                 }
                 else if ( doPacking ) {
                     p.setPacking(ts.content);
-                    p.setPrice(0.0);
                     doPacking = false;
                 }
             }
@@ -316,7 +333,7 @@ public class productProcessor {
 
     private static void insertProductInMongoDatabase(
         DBCollection marPicoProduct,
-        Product p, Date importDate, TaggedHtml pageProcessor, String url) 
+        Product p, Date importDate, IngenioTaggedHtml pageProcessor, String url) 
     {
         BasicDBObject pdb;
         pdb = new BasicDBObject();
@@ -452,16 +469,32 @@ public class productProcessor {
     /**
     Gets specific marPicoProduct from already links on collection "marPicoElementLink".
     Populates collection "productList".
+     * @param cookies
     @param marPicoElementLink
     @param marPicoProduct
     */
     public static void downloadProductCategoryPages(
+        ArrayList<String> cookies,
         DBCollection marPicoElementLink,
-        DBCollection marPicoProduct
-    ) {
+        DBCollection marPicoProduct) 
+    {
         BasicDBObject searchKey = new BasicDBObject();
         BasicDBObject options = new BasicDBObject("sourceUrl", 1);
         DBCursor c = marPicoElementLink.find(searchKey, options);
+
+        IngenioTaggedHtml pageProcessor;
+        pageProcessor = new IngenioTaggedHtml();
+        boolean status = pageProcessor.postInternetPageForLogin(
+            "http://www.mppromocionales.com/login.php?url=http://www.mppromocionales.com/index.php",
+            cookies,
+            "ejecorp",
+            "ejecorp"
+        );
+        
+        if ( !status ) {
+            System.out.println("ERROR LOGIN");
+            System.exit(1);
+        }
         
         while ( c.hasNext() ) {
             DBObject ei;
@@ -472,11 +505,11 @@ public class productProcessor {
             
             if ( url.contains("detallesvar.php") ) {
                 System.out.println("  - Adding product: " + url);
-                TaggedHtml pageProcessor;
-                pageProcessor = new TaggedHtml();
-                pageProcessor.getInternetPage(url);
+                pageProcessor = new IngenioTaggedHtml();
+                pageProcessor.getInternetPage(url, cookies);
                 buildProductEntryFromPage(marPicoProduct, pageProcessor, url);
-            } 
+                System.exit(1);
+            }        
         }
     }    
 

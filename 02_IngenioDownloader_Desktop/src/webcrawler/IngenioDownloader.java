@@ -6,6 +6,7 @@ import com.mongodb.DBCollection;
 
 // Application specific classes
 import databaseMongo.IngenioDatabaseConnection;
+import java.util.ArrayList;
 
 public class IngenioDownloader {
     public static void main(String[] args) 
@@ -22,6 +23,10 @@ public class IngenioDownloader {
         marPicoElementLink = databaseConnection.createMongoCollection("marPicoElementLink");
         marPicoCategory = databaseConnection.createMongoCollection("marPicoCategory");
 
+        ArrayList<String> cookies;
+
+        cookies = new ArrayList<String>();
+
         /*
         First stage does the following:
           - Builds marPicoCategory collection, which contains categories, 
@@ -33,6 +38,7 @@ public class IngenioDownloader {
         */
         System.out.println("1. Downloading product indexes:");
         //indexProcessor.downloadAllProductIndexes(
+        //    cookies,
         //    marPicoElementLink, marPicoCategory, true);
         System.out.println("done downloading indexes");
 
@@ -41,7 +47,9 @@ public class IngenioDownloader {
           - Each product is linked to its respective containing category
         */
         System.out.println("2. Downloading marPicoProduct");
+        cookies = new ArrayList<String>();
         productProcessor.downloadProductCategoryPages(
+            cookies,
             marPicoElementLink, marPicoProduct);
         System.out.println("done downloading marPicoProduct");
     }

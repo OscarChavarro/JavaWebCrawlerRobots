@@ -53,7 +53,7 @@ public class Tool01_ExtractionDownloader {
         
         //printCookies(cookies);
 
-        if ( pageProcessor.segmentList == null ) {
+        if ( pageProcessor.segmentList2 == null ) {
             System.out.println("Warning: empty page A");
             return false;
         }
@@ -74,7 +74,7 @@ public class Tool01_ExtractionDownloader {
     */
     public static void listTagsFromPage(ComputrabajoTaggedHtml pageProcessor)
     {
-        if ( pageProcessor.segmentList == null ) {
+        if ( pageProcessor.segmentList2 == null ) {
             System.out.println("Warning: empty page B");
             return;
         }
@@ -87,8 +87,8 @@ public class Tool01_ExtractionDownloader {
 
         boolean doNext = false;
 
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
-            ts = pageProcessor.segmentList.get(i);
+        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
+            ts = pageProcessor.segmentList2.get(i);
 
             if ( !ts.insideTag && doNext ) {
                 doNext = false;
@@ -113,7 +113,7 @@ public class Tool01_ExtractionDownloader {
         ComputrabajoTaggedHtml pageProcessor,
         HashMap<String, String> identifiers)
     {
-        if ( pageProcessor.segmentList == null ) {
+        if ( pageProcessor.segmentList2 == null ) {
             System.out.println("Warning: empty page C");
             return;
         }
@@ -126,8 +126,8 @@ public class Tool01_ExtractionDownloader {
 
         boolean doNext = false;
 
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
-            ts = pageProcessor.segmentList.get(i);
+        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
+            ts = pageProcessor.segmentList2.get(i);
 
             if ( ts == null ) {
                 continue;
@@ -221,8 +221,8 @@ public class Tool01_ExtractionDownloader {
         boolean insideSpan = false;
         boolean insideTitleSection = false;
 
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
-            ts = pageProcessor.segmentList.get(i);
+        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
+            ts = pageProcessor.segmentList2.get(i);
 
             if ( !ts.insideTag ) {
                 if ( insideTitleSection && insideSpan ) {
@@ -284,9 +284,9 @@ public class Tool01_ExtractionDownloader {
         boolean insideList = false;
         String lastUrl = "";
 
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
+        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
             
-            ts = pageProcessor.segmentList.get(i);
+            ts = pageProcessor.segmentList2.get(i);
             if ( ts == null ) continue;
 
             String tn = ts.getTagName();
@@ -448,8 +448,8 @@ public class Tool01_ExtractionDownloader {
         String htmlContent = "";
         int divLevel = 0;
         
-        for ( i = 0; i < pageProcessor.segmentList.size(); i++ ) {
-            ts = pageProcessor.segmentList.get(i);
+        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
+            ts = pageProcessor.segmentList2.get(i);
 
             if ( ts == null ) {
                 continue;
