@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.HashMap;
 
 // MongoDB classes
 import com.mongodb.BasicDBList;
@@ -29,7 +30,7 @@ import vsdk.toolkit.common.VSDK;
 
 // Application specific classes
 import databaseMongo.model.Product;
-import java.util.HashMap;
+import java.util.Collection;
 
 /**
 */
@@ -249,7 +250,7 @@ public class productProcessor {
                 }
                 HashMap<String, ProductVariant> variants;
                 variants = processProductPageForVariants(pageProcessor, p);
-                updateVariantsInProductDatabase(p, variants);
+                updateVariantsInProductDatabase(marPicoProduct, p, variants);
             }
         }
     }
@@ -495,6 +496,7 @@ public class productProcessor {
     }
 
     private static void updateVariantsInProductDatabase(
+        DBCollection marPicoProduct,
         Product p, HashMap<String, ProductVariant> variants) 
     {
         int n = variants.size();
@@ -503,7 +505,36 @@ public class productProcessor {
             System.out.println("ERROR: THERE IS NO VARIANTS!");
             System.exit(1);
         }
+        
         //System.out.println("    . Number of variants: " + n);
+        BasicDBObject searchKey;
+        searchKey = new BasicDBObject("id", p.getCode());
+        DBObject dbObject;
+        dbObject = marPicoProduct.findOne(searchKey);
+        if ( dbObject == null ) {
+            return;
+        }
+        
+        ArrayList<DBObject> arr;
+        arr = new ArrayList<DBObject>();
+        
+        Collection<ProductVariant> s = variants.values();
+        
+        for ( ProductVariant pv : s ) {
+            BasicDBObject dbo = new BasicDBObject();
+            dbo.append("reference", pv.getReference());
+            dbo.append("description", pv.getDescription());
+            dbo.append("quantityFontibon", pv.getQuantityFontibon());
+            dbo.append("quantityCelta", pv.getQuantityCelta());
+            dbo.append("quantityTotal", pv.getQuantityTotal());
+            arr.add(dbo);
+        }
+        
+        DBObject newValues = new BasicDBObject(
+            new BasicDBObject("$set",
+                new BasicDBObject("arrayOfVariants", arr)));
+        
+        marPicoProduct.update(searchKey, newValues);
     }
 }
 

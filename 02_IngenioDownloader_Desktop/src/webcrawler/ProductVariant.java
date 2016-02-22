@@ -1,5 +1,7 @@
+//==============================================================================
 package webcrawler;
 
+// Java basic classes
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -123,7 +125,7 @@ public class ProductVariant {
             setDescription(parser.nextToken());
         }
         catch ( NoSuchElementException e ) {
-            System.out.println("Invalid content: " + content);
+            //System.out.println("Invalid content: " + content);
             setDescription("[INDEFINIDO]");
         }
     }
@@ -143,3 +145,7 @@ public class ProductVariant {
         return msg;
     }    
 }
+
+//==============================================================================
+//= EOF                                                                        =
+//==============================================================================
