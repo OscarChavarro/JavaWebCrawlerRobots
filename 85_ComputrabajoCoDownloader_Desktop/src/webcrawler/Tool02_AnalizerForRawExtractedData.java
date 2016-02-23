@@ -32,7 +32,7 @@ public class Tool02_AnalizerForRawExtractedData {
     {
         DBCollection professionalResume;
         professionalResume = 
-            databaseConnection.getProfessionalResume();
+            databaseConnection.createMongoCollection("professionalResume");
         if ( professionalResume == null ) {
             return;
         }
@@ -84,5 +84,4 @@ public class Tool02_AnalizerForRawExtractedData {
         FieldProcessors.reportResultingAreas(regions);
         NameProcessor.reportNameElements(nameElements);
     }
-
 }

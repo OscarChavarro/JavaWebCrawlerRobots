@@ -494,10 +494,10 @@ public class productProcessor {
                 pageProcessor = new IngenioTaggedHtml();
                 pageProcessor.getInternetPage(url, cookies);
                 buildProductEntryFromPage(marPicoProduct, pageProcessor, url);
-                System.exit(1);
-            }        
+                //System.exit(1);
+            }
         }
-    }    
+    }
 
     private static String urlPattern(String url) 
     {

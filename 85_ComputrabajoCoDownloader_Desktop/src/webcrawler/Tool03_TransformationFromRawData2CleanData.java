@@ -31,7 +31,7 @@ public class Tool03_TransformationFromRawData2CleanData {
     static {
         databaseConnection = new ComputrabajoDatabaseConnection(
                 "localhost", 27017, "computrabajoCo", "professionalResume");
-        professionalResume = databaseConnection.getProfessionalResume();
+        professionalResume = databaseConnection.createMongoCollection("professionalResume");
         professionalResumeTrans = databaseConnection.createMongoCollection(
                 "professionalResumeTransformed");
     }
@@ -283,7 +283,7 @@ public class Tool03_TransformationFromRawData2CleanData {
         DBCursor c;
         c = professionalResume.find();
 
-        if (c != null) {
+        if ( c != null ) {
             processAllRegisters(c);
         }
     }

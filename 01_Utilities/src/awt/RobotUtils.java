@@ -111,6 +111,26 @@ public class RobotUtils {
         r.delay(100);        
     }
 
+    public static void writeStringCPWithDelay(
+        String inputText, 
+        Clipboard clipboard, 
+        ClipboardOwner clipboardOwner, 
+        Robot r,
+        int delay) 
+    {
+        StringSelection stringSelection = new StringSelection(inputText);
+        clipboard.setContents(stringSelection, clipboardOwner);
+        
+        pasteMacro(r);
+        
+        int keycode = KeyEvent.VK_ENTER;
+        r.delay(delay);
+        r.keyPress(keycode);
+        r.delay(10);
+        r.keyRelease(keycode);
+        r.delay(10);
+    }
+
     public static void writeStringCP(
         String inputText, 
         Clipboard clipboard, 

@@ -43,7 +43,7 @@ public class Tool04_AnalizerForCleanData {
 	emailMarkFos = null;
         databaseConnection = new ComputrabajoDatabaseConnection(
             "localhost" , 27017, "computrabajoCo", 
-            "professionalResumeTransformed");
+            null);
     }
 
     private static HashMap<String, EmailElement> loadEmailElementCache()
@@ -155,7 +155,7 @@ public class Tool04_AnalizerForCleanData {
     public static void main(String args[]) {
         DBCollection professionalResume;
         professionalResume = 
-            databaseConnection.getProfessionalResume();
+            databaseConnection.createMongoCollection("professionalResumeTransformed");
         if ( professionalResume == null ) {
             return;
         }
