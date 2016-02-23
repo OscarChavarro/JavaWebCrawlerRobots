@@ -26,6 +26,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TreeSet;
 
 /**
 */
@@ -37,19 +38,19 @@ public class LocateFacebookUserByEmail {
             MongoClient mongoClient1;
             mongoClient1 = new MongoClient("localhost", 27017);
             MongoClient mongoClient2;
-            mongoClient2 = new MongoClient("localhost", 27018);
+            //mongoClient2 = new MongoClient("localhost", 27018);
             DB transformed;
             DB origin;
             transformed = mongoClient1.getDB("computrabajoCo");
-            origin = mongoClient2.getDB("computrabajoCo");
+            //origin = mongoClient2.getDB("computrabajoCo");
             DBCollection professionalResumeTransformed;
             professionalResumeTransformed = 
                 transformed.createCollection(
                     "professionalResumeTransformed", null);
             DBCollection professionalResume;
-            professionalResume = 
-                origin.createCollection(
-                    "professionalResume", null);
+            professionalResume = null;
+            //    origin.createCollection(
+            //        "professionalResume", null);
 
             //----            
             Toolkit.getDefaultToolkit();
@@ -75,7 +76,7 @@ public class LocateFacebookUserByEmail {
 
             r.delay(2000);
 
-            ArrayList<String> emails = new ArrayList<String>();
+            TreeSet<String> emails = new TreeSet<String>();
             for ( i = 1; c.hasNext(); i++ ) {
                 DBObject e = c.next();
                 if ( e == null ) {
@@ -87,18 +88,17 @@ public class LocateFacebookUserByEmail {
                     continue;
                 }
                 String email = ee.toString();
-                emails.add(email);
+                if ( !emails.contains(email) ) {
+                    emails.add(email);
+                }
             }
             
-            for ( i = 0; i < emails.size(); i++ ) {
-                String email = emails.get(i);
-                System.out.println("  - (" + (i+1) + "/" + n + ")" + email);
-                searchFacebookAccountByMail(
-                    r, email, professionalResumeTransformed, professionalResume);
-                
-                if ( i >= 10 ) {
-                    //System.exit(1);
-                }                
+            i = 0;
+            for ( String email : emails ) {
+                System.out.println("  - (" + (i+1) + "/" + n + ") " + email);
+                //searchFacebookAccountByMail(
+                //    r, email, professionalResumeTransformed, professionalResume);
+                i++;
             }
         } 
         catch ( UnknownHostException e ) {
@@ -119,15 +119,23 @@ public class LocateFacebookUserByEmail {
                 new BasicDBObject("$regex", ".*ogot*"));
         arr.add(filter);
         
-        filter = new BasicDBObject("facebookUrl",
-                new BasicDBObject("$exists", 0));
-        arr.add(filter);
+        //filter = new BasicDBObject("facebookUrl",
+        //        new BasicDBObject("$exists", 0));
+        //arr.add(filter);
         
         filter = new BasicDBObject("gender", "f");
         arr.add(filter);
         
-        filter = new BasicDBObject("age", new BasicDBObject("$lte", 16));
+        filter = new BasicDBObject("age", new BasicDBObject("$gte", 16));
         arr.add(filter);
+
+        filter = new BasicDBObject("age", new BasicDBObject("$lte", 19));
+        arr.add(filter);
+
+        filter = new BasicDBObject("professionHint",
+                new BasicDBObject("$regex", ".*protocolo*"));
+        arr.add(filter);
+
         searchFilter.append("$and", arr);
         return searchFilter;
     }
@@ -162,7 +170,7 @@ public class LocateFacebookUserByEmail {
             ClipboardOwner clipboardOwner;
             clipboardOwner = null;
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            RobotUtils.writeStringCPWithDelay(email, clipboard, clipboardOwner, r, 1500);
+            RobotUtils.writeStringCPWithDelay(email, clipboard, clipboardOwner, r, 1000);
             r.delay(1000);
             
             // PART C: select browser URL text area
@@ -183,10 +191,12 @@ public class LocateFacebookUserByEmail {
             String validated = getFacebookProfileUrl(response);
             
             System.out.println("    . " + validated);
-            updateFacebookInfoOnDatabaseCollection(
-                professionalResume, email, validated);
-            updateFacebookInfoOnDatabaseCollection(
-                professionalResumeTransformed, email, validated);
+            if ( !validated.equals("?") ) {
+                //updateFacebookInfoOnDatabaseCollection(
+                //    professionalResume, email, validated);
+                updateFacebookInfoOnDatabaseCollection(
+                    professionalResumeTransformed, email, validated);
+            }
         } 
         catch (UnsupportedFlavorException ex) {
 
