@@ -506,6 +506,7 @@ public class RGBImage extends Image
 
     public void dispose() {
         if ( data != null ) {
+	    /*
             try {
                 Field cleanerField;
                 cleanerField = data.getClass().getDeclaredField("cleaner");
@@ -528,6 +529,7 @@ public class RGBImage extends Image
                 VSDK.reportMessageWithException(this, VSDK.FATAL_ERROR, 
                     "dispose", "Illegal access", ex);                
             }
+	    */
         }
     }
 
