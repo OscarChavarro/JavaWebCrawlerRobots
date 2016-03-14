@@ -2,6 +2,9 @@
 
 // Java basic classes
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TreeSet;
 
 // Swing/Awt classes                                                            
 import java.awt.Robot;
@@ -24,13 +27,18 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TreeSet;
 
 /**
 */
 public class LocateFacebookUserByEmail {
+    private static ArrayList<String> currentInvalidMails;
+    private static final ArrayList<String> totalInvalidMails;
+            
+    static {
+        currentInvalidMails = new ArrayList<String>();
+        totalInvalidMails = new ArrayList<String>();
+    }
+
     public static void main(String args[])
     {
         try {
@@ -65,13 +73,13 @@ public class LocateFacebookUserByEmail {
             
             DBObject options = new BasicDBObject("email", 1);
 
-            System.out.println("Buscando elementos en la base de datos...");
+            System.out.println("Searching elements in database...");
             DBCursor c;
             c = professionalResumeTransformed.find(searchFilter, options);
 
 
             int n = c.count();
-            System.out.println("Correos a bajar:" + n);
+            System.out.println("Profiles to check (with email repetitions): " + n);
             int i;
 
             r.delay(2000);
@@ -94,11 +102,26 @@ public class LocateFacebookUserByEmail {
             }
             
             i = 0;
+            n = emails.size();
             for ( String email : emails ) {
                 System.out.println("  - (" + (i+1) + "/" + n + ") " + email);
-                //searchFacebookAccountByMail(
-                //    r, email, professionalResumeTransformed, professionalResume);
+                searchFacebookAccountByMail(
+                    r, email, professionalResumeTransformed, professionalResume);
                 i++;
+                
+                if ( currentInvalidMails.size() > 20 ) {
+                    System.out.println("Error: Too many bad profiles. Recheck since last valid one");
+                    break;
+                }
+            }
+            
+            for ( i = 0; i < totalInvalidMails.size(); i++ ) {
+                //updateFacebookInfoOnDatabaseCollection(
+                //    professionalResume, 
+                //    totalInvalidMails.get(i), "?");
+                updateFacebookInfoOnDatabaseCollection(
+                    professionalResumeTransformed, 
+                    totalInvalidMails.get(i), "?");
             }
         } 
         catch ( UnknownHostException e ) {
@@ -173,6 +196,15 @@ public class LocateFacebookUserByEmail {
             RobotUtils.writeStringCPWithDelay(email, clipboard, clipboardOwner, r, 1000);
             r.delay(1000);
             
+            // If something is found, go to its page
+            r.delay(500);
+            r.mouseMove(xBase + 700, yBase + 300);
+            r.delay(100);
+            r.mouseMove(xBase + 702, yBase + 300);
+            RobotUtils.click(r);
+            r.delay(1500);
+
+            
             // PART C: select browser URL text area
             r.delay(500);
             r.mouseMove(xBase + 800, yBase + 72);
@@ -188,7 +220,7 @@ public class LocateFacebookUserByEmail {
             
             response = (String)clipboard.getData(DataFlavor.stringFlavor);
             
-            String validated = getFacebookProfileUrl(response);
+            String validated = getFacebookProfileUrl(response, email);
             
             System.out.println("    . " + validated);
             if ( !validated.equals("?") ) {
@@ -230,10 +262,13 @@ public class LocateFacebookUserByEmail {
     /**
     Return facebook URL if this is a valid profile, null if not
     */
-    private static String getFacebookProfileUrl(String url) {
+    private static String getFacebookProfileUrl(String url, String email) {
         if ( url.contains("https://www.facebook.com/search/top/") ) {
+            currentInvalidMails.add(email);
             return "?";
         }
+        totalInvalidMails.addAll(currentInvalidMails);
+        currentInvalidMails = new ArrayList<String>();
         return url.replace("?fref=ts", "");
     }
 }

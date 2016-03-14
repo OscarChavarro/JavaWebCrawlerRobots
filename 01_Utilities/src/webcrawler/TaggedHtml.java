@@ -17,15 +17,23 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.URL;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
+import org.apache.http.HttpVersion;
 import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import vsdk.toolkit.common.VSDK;
 
 /**
 This class is meant to keep an on-memory copy of a HTML or similar file.
@@ -374,17 +382,146 @@ public class TaggedHtml
 
         return isLast;
     }
+    
+    public static String getHostFromURL(String pageUrl) {
+        //System.out.println("  * URL: " + pageUrl);
+        try {
+            String hostname;
+            URI u = new URI(pageUrl);
+            hostname = u.getHost();
+            //System.out.println("  * HOSTNAME: " + hostname);
+            return hostname;
+        }
+        catch ( Exception e ) {
+            System.out.println("Error: malformed URL");
+            System.exit(9);
+        }
+        return null;
+    }
+
+    public void getInternetPage(
+        String pageUrl, ArrayList<String> cookies)
+    {
+        getInternetPage(pageUrl, cookies, false);
+    }
 
     /**
     Creates a new html based web transaction from the specified pageUrl,
     without taking into account any input cookies.
     TODO: Change this to only call another method, one with cookies handling!
     @param pageUrl
-    @param mcookies
+    @param cookies
+    @param withRedirect true if used in the login phase with redirects
+    */
+    public void getInternetPage(
+        String pageUrl, 
+        ArrayList<String> cookies, 
+        boolean withRedirect)
+    {
+        //----------------------------------------------------------------- 
+        CloseableHttpClient httpclient;
+
+        HttpGet connection;
+        connection = new HttpGet(pageUrl);
+
+        connection.setProtocolVersion(HttpVersion.HTTP_1_1);
+        connection.setHeader("Host", getHostFromURL(pageUrl));
+        connection.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        connection.setHeader("Upgrade-Insecure-Requests", "1");
+        connection.setHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36");
+        connection.setHeader("DNT", "1");
+        connection.setHeader("Accept-Encoding", "identity" /*"gzip, deflate, sdch"*/);
+        connection.setHeader("Accept-Language", "en-US,en;q=0.8,es;q=0.6");
+        //connection.setHeader("Connection", "keep-alive");
+        //connection.setHeader("Cache-Control", "max-age=0");
+        //connection.setHeader("Referer", "http://empresa.computrabajo.com.co/");
+        prepareExistingCookies(cookies, connection);
+
+        //-----------------------------------------------------------------
+        httpclient = null;
+        if ( !withRedirect ) {
+            httpclient = HttpClients.createDefault();
+        }
+        else {
+            /*
+            DefaultHttpClient dhttpclient;
+            dhttpclient = new DefaultHttpClient();
+            MyRedirectStrategy rs;
+            rs = new MyRedirectStrategy(connection, cookies);
+            dhttpclient.setRedirectStrategy(rs);
+            httpclient = dhttpclient;
+            */
+            System.out.println("CHECK REDIRECT STRATEGY");
+            System.exit(9);
+        }
+        
+        CloseableHttpResponse response = null;
+        try {
+            response = httpclient.execute(connection);
+        }
+        catch ( ClientProtocolException e ) {
+            System.out.println("HTTP redirect error");
+        }
+        catch ( IOException e ) {
+            System.out.println("ERROR BAJANDO ARCHIVO!");
+            try {
+                Thread.sleep(5000);
+            } 
+            catch (InterruptedException ex) {
+            
+            }
+            System.out.println("*** Fallo en descarga html, reintento 2");
+            try {
+                response = httpclient.execute(connection);
+            }
+            catch ( Exception e2 ) {
+                VSDK.reportMessageWithException(this,
+                    VSDK.WARNING,
+                    "getInternetPage",
+                    "HTTP ERROR",
+                    e2);                        
+            }
+        }
+
+        //-----------------------------------------------------------------
+        try {
+            if ( response != null ) {
+                InputStream is;
+                is = response.getEntity().getContent();
+                importDataFromHtml(is);
+
+                //-----------------------------------------------------------------
+                addRecievedCookies(response, cookies);        
+                is.close();
+                response.close();
+            }
+        }
+        catch ( IOException e ) {
+            VSDK.reportMessageWithException(this,
+                VSDK.WARNING,
+                "getInternetPage",
+                "HTTP ERROR",
+                e);        
+        }
+
+        //-----------------------------------------------------------------
+        try {
+            httpclient.close();
+        }
+        catch ( Exception e ) {
+	}
+    }
+
+    /**
+    Creates a new html based web transaction from the specified pageUrl,
+    without taking into account any input cookies.
+    TODO: Change this to only call another method, one with cookies handling!
+    @param pageUrl
+    @param cookies
     @return cookies
     */
-    public ArrayList<String> getInternetPage(
-        String pageUrl, ArrayList<String> mcookies)
+    public ArrayList<String> getInternetPageOld(
+        String pageUrl, ArrayList<String> cookies)
     {
         //-----------------------------------------------------------------
         HttpURLConnection connection;
@@ -425,7 +562,7 @@ public class TaggedHtml
             Map<String, List<String>> hfs;
             hfs = connection.getHeaderFields();
 
-            addRecievedCookies(hfs, mcookies);
+            addRecievedCookies(hfs, cookies);
             
             connection.disconnect();
         }
@@ -434,7 +571,7 @@ public class TaggedHtml
         	System.out.println("HTTP Error");
         }
         //-----------------------------------------------------------------
-        return mcookies;
+        return cookies;
     }
 
     private void addRecievedCookies(Map<String, List<String>> hfs, List<String> cookies1) {

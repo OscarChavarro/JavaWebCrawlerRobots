@@ -15,20 +15,13 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 
 //
-        
-//
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.HttpVersion;
-import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -651,22 +644,6 @@ public class ComputrabajoTaggedHtml extends TaggedHtml
         }
 
         return cells;
-    }
-
-    public static String getHostFromURL(String pageUrl) {
-        //System.out.println("  * URL: " + pageUrl);
-        try {
-            String hostname;
-            URI u = new URI(pageUrl);
-            hostname = u.getHost();
-            //System.out.println("  * HOSTNAME: " + hostname);
-            return hostname;
-        }
-        catch ( Exception e ) {
-            System.out.println("Error: malformed URL");
-            System.exit(9);
-        }
-        return null;
     }
 }
 

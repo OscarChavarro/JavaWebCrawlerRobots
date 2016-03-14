@@ -37,9 +37,9 @@ public class IngenioDownloader {
             collection for further processing at stage 2
         */
         System.out.println("1. Downloading product indexes:");
-        //indexProcessor.downloadAllProductIndexes(
-        //    cookies,
-        //    marPicoElementLink, marPicoCategory, true);
+        indexProcessor.downloadAllProductIndexes(
+            cookies,
+            marPicoElementLink, marPicoCategory, true);
         System.out.println("done downloading indexes");
 
         /*

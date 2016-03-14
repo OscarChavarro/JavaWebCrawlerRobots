@@ -30,7 +30,7 @@ public class indexProcessor {
                 searchLink) != null ) {
             // If element exist, analyze its children
             pageProcessor = new IngenioTaggedHtml();
-            pageProcessor.getInternetPage(url, cookies);
+            pageProcessor.getInternetPage(url, cookies, false);
             findHref(
                 marPicoElementLink, 
                 marPicoCategory, 
@@ -208,6 +208,9 @@ public class indexProcessor {
                 n = sn.toString();
             }
             if ( url.contains("productos.php") ) {
+                if ( url.contains("?cat_id") && !url.contains("porpag=all") ) {
+                    url = url + "&porpag=all";
+                }
                 downloadIndexPage(
                     cookies,
                     marPicoElementLink, 
