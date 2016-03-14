@@ -23,12 +23,12 @@ public class DatabaseMongoConnection
     public DatabaseMongoConnection(String url,int port, String connectionName, String collectionName)
     {
         try 
-		{
+	{
             MongoClient mongoClient;
             mongoClient = new MongoClient(url, port);
             mongoConnection = mongoClient.getDB(connectionName);
         }
-        catch ( UnknownHostException ex ) {
+        catch ( Exception ex ) {
             VSDK.reportMessageWithException(
                 null, 
                 VSDK.FATAL_ERROR, 
@@ -41,12 +41,12 @@ public class DatabaseMongoConnection
     public static DB createMongoConnection(String url,int port, String connectionName, String collectionName)
     {
         try 
-		{
+	{
             MongoClient mongoClient;
             mongoClient = new MongoClient(url, port);
             mongoConnection = mongoClient.getDB(connectionName);
         }
-        catch ( UnknownHostException ex ) {
+        catch ( Exception ex ) {
             VSDK.reportMessageWithException(
                 null, 
                 VSDK.FATAL_ERROR, 
