@@ -15,14 +15,16 @@ import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.GeographicAdministrativeRegion;
 import databaseMongo.model.NameElement;
 import webcrawler.processors.NameProcessor;
-import webcrawler.processors.FieldProcessors;
 import webcrawler.processors.LocationProcessor;
+import webcrawler.processors.PhoneProcessor;
 
 /**
 This tool is deprecated. The initial intent for this program was to analize
 information from incoming data in raw source database. It is advised to make 
 this kind of analysis over filtered/processed database (that builded by
 stage 3 Tool - TransformationFromRawData2CleanData).
+ 
+Estimated running time: for 3'100.000 registers: 7min.
 */
 @Deprecated
 public class Tool02_AnalizerForRawExtractedData {
@@ -52,7 +54,7 @@ public class Tool02_AnalizerForRawExtractedData {
             }
             
             String _id = o.get("_id").toString();
-            
+
             if ( i % 10000 == 0 ) {
                 reportAdvances = true;                
             }
@@ -63,11 +65,15 @@ public class Tool02_AnalizerForRawExtractedData {
 
             if ( o.containsField("location") ) {
                 LocationProcessor.processLocation(
-                        o, i, c.count(), regions, reportAdvances);
+                    o, i, c.count(), regions, reportAdvances);
             }
             if ( o.containsField("name") ) {
                 NameProcessor.processName(
-                        o, i, c.count(), nameElements, reportAdvances);
+                    o, i, c.count(), nameElements, reportAdvances);
+            }
+            if ( o.containsField("phone") ) {
+                PhoneProcessor.processPhone(
+                    o, i, c.count(), nameElements, reportAdvances);
             }
             //if ( o.containsField("htmlContent") ) {
             //    processHtmlContent(o, i);
@@ -103,6 +109,7 @@ public class Tool02_AnalizerForRawExtractedData {
         // Export analysis results
         LocationProcessor.reportResultingAreas(regions);
         NameProcessor.reportNameElements(nameElements);
+        PhoneProcessor.reportPhoneElements();
     }
 }
 

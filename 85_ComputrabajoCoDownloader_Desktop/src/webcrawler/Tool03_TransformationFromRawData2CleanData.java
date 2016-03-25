@@ -20,9 +20,11 @@ import vsdk.toolkit.common.VSDK;
 import webcrawler.processors.LocationProcessor;
 
 /**
- * This program reads records from "professionalResume" Mongo collection and
- * writes a transformed version to "professionalResumeTrans".
- */
+This program reads records from "professionalResume" Mongo collection and
+writes a transformed version to "professionalResumeTrans".
+
+Estimated running time: for 3'117.859 registers: 2h12min
+*/
 public class Tool03_TransformationFromRawData2CleanData {
 
     private static final ComputrabajoMongoDatabaseConnection databaseConnection;
@@ -239,6 +241,13 @@ public class Tool03_TransformationFromRawData2CleanData {
                 }
                 else {
                     searchQuery.append("location", "null");
+                }
+                
+                if ( ei.containsField("htmlContent") ) {
+                    searchQuery.append("htmlContent", ei.get("htmlContent"));
+                }
+                else {
+                    searchQuery.append("htmlContent", "null");
                 }
                 //searchQuery.append("location", r.getLocation());
                 

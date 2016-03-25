@@ -18,6 +18,7 @@ import java.util.Locale;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 
 // VSDK classes
 import vsdk.toolkit.io.PersistenceElement;
@@ -180,14 +181,14 @@ public class Tool01_ExtractionDownloader {
         
         int i; // 106700
         // 1000 paginas de 20 se bajan ambas fases en 3h13min..
-        int nb = 33; // Bloques de a 4000 listas, 80000 hojas de vida
-        // El viernes a las 10:12pm se baja el bloque 33
+        int nb = 34; // Bloques de a 4000 listas, 80000 hojas de vida
+        // El viernes a las 3:12pm se baja el bloque 34
         int start;
         int end;
-        start = (n/20) - (nb+1)*4000;
-        //start = 1;
-        end = (n/20) - (nb)*4000 + 100;
-        //end = 1000;
+        //start = (n/20) - (nb+1)*4000;
+        start = 1;
+        //end = (n/20) - (nb)*4000 + 100;
+        end = 1000;
         for ( i = start; i <= (n/20) + 1; i++ ) {
             // Process current page
             Date date = new Date();
@@ -836,7 +837,7 @@ public class Tool01_ExtractionDownloader {
     @param resumeListToDownload
     @param resumeListAlreadyDownloaded 
     */
-    private static void removeExistingResumes(
+    private static void removeExistingResumesInFileCache(
         TreeSet<String> resumeListToDownload, 
         TreeSet<String> resumeListAlreadyDownloaded) 
     {
@@ -852,6 +853,56 @@ public class Tool01_ExtractionDownloader {
             "  - 6.2. Items after: " + resumeListToDownload.size());
     }
 
+    /**
+    Removes all existing URLs in database from resumeListToDownload.
+    @param resumeListToDownload
+    @param professionalResume 
+    */
+    private static void removeExistingResumesInDatabase(
+        TreeSet<String> resumeListToDownload, 
+        DBCollection professionalResume) {
+        System.out.println("8. Checking URLs to download against database: " +
+            resumeListToDownload.size());
+        int i = 1;
+        ArrayList<String> zombie = new ArrayList<String>();
+        for ( String partialUrl : resumeListToDownload ) {
+            String url = "http://empresa.computrabajo.com.co" + partialUrl;
+            if ( urlExistsInDatabase(url, professionalResume) ) {
+                zombie.add(partialUrl);
+            }
+            
+            if ( i % 50 == 0 ) {
+                System.out.println(
+                    "  . Excluding existing resumes from download set: " + 
+                        i + "/" + resumeListToDownload.size());
+            }
+            
+            i++;
+        }
+
+        for ( i = 0; i < zombie.size(); i++ ) {
+            resumeListToDownload.remove(zombie.get(i));
+        }
+        System.out.println("  - 8.1. Final set size: " + resumeListToDownload.size());
+    }
+
+    /**
+    Check if given url already exist in database.
+    @param url
+    @param professionalResume
+    @return 
+    */
+    private static boolean urlExistsInDatabase(
+        String url, DBCollection professionalResume) 
+    {
+        BasicDBObject filter = new BasicDBObject("sourceUrl", url);
+        BasicDBObject options = new BasicDBObject("sourceUrl", true);
+        DBObject o;
+        
+        o = professionalResume.findOne(filter, options);
+        return (o != null);
+    }
+    
     /**
     Main program connects to Computrabajo Colombia web page, logs in using a
     registered user and downloads resume profiles data incrementally (taking
@@ -879,7 +930,7 @@ public class Tool01_ExtractionDownloader {
             importListFromCache(resumeListToDownload, totalCacheFilename);
         }
         System.out.println(
-            "2. Number of URLs on cache: " + resumeListToDownload.size());
+            "0. Number of URLs on cache: " + resumeListToDownload.size());
 
         //checkExistingResumesOnDatabase(
         //    databaseConnection.getProfessionalResume(),
@@ -895,11 +946,13 @@ public class Tool01_ExtractionDownloader {
 
         System.out.println("5. Accesing resume lists");
         indexPageProcessor = new ComputrabajoTaggedHtml();
-        downloadIndexPages(resumeListToDownload, cookies);
-        removeExistingResumes(
-            resumeListToDownload, resumeListAlreadyDownloaded);
+        //downloadIndexPages(resumeListToDownload, cookies);
+        //removeExistingResumesInFileCache(
+        //    resumeListToDownload, resumeListAlreadyDownloaded);
+        removeExistingResumesInDatabase(
+            resumeListToDownload, databaseConnection.getProfessionalResume());
         exportListToCache(resumeListToDownload, totalCacheFilename);
-        //downloadResumes(resumeListToDownload, cookies);
+        downloadResumes(resumeListToDownload, cookies);
     }
 }
 
