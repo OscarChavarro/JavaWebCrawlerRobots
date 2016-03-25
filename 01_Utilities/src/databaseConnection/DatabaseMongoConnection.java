@@ -13,14 +13,18 @@ import vsdk.toolkit.common.VSDK;
 
 public class DatabaseMongoConnection 
 {
-    private static DB mongoConnection;
+    protected static DB mongoConnection;
 
     static 
 	{
         mongoConnection = null;
     }
     
-    public DatabaseMongoConnection(String url,int port, String connectionName, String collectionName)
+    public DatabaseMongoConnection(
+        String url,
+        int port, 
+        String connectionName, 
+        String collectionName)
     {
         try 
 	{

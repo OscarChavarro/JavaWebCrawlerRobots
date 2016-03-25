@@ -28,12 +28,21 @@ public class Resume extends JdbcEntity {
     private boolean availableForRelocation;
     private boolean currentlyWorking;
     private String country;
+    private int transformStatus;
 
     public Resume() {
         this.country = "co";
         emailStatus = 0;
+        transformStatus = 0;
     }
     
+    public void setTransformStatus(int t) {
+        transformStatus = t;
+    }
+
+    public int getTransformStatus() {
+        return transformStatus;
+    }
         
     /**
      * @return the lastUpdateDate

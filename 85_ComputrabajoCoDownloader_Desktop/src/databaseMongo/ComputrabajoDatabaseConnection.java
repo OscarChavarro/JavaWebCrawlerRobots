@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TreeSet;
 
 // Mongo classes
 import com.mongodb.BasicDBObject;
@@ -20,7 +19,8 @@ import org.bson.types.ObjectId;
 // Application specific classes
 import databaseMongo.model.Resume;
 import databaseMongo.model.ResumeTrans;
-import databaseConnection.DatabaseMongoConnection;;
+import databaseConnection.DatabaseMongoConnection;import vsdk.toolkit.common.VSDK;
+;
 
 
 /**
@@ -37,6 +37,20 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
     public ComputrabajoDatabaseConnection(String url, int port, String connectionName, String collectionName) 
     {
         super(url, port, connectionName, collectionName);
+        try
+        {
+                professionalResume = mongoConnection.getCollection(collectionName);
+        }
+        catch ( MongoException ex)
+        {
+                VSDK.reportMessageWithException(
+                                null,
+                                VSDK.FATAL_ERROR,
+                                "createMongoCollection",
+                                "Error connecting",
+                                ex);
+        }
+
     }
 
     public void insertResumeMongo(Resume r)
@@ -123,13 +137,6 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         return professionalResume;
     }
 
-    public void checkExistingResumesOnDatabase(
-        TreeSet<String> resumeListAlreadyDownloaded) 
-    {
-        //super.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded, "sourceUrl");	
-        System.out.println("***** ERROR!!! OPERACION NO DISPONIBLE");
-    }
-    
     public ArrayList<Resume> _fetchAllProductsMongo()
     {
         if ( professionalResume == null ) 

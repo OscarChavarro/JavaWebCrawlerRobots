@@ -4,6 +4,9 @@ package webcrawler;
 // Java basic classes
 
 // Toolkit classes
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import databaseMongo.model.Resume;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,7 +33,7 @@ public class Tool01_ExtractionDownloader {
     static 
     {
         databaseConnection = new ComputrabajoDatabaseConnection("localhost", 
-            27017, "computrabajoCo", "professionalResume");
+            27018, "computrabajoCo", "professionalResume");
     }
 
 
@@ -188,28 +191,40 @@ public class Tool01_ExtractionDownloader {
         n = getNumberOfResumes(pageProcessor);
         System.out.println("  - 4.1. Preparing for downloading " + n + " resumes from "  + (n/20) + " listing pages:" );
         
-        int i;
-        for ( i = 1; i <= (n/20) + 1; i++ ) {
+        int i; // 106700
+        // 1000 paginas de 20 se bajan ambas fases en 3h13min..
+        int nb = 32; // Bloques de a 4000 listas, 80000 hojas de vida
+        // El domingo a las 8:00am se baja el bloque 32 LENTO
+        int start;
+        int end;
+        start = (n/20) - (nb+1)*4000;
+        //start = 1;
+        end = (n/20) - (nb)*4000 + 100;
+        //end = 1000;
+        for ( i = start; i <= (n/20) + 1; i++ ) {
             // Process current page
             Date date = new Date();
             DateFormat format = new SimpleDateFormat(
                 "yyyy-MM-dd'T'HH:mm:ss'Z'", 
                 Locale.ENGLISH);
 
-            System.out.println("    . Downloading listing page " + i + " of " + 
+            System.out.println("    . Downloading listing page " + 
+                i + " of " + 
                 (n/20 + 1) + " on time " + format.format(date));
             importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
             
-            if ( i == 10 ) {
-                System.out.println("***** LISTO, PRUEBA DETENIDA! *****");
+            if ( i == end ) {
+                System.out.println("***** SEQUENCE DONE, CONTINUING TO DOWNLOAD! *****");
                 break;
             }
 
             // Advance to next
             pageProcessor = new ComputrabajoTaggedHtml();
-            pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/Company/Cvs/?p=" + (i+1), cookies, false);
-            
+            pageProcessor.getInternetPage(
+                "http://empresa.computrabajo.com.co/Company/Cvs/?p=" + 
+                 (i+1), cookies, false);
         }
+
     }
 
     private static int getNumberOfResumes(ComputrabajoTaggedHtml pageProcessor) {
@@ -400,7 +415,7 @@ public class Tool01_ExtractionDownloader {
     {
         int n = resumeList.size();
         int i = 1;
-        System.out.println("7. Analizing individual resumes");
+        System.out.println("7. Analizing individual resumes: " + n);
         for ( String url : resumeList ) {
             System.out.println("  - Downloading resume " + i + " of " + n);
             ComputrabajoTaggedHtml pageProcessor;
@@ -408,7 +423,9 @@ public class Tool01_ExtractionDownloader {
             pageProcessor.getInternetPage("http://empresa.computrabajo.com.co" + url, cookies, true);
             Resume r;
             r = importResumeFromPage(pageProcessor, "http://empresa.computrabajo.com.co" + url, cookies);
-            databaseConnection.insertResumeMongo(r);
+            if ( r != null ) {
+		databaseConnection.insertResumeMongo(r);
+	    }
             i++;
         }
     }
@@ -447,6 +464,10 @@ public class Tool01_ExtractionDownloader {
         String lastSpanType = "";
         String htmlContent = "";
         int divLevel = 0;
+
+	if ( pageProcessor == null || pageProcessor.segmentList == null ) {
+            return null;
+	}
         
         for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
             ts = pageProcessor.segmentList2.get(i);
@@ -721,6 +742,48 @@ public class Tool01_ExtractionDownloader {
     private static String fixStringForUtf(String v) {
         return v;
     }
+    
+    private static void checkExistingResumesOnDatabase(
+        DBCollection properties, 
+        TreeSet<String> resumeListAlreadyDownloaded)
+    {
+        System.out.println("0. Importing all Objects loaded in database... ");
+        BasicDBObject query;
+        BasicDBObject options;
+
+        query = new BasicDBObject();
+        options = new BasicDBObject();
+        options.append("sourceUrl", true);                                                                                   
+        options.append("_id", false);                                                                                   
+        DBCursor c = properties.find(query, options);
+
+        System.out.println("  - 0.1. Importing database entries...");
+        int i;
+
+        for ( i = 0; c.hasNext(); i++ )
+                {
+            if ( i % 10000 == 0 )
+                        {
+                System.out.println("     . " + i);
+            }
+            Object o = c.next().get("sourceUrl");                                                                            
+            //Object o = c.next().get(key);
+
+            if ( o == null ) {
+                continue;
+            }
+
+            String url = o.toString();
+            // Trim "http://empresa.computrabajo.com.ve" out                                                                   
+            url = url.substring(34);
+            if ( url != null && !url.equals("null") )
+                        {
+                resumeListAlreadyDownloaded.add(url);
+            }
+        }
+
+        System.out.println("  - 5.2. Number of resumes already imported in database: " + i);
+    }
 
     /**
     @param args
@@ -731,8 +794,22 @@ public class Tool01_ExtractionDownloader {
         ArrayList<String> cookies;
         cookies = new ArrayList<String>();
 
-        // "hismael@80milprofesionales.com", "d.jfoQ?1*"
-        // "talent%40abakoventures.com", "Qwerty77"
+        String filename = "totalResumeListCache.txt";
+        File fd = new File(filename);
+        TreeSet<String> resumeListToDownload;
+        resumeListToDownload = new TreeSet<String>();
+        TreeSet<String> resumeListAlreadyDownloaded;
+        resumeListAlreadyDownloaded = new TreeSet<String>();
+
+        if ( fd.exists() ) {
+            importListFromCache(resumeListToDownload, filename);
+        }
+        System.out.println("Number of URLs on cache: " + resumeListToDownload.size());
+
+        checkExistingResumesOnDatabase(
+            databaseConnection.getProfessionalResume(),
+            resumeListAlreadyDownloaded);
+
         boolean ready = doLoginIntoComputrabajoSystem(
             "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);
         
@@ -741,20 +818,9 @@ public class Tool01_ExtractionDownloader {
             return;
         }
         
-        TreeSet<String> resumeListToDownload;
-        resumeListToDownload = new TreeSet<String>();
-        TreeSet<String> resumeListAlreadyDownloaded;
-        resumeListAlreadyDownloaded = new TreeSet<String>();
-        
-        String filename = "totalResumeListCache.txt";
-        File fd = new File(filename);
-        if ( fd.exists() ) {
-            importListFromCache(resumeListToDownload, filename);
-        }
         indexPageProcessor = new ComputrabajoTaggedHtml();
         analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
 
-        databaseConnection.checkExistingResumesOnDatabase(resumeListAlreadyDownloaded);
         removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
         exportList(resumeListToDownload);
         downloadResumes(resumeListToDownload, cookies);

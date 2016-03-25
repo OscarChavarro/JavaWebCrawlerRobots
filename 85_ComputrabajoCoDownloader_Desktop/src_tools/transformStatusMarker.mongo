@@ -1,0 +1,3 @@
+DBQuery.shellBatchSize = 10000000
+
+db.professionalResume.find({}, {_id: 1});

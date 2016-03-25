@@ -11,8 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import webcrawler.ComputrabajoTagSegment;
 import webcrawler.ComputrabajoTaggedHtml;
 import webcrawler.Tool02_AnalizerForRawExtractedData;
@@ -358,9 +356,9 @@ public class FieldProcessors {
         try {
             p = Runtime.getRuntime().exec(arr); 
             p.waitFor();
-        } catch ( Exception ex ) {
-            Logger.getLogger(Tool02_AnalizerForRawExtractedData.class.getName()).
-                log(Level.SEVERE, null, ex);
+        }
+	catch ( Exception ex ) {
+
         }
         
     }
@@ -391,8 +389,9 @@ public class FieldProcessors {
             String ext = getExtension(p);
             String filename = "./output/profilePictures/" + id + "." + ext;
             downloadImage(p, filename);
-        } catch (Exception ex) {
-            Logger.getLogger(Tool02_AnalizerForRawExtractedData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+	catch (Exception ex) {
+
         }
     }
 
