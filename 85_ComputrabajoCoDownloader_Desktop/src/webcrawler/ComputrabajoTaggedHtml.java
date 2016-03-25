@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.net.CookieHandler;
 import java.net.CookieManager;
-import java.net.URI;
 import java.util.HashMap;
 
 //
@@ -197,6 +196,7 @@ public class ComputrabajoTaggedHtml extends TaggedHtml
     @param cookies
     @param withRedirect true if used in the login phase with redirects
     */
+    @Override
     public void getInternetPage(
         String pageUrl, 
         ArrayList<String> cookies, 
@@ -205,8 +205,17 @@ public class ComputrabajoTaggedHtml extends TaggedHtml
         //----------------------------------------------------------------- 
         CloseableHttpClient httpclient;
 
-        HttpGet connection;
-        connection = new HttpGet(pageUrl);
+        HttpGet connection = null;
+        try {
+            connection = new HttpGet(pageUrl);
+        }
+        catch ( Exception e ) {
+            
+        }
+        
+        if ( connection == null ) {
+            return;
+        }
 
         connection.setProtocolVersion(HttpVersion.HTTP_1_1);
         connection.setHeader("Host", getHostFromURL(pageUrl));

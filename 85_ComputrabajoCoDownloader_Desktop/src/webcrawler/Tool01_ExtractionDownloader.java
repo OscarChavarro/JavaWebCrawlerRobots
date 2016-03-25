@@ -18,11 +18,7 @@ import vsdk.toolkit.io.PersistenceElement;
 import databaseMongo.ComputrabajoDatabaseConnection;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 
 /**
 */
@@ -201,29 +197,29 @@ public class Tool01_ExtractionDownloader {
         //start = 1;
         end = (n/20) - (nb)*4000 + 100;
         //end = 1000;
-        for ( i = start; i <= (n/20) + 1; i++ ) {
-            // Process current page
-            Date date = new Date();
-            DateFormat format = new SimpleDateFormat(
-                "yyyy-MM-dd'T'HH:mm:ss'Z'", 
-                Locale.ENGLISH);
-
-            System.out.println("    . Downloading listing page " + 
-                i + " of " + 
-                (n/20 + 1) + " on time " + format.format(date));
-            importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
-            
-            if ( i == end ) {
-                System.out.println("***** SEQUENCE DONE, CONTINUING TO DOWNLOAD! *****");
-                break;
-            }
-
-            // Advance to next
-            pageProcessor = new ComputrabajoTaggedHtml();
-            pageProcessor.getInternetPage(
-                "http://empresa.computrabajo.com.co/Company/Cvs/?p=" + 
-                 (i+1), cookies, false);
-        }
+//        for ( i = start; i <= (n/20) + 1; i++ ) {
+//            // Process current page
+//            Date date = new Date();
+//            DateFormat format = new SimpleDateFormat(
+//                "yyyy-MM-dd'T'HH:mm:ss'Z'", 
+//                Locale.ENGLISH);
+//
+//            System.out.println("    . Downloading listing page " + 
+//                i + " of " + 
+//                (n/20 + 1) + " on time " + format.format(date));
+//            importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
+//            
+//            if ( i == end ) {
+//                System.out.println("***** SEQUENCE DONE, CONTINUING TO DOWNLOAD! *****");
+//                break;
+//            }
+//
+//            // Advance to next
+//            pageProcessor = new ComputrabajoTaggedHtml();
+//            pageProcessor.getInternetPage(
+//                "http://empresa.computrabajo.com.co/Company/Cvs/?p=" + 
+//                 (i+1), cookies, false);
+//        }
 
     }
 
@@ -420,7 +416,9 @@ public class Tool01_ExtractionDownloader {
             System.out.println("  - Downloading resume " + i + " of " + n);
             ComputrabajoTaggedHtml pageProcessor;
             pageProcessor = new ComputrabajoTaggedHtml();
-            pageProcessor.getInternetPage("http://empresa.computrabajo.com.co" + url, cookies, true);
+            String totalUrl = "http://empresa.computrabajo.com.co" + url;
+            //System.out.println("    . URL: " + totalUrl);
+            pageProcessor.getInternetPage(totalUrl, cookies, true);
             Resume r;
             r = importResumeFromPage(pageProcessor, "http://empresa.computrabajo.com.co" + url, cookies);
             if ( r != null ) {
@@ -465,7 +463,7 @@ public class Tool01_ExtractionDownloader {
         String htmlContent = "";
         int divLevel = 0;
 
-	if ( pageProcessor == null || pageProcessor.segmentList == null ) {
+	if ( pageProcessor == null || pageProcessor.segmentList2 == null ) {
             return null;
 	}
         
@@ -782,7 +780,7 @@ public class Tool01_ExtractionDownloader {
             }
         }
 
-        System.out.println("  - 5.2. Number of resumes already imported in database: " + i);
+        System.out.println("  - 0.2. Number of resumes already imported in database: " + i);
     }
 
     /**
@@ -806,9 +804,9 @@ public class Tool01_ExtractionDownloader {
         }
         System.out.println("Number of URLs on cache: " + resumeListToDownload.size());
 
-        checkExistingResumesOnDatabase(
-            databaseConnection.getProfessionalResume(),
-            resumeListAlreadyDownloaded);
+        //checkExistingResumesOnDatabase(
+        //    databaseConnection.getProfessionalResume(),
+        //    resumeListAlreadyDownloaded);
 
         boolean ready = doLoginIntoComputrabajoSystem(
             "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);

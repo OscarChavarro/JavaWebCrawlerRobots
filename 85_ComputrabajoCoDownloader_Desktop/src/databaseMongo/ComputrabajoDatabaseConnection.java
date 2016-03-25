@@ -77,6 +77,7 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
                 System.out.println("    . Saltando hoja de vida vacia");
             }
             else {
+                //System.out.println("    . Intertando: " + newDocument.getString("sourceUrl"));
                 getProfessionalResume().insert(newDocument);
             }
         }
