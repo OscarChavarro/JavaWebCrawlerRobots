@@ -24,7 +24,7 @@ information from incoming data in raw source database. It is advised to make
 this kind of analysis over filtered/processed database (that builded by
 stage 3 Tool - TransformationFromRawData2CleanData).
  
-Estimated running time: for 3'100.000 registers: 7min.
+Estimated running time: for 3'100.000 registers: 7min. With phone: 40min
 */
 @Deprecated
 public class Tool02_AnalizerForRawExtractedData {

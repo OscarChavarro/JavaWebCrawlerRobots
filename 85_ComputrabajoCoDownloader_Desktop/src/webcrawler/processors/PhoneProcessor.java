@@ -43,12 +43,18 @@ public class PhoneProcessor {
         char c;
         for ( i = 0; i < p.length(); i++ ) {
             c = p.charAt(i);
-            if ( characters.containsKey(c) ) {
-                characters.get(c).n++;
+            
+            if ( Character.isAlphabetic(c) ) {
+                System.out.println("  * RARE PHONE: " + p);
+                break;
             }
-            else {
-                characters.put(c, new CCounter());
-            }
+            
+            //if ( characters.containsKey(c) ) {
+            //    characters.get(c).n++;
+            //}
+            //else {
+            //    characters.put(c, new CCounter());
+            //}
         }
     }
 

@@ -185,10 +185,10 @@ public class Tool01_ExtractionDownloader {
         // El viernes a las 3:12pm se baja el bloque 34
         int start;
         int end;
-        //start = (n/20) - (nb+1)*4000;
-        start = 1;
-        //end = (n/20) - (nb)*4000 + 100;
-        end = 1000;
+        start = (n/20) - (nb+1)*4000;
+        //start = 1;
+        end = (n/20) - (nb)*4000 + 100;
+        //end = 1000;
         for ( i = start; i <= (n/20) + 1; i++ ) {
             // Process current page
             Date date = new Date();
@@ -932,6 +932,7 @@ public class Tool01_ExtractionDownloader {
         System.out.println(
             "0. Number of URLs on cache: " + resumeListToDownload.size());
 
+        // This enables RAM cache cleaning
         //checkExistingResumesOnDatabase(
         //    databaseConnection.getProfessionalResume(),
         //    resumeListAlreadyDownloaded);
@@ -946,9 +947,12 @@ public class Tool01_ExtractionDownloader {
 
         System.out.println("5. Accesing resume lists");
         indexPageProcessor = new ComputrabajoTaggedHtml();
-        //downloadIndexPages(resumeListToDownload, cookies);
+        downloadIndexPages(resumeListToDownload, cookies);
+        
+        // RAM cache cleaning:
         //removeExistingResumesInFileCache(
         //    resumeListToDownload, resumeListAlreadyDownloaded);
+        
         removeExistingResumesInDatabase(
             resumeListToDownload, databaseConnection.getProfessionalResume());
         exportListToCache(resumeListToDownload, totalCacheFilename);
