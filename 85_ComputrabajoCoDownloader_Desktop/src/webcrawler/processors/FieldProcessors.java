@@ -1,46 +1,41 @@
+//===========================================================================
 package webcrawler.processors;
 
-import com.mongodb.DBObject;
-import databaseMongo.model.GeographicAdministrativeRegion;
-import databaseMongo.model.HtmlExtraInformation;
+// Basic Java classes
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+
+// MongoDB classes
+import com.mongodb.DBObject;
+
+// Application specific classes
+import databaseMongo.model.GeographicAdministrativeRegion;
+import databaseMongo.model.HtmlExtraInformation;
 import webcrawler.ComputrabajoTagSegment;
 import webcrawler.ComputrabajoTaggedHtml;
-import webcrawler.Tool02_AnalizerForRawExtractedData;
 
 /**
 */
 public class FieldProcessors {
-
-    public static void reportResultingAreas(HashMap<String, GeographicAdministrativeRegion> regions) {
-        Collection<GeographicAdministrativeRegion> s = regions.values();
-        System.out.println("- ENCOUNTERED REGIONS: " + regions.size() + " -");
-        ArrayList<GeographicAdministrativeRegion> sorted;
-        sorted = new ArrayList<GeographicAdministrativeRegion>();
-        for (GeographicAdministrativeRegion g : s) {
-            sorted.add(g);
-        }
-        Collections.sort(sorted);
-        int i;
-        for (i = 0; i < sorted.size(); i++) {
-            System.out.print(sorted.get(i));
-        }
-    }
-
     /**
     @param pageProcessor
     @param h
     @param elementCount
     @param id
      */
-    public static void processHtmlStructure(ComputrabajoTaggedHtml pageProcessor, HtmlExtraInformation h, int elementCount, String id) {
+    public static void processHtmlContent(
+        ComputrabajoTaggedHtml pageProcessor, 
+        HtmlExtraInformation h,
+        int elementCount, 
+        String id) 
+    {
         if (pageProcessor.segmentList2 == null) {
             System.out.println("Warning: empty page");
             return;
@@ -263,85 +258,8 @@ public class FieldProcessors {
         }
     }
 
-    /**
-    Given a database object with a location label, this method performs a
-    process of data normalization following these steps:
-    -  Each valid location label should have to parts separated
-    by a single slash character.
-    - Each half will have its leading and trailing spaces trimmed.
-    @param o
-    @param index
-    @param n
-    @param regions
-    @param reportAdvances
-    */
-    public static void processLocation(
-        DBObject o, 
-        int index, 
-        int n, 
-        HashMap<String, GeographicAdministrativeRegion> regions,
-        boolean reportAdvances) {
-        String id = o.get("_id").toString();
-        String l = o.get("location").toString();
-        if (l.equals("null")) {
-            if ( reportAdvances ) {
-                System.out.println("    . Curriculo vacio ... saltando");
-            }
-            return;
-        }
-        //- 1. Check each half ------------------------------------------------
-        int i;
-        char c;
-        int numberOfSeparators = 0;
-        for (i = 0; i < l.length(); i++) {
-            c = l.charAt(i);
-            if (c == '/') {
-                numberOfSeparators++;
-            }
-        }
-        String area = null;
-        if (numberOfSeparators == 0) {
-            area = l;
-            if (!regions.containsKey(area)) {
-                GeographicAdministrativeRegion areaRegion;
-                areaRegion = new GeographicAdministrativeRegion();
-                areaRegion.setNameSpa(area);
-                regions.put(area, areaRegion);
-            }
-            return;
-        } else if (numberOfSeparators != 1) {
-            System.out.println("ERROR: La ubicacion " + l + " es invalida:");
-            System.out.println("  - Numero incorrecto de separadores");
-            System.out.println("  - ID: " + id);
-            return;
-        }
-        String subarea = null;
-        StringTokenizer parser = new StringTokenizer(l, "/");
-        try {
-            area = parser.nextToken();
-            subarea = parser.nextToken();
-            area = ComputrabajoTaggedHtml.trimSpaces(area);
-            subarea = ComputrabajoTaggedHtml.trimSpaces(subarea);
-            if (reportAdvances) {
-                System.out.println("    . Location: [" + area + "] / [" + subarea + "]");
-            }
-        } catch (Exception e) {
-            System.out.println("ERROR: No puedo romper la cadena [" + l + "]");
-            System.out.println("  - ID: " + id);
-        }
-        GeographicAdministrativeRegion areaRegion;
-        if (regions.containsKey(area)) {
-            areaRegion = regions.get(area);
-        } else {
-            areaRegion = new GeographicAdministrativeRegion();
-            areaRegion.setNameSpa(area);
-            regions.put(area, areaRegion);
-        }
-        areaRegion.insertSubarea(subarea);
-    }
 
-
-        private static void downloadImage(String url, String filename) 
+    private static void downloadImage(String url, String filename) 
     {
         File fd;
 
@@ -357,13 +275,15 @@ public class FieldProcessors {
             p = Runtime.getRuntime().exec(arr); 
             p.waitFor();
         }
-	catch ( Exception ex ) {
+	catch ( IOException ioe ) {
+            
+        }
+        catch ( InterruptedException ex ) {
 
         }
-        
     }
 
-            private static String getExtension(String name)
+    private static String getExtension(String name)
     {
         String m = "";
         
@@ -380,7 +300,8 @@ public class FieldProcessors {
         return "";
     }
 
-    private static void processProfilePictureUrl(DBObject o, String id, int i) {
+    private static void processProfilePictureUrl(DBObject o, String id, int i) 
+    {
         try {
             String p = o.get("profilePictureUrl").toString();
             if (p.equals("null")) {
@@ -395,7 +316,8 @@ public class FieldProcessors {
         }
     }
 
-    private static void processHtmlContent(DBObject o, int elementCount) {
+    private static void processHtmlContent(DBObject o, int elementCount) 
+    {
         String html = o.get("htmlContent").toString();
         String id = o.get("_id").toString();
         if (html == null || html.equals("null") || html.isEmpty()) {
@@ -409,12 +331,14 @@ public class FieldProcessors {
         page.importDataFromHtml(is);
         HtmlExtraInformation h;
         h = new HtmlExtraInformation();
-        processHtmlStructure(page, h, elementCount, id);
+        processHtmlContent(page, h, elementCount, id);
         if (h.getNh2() != 4) {
             System.out.println("***** WARNING: H2 apareances: " + h.getNh2());
             System.out.println("  - HTML: " + html);
         }
-    }
-
-    
+    }    
 }
+
+//===========================================================================
+//= EOF                                                                     =
+//===========================================================================

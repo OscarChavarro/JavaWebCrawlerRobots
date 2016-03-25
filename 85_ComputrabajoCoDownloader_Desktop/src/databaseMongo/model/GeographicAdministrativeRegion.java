@@ -51,7 +51,7 @@ public class GeographicAdministrativeRegion
         
         msg = "* Area [" + nameSpa + "]: \n";
         for ( String s : subRegions ) {
-            msg += "  - " + s + "\n";
+            msg += "  - [" + s + "]\n";
         }
         
         return msg;

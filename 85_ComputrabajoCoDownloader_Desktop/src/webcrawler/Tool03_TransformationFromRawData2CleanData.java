@@ -17,6 +17,7 @@ import com.mongodb.DBObject;
 import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.Resume;
 import vsdk.toolkit.common.VSDK;
+import webcrawler.processors.LocationProcessor;
 
 /**
  * This program reads records from "professionalResume" Mongo collection and
@@ -230,7 +231,17 @@ public class Tool03_TransformationFromRawData2CleanData {
                 searchQuery.append("_id", r.get_id());
                 searchQuery.append("name", transformName(r.getName()));
                 searchQuery.append("documentId", r.getDocumentId());
-                searchQuery.append("location", r.getLocation());
+                
+                if ( ei.containsField("location") ) {
+                    String l;
+                    l = LocationProcessor.processLocation(ei, 0, 0, null, false);
+                    searchQuery.append("location", l);
+                }
+                else {
+                    searchQuery.append("location", "null");
+                }
+                //searchQuery.append("location", r.getLocation());
+                
                 if ( r.getCountry().equals("co") ) {
                     searchQuery.append("country", "co");
                 }

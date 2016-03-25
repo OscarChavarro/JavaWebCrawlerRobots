@@ -326,7 +326,7 @@ public class Tool01_ExtractionDownloader {
                     if ( n.equals("href") ) {
                         if ( !v.equals(lastUrl) ) {
                             lastUrl = v;
-                            addNewResume(outResumeLinks, v);
+                            addNewResumeToBeDownloaded(outResumeLinks, v);
                         }
                     }
                 }                
@@ -338,7 +338,8 @@ public class Tool01_ExtractionDownloader {
     @param resumeLinks
     @param url 
     */
-    private static void addNewResume(TreeSet<String> resumeLinks, String url) 
+    private static void addNewResumeToBeDownloaded(
+        TreeSet<String> resumeLinks, String url) 
     {
         try {
             if ( resumeLinks.contains(url) ||
@@ -426,6 +427,10 @@ public class Tool01_ExtractionDownloader {
     }
 
     /**
+    Controls individual resume profile downloading taking into account the
+    current marked for processing. Note that this algorithm allows to run
+    the program incrementally, adding new profiles to currently downloaded
+    ones.
     @param resumeList
     @param cookies 
     */
@@ -454,6 +459,9 @@ public class Tool01_ExtractionDownloader {
     }
 
     /**
+    Given a downloaded resume profile downloaded from Computrabajo web system
+    and stored as HTML page, this method builds an in RAM Resume data structure
+    ready for database storage.
     @param pageProcessor
     @param originUrl
     @param cookies
@@ -767,7 +775,8 @@ public class Tool01_ExtractionDownloader {
     }
 
     /**
-    Not implemented yet
+    Not implemented yet. 
+    @todo It is possible that some URLs are being missed due to not being fixed
     @param v
     */
     private static String fixStringForUtf(String v) {
@@ -775,6 +784,8 @@ public class Tool01_ExtractionDownloader {
     }
     
     /**
+    Connects to Mongo database and builds a TreeSet list in RAM containing URLs
+    of currently downloaded resume profiles.
     @param properties
     @param resumeListAlreadyDownloaded 
     */
@@ -821,6 +832,7 @@ public class Tool01_ExtractionDownloader {
     }
     
     /**
+    Removes already downloaded elements from list of new elements to download.
     @param resumeListToDownload
     @param resumeListAlreadyDownloaded 
     */
@@ -841,7 +853,14 @@ public class Tool01_ExtractionDownloader {
     }
 
     /**
-    @param args
+    Main program connects to Computrabajo Colombia web page, logs in using a
+    registered user and downloads resume profiles data incrementally (taking
+    in to account previously downloaded profiles). Resulting information is
+    stored on a Mongo database.
+     
+    Program is tested to download about 80.000 resume profiles in 10 hours
+    as of march 2016.
+    @param args not used
     */
     public static void main(String args [])
     {
@@ -862,9 +881,9 @@ public class Tool01_ExtractionDownloader {
         System.out.println(
             "2. Number of URLs on cache: " + resumeListToDownload.size());
 
-        checkExistingResumesOnDatabase(
-            databaseConnection.getProfessionalResume(),
-            resumeListAlreadyDownloaded);
+        //checkExistingResumesOnDatabase(
+        //    databaseConnection.getProfessionalResume(),
+        //    resumeListAlreadyDownloaded);
 
         boolean ready = doLoginIntoComputrabajoSystem(
             "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);
@@ -876,11 +895,11 @@ public class Tool01_ExtractionDownloader {
 
         System.out.println("5. Accesing resume lists");
         indexPageProcessor = new ComputrabajoTaggedHtml();
-        //downloadIndexPages(resumeListToDownload, cookies);
+        downloadIndexPages(resumeListToDownload, cookies);
         removeExistingResumes(
             resumeListToDownload, resumeListAlreadyDownloaded);
         exportListToCache(resumeListToDownload, totalCacheFilename);
-        downloadResumes(resumeListToDownload, cookies);
+        //downloadResumes(resumeListToDownload, cookies);
     }
 }
 
