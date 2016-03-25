@@ -33,8 +33,9 @@ public class Tool01_ExtractionDownloader {
 
     private static final ComputrabajoMongoDatabaseConnection databaseConnection;
     private static final boolean WITH_DEBUG_MESSAGES = false;
+    private static final boolean WITH_RAM_CACHE = false;
 
-    static 
+    static
     {
         databaseConnection = new ComputrabajoMongoDatabaseConnection(
             "localhost", 
@@ -182,7 +183,7 @@ public class Tool01_ExtractionDownloader {
         int i; // 106700
         // 1000 paginas de 20 se bajan ambas fases en 3h13min..
         int nb = 34; // Bloques de a 4000 listas, 80000 hojas de vida
-        // El viernes a las 3:12pm se baja el bloque 34
+        // El viernes a las 5:25pm se baja el bloque 34
         int start;
         int end;
         start = (n/20) - (nb+1)*4000;
@@ -790,7 +791,7 @@ public class Tool01_ExtractionDownloader {
     @param properties
     @param resumeListAlreadyDownloaded 
     */
-    private static void checkExistingResumesOnDatabase(
+    private static void BuildRAMCacheFromDatabase(
         DBCollection properties, 
         TreeSet<String> resumeListAlreadyDownloaded)
     {
@@ -837,7 +838,7 @@ public class Tool01_ExtractionDownloader {
     @param resumeListToDownload
     @param resumeListAlreadyDownloaded 
     */
-    private static void removeExistingResumesInFileCache(
+    private static void removeExistingResumesInRAMCache(
         TreeSet<String> resumeListToDownload, 
         TreeSet<String> resumeListAlreadyDownloaded) 
     {
@@ -932,10 +933,11 @@ public class Tool01_ExtractionDownloader {
         System.out.println(
             "0. Number of URLs on cache: " + resumeListToDownload.size());
 
-        // This enables RAM cache cleaning
-        //checkExistingResumesOnDatabase(
-        //    databaseConnection.getProfessionalResume(),
-        //    resumeListAlreadyDownloaded);
+        if ( WITH_RAM_CACHE ) {
+            BuildRAMCacheFromDatabase(
+                databaseConnection.getProfessionalResume(),
+            resumeListAlreadyDownloaded);
+        }
 
         boolean ready = doLoginIntoComputrabajoSystem(
             "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);
@@ -949,12 +951,14 @@ public class Tool01_ExtractionDownloader {
         indexPageProcessor = new ComputrabajoTaggedHtml();
         downloadIndexPages(resumeListToDownload, cookies);
         
-        // RAM cache cleaning:
-        //removeExistingResumesInFileCache(
-        //    resumeListToDownload, resumeListAlreadyDownloaded);
-        
-        removeExistingResumesInDatabase(
-            resumeListToDownload, databaseConnection.getProfessionalResume());
+        if ( WITH_RAM_CACHE ) {
+            removeExistingResumesInRAMCache(
+                resumeListToDownload, resumeListAlreadyDownloaded);
+        }
+        else {
+            removeExistingResumesInDatabase(
+                resumeListToDownload, databaseConnection.getProfessionalResume());
+        }
         exportListToCache(resumeListToDownload, totalCacheFilename);
         downloadResumes(resumeListToDownload, cookies);
     }
