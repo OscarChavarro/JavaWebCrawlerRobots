@@ -804,9 +804,9 @@ public class Tool01_ExtractionDownloader {
         }
         System.out.println("Number of URLs on cache: " + resumeListToDownload.size());
 
-        //checkExistingResumesOnDatabase(
-        //    databaseConnection.getProfessionalResume(),
-        //    resumeListAlreadyDownloaded);
+        checkExistingResumesOnDatabase(
+            databaseConnection.getProfessionalResume(),
+            resumeListAlreadyDownloaded);
 
         boolean ready = doLoginIntoComputrabajoSystem(
             "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);
