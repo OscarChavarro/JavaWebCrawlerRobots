@@ -4,11 +4,11 @@ package webcrawler;
 import java.util.ArrayList;
 import java.net.URLEncoder;
 
-class ComputrabajoFormInputA
+class ComputrabajoFormInput
 {
     public String name;
     public String value;
-    public ComputrabajoFormInputA() {
+    public ComputrabajoFormInput() {
 	name = null;
 	value = null;
     }
@@ -18,11 +18,11 @@ public class ComputrabajoHtmlForm
 {
     public String actionUrl;
     public String method;
-    ArrayList<ComputrabajoFormInputA> inputs;
+    ArrayList<ComputrabajoFormInput> inputs;
 
     public ComputrabajoHtmlForm()
     {
-        inputs = new ArrayList<ComputrabajoFormInputA>();
+        inputs = new ArrayList<ComputrabajoFormInput>();
     }
 
     public String exportAsUrlQueryString()
@@ -30,7 +30,7 @@ public class ComputrabajoHtmlForm
         int i = 0;
         //String cad = new String("[" + method + "] - " + actionUrl + "?");
 	String cad = "";
-        ComputrabajoFormInputA f = null;
+        ComputrabajoFormInput f = null;
 
 	try {
         for ( i = 0; i < inputs.size(); i++ ) {
@@ -76,7 +76,7 @@ public class ComputrabajoHtmlForm
         ComputrabajoTagParameter p;
         String name;
         boolean activeTag = false;
-        ComputrabajoFormInputA input = new ComputrabajoFormInputA();
+        ComputrabajoFormInput input = new ComputrabajoFormInput();
 
         for ( i = 0; i < tag.size(); i++ ) {
             p = tag.get(i);
@@ -100,7 +100,7 @@ public class ComputrabajoHtmlForm
     public void elimEntry(String key)
     {
         int i;
-        ComputrabajoFormInputA f;
+        ComputrabajoFormInput f;
         
         for ( i = 0; i < inputs.size(); i++ ) {
             f = inputs.get(i);
@@ -126,7 +126,7 @@ public class ComputrabajoHtmlForm
     public void setValue(String var, String val)
     {
         int i;
-        ComputrabajoFormInputA f;
+        ComputrabajoFormInput f;
         
         for ( i = 0; i < inputs.size(); i++ ) {
             f = inputs.get(i);
@@ -135,7 +135,7 @@ public class ComputrabajoHtmlForm
 		return;
 	    }
 	}
-	f = new ComputrabajoFormInputA();
+	f = new ComputrabajoFormInput();
 	f.name = var;
 	f.value = val;
         inputs.add(f);

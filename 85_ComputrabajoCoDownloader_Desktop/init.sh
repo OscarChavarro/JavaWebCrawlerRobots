@@ -25,7 +25,7 @@ cd model/
 ln -s ~/JavaWebCrawlerRobots/85_ComputrabajoCoDownloader_Desktop/src/databaseMongo/model/* .
 cd ../../webcrawler/
 ln -s ~/JavaWebCrawlerRobots/85_ComputrabajoCoDownloader_Desktop/src/webcrawler/* .
-cd ..
+cd ../..
 cd lib/
 ln -s ~/JavaWebCrawlerRobots/_commonLibsInJar/* .
 cd ..
