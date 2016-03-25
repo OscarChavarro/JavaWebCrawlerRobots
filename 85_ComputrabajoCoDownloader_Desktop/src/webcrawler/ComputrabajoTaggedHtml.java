@@ -57,6 +57,41 @@ public class ComputrabajoTaggedHtml extends TaggedHtml
         CookieHandler.setDefault(cookieManager);
     }
 
+    /**
+    */
+    public void listTagsFromPage()
+    {
+        if ( segmentList2 == null ) {
+            System.out.println("Warning: empty page B");
+            return;
+        }
+
+        ComputrabajoTagSegment ts;
+        int i;
+        int j;
+        String n;
+        String v;
+
+        boolean doNext = false;
+
+        for ( i = 0; i < segmentList2.size(); i++ ) {
+            ts = segmentList2.get(i);
+
+            if ( !ts.insideTag && doNext ) {
+                doNext = false;
+                System.out.println(ts.getContent());
+            }
+            System.out.println("TAG: " + ts.getTagName());
+
+            for ( j = 0; j < ts.getTagParameters().size(); j++ ) {
+                n = ts.getTagParameters().get(j).name;
+                v = ts.getTagParameters().get(j).value;
+
+                System.out.println("  - " + n + " = " + v);
+            }
+        }
+    }
+
     public static boolean justSpaces(String in)
     {
         if ( in == null || in.length() < 1 ) {
@@ -396,7 +431,7 @@ public class ComputrabajoTaggedHtml extends TaggedHtml
             is = response.getEntity().getContent();
             
             importDataFromHtml(is);
-            System.out.println("3. Activating page");
+            System.out.println("4. Activating page");
             
             //ComputrabajoCoDownloader.listTagsFromPage(this);
             

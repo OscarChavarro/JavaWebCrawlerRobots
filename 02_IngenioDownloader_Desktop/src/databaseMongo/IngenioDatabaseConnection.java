@@ -20,9 +20,13 @@ import databaseMongo.model.Product;
 public class IngenioDatabaseConnection extends DatabaseMongoConnection
 {
 
-	public IngenioDatabaseConnection(String url, int port, String connectionName, String collectionName) 
+	public IngenioDatabaseConnection(
+            String url, 
+            int port,
+            String connectionName, 
+            String collectionName) 
 	{
-		super(url, port, connectionName, collectionName);
+		super(url, port, connectionName);
 	}
 	
 	private static DBCollection products;

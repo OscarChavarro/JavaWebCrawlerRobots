@@ -19,7 +19,7 @@ import com.mongodb.DBObject;
 import vsdk.toolkit.io.PersistenceElement;
 
 // Application specific classes
-import databaseMongo.ComputrabajoDatabaseConnection;
+import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import databaseMongo.model.EmailElement;
@@ -35,13 +35,13 @@ This tool also updates emailStatus to -10 for emails on invalid domains.
 */
 public class Tool04_AnalizerForCleanData {
     private static boolean reportAdvances = false;
-    private static final ComputrabajoDatabaseConnection databaseConnection;
+    private static final ComputrabajoMongoDatabaseConnection databaseConnection;
     private static FileOutputStream emailMarkFos;
 
     static 
     {
 	emailMarkFos = null;
-        databaseConnection = new ComputrabajoDatabaseConnection(
+        databaseConnection = new ComputrabajoMongoDatabaseConnection(
             "localhost" , 27017, "computrabajoCo", 
             null);
     }

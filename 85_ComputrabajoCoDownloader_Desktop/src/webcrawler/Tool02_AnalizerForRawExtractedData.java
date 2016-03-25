@@ -12,7 +12,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 // Application specific classes
-import databaseMongo.ComputrabajoDatabaseConnection;
+import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.GeographicAdministrativeRegion;
 import databaseMongo.model.NameElement;
 
@@ -20,11 +20,11 @@ import databaseMongo.model.NameElement;
 */
 public class Tool02_AnalizerForRawExtractedData {
     private static boolean reportAdvances = false;
-    private static final ComputrabajoDatabaseConnection databaseConnection;
+    private static final ComputrabajoMongoDatabaseConnection databaseConnection;
 
     static
     {
-        databaseConnection = new ComputrabajoDatabaseConnection("localhost" , 
+        databaseConnection = new ComputrabajoMongoDatabaseConnection("localhost" , 
             27017, "computrabajoCo", "professionalResume");
     }    
 

@@ -138,7 +138,16 @@ public class indexProcessor {
         }
         int ni = url.indexOf("cat_id=") + 7;
         String nu = url.substring(ni);
-        id = Integer.parseInt(nu);
+        try {
+            if ( nu.contains("&") ) {
+                System.out.println("ERROR: Must trim!");
+            }
+            id = Integer.parseInt(nu);
+        }
+        catch ( Exception e ) {
+            System.out.println("ERROR: URL [" + url + "]");
+            return;
+        }
         ca.append("nameSpa", linkName);
         ca.append("id", id);
                 

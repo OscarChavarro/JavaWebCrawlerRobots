@@ -23,8 +23,7 @@ public class DatabaseMongoConnection
     public DatabaseMongoConnection(
         String url,
         int port, 
-        String connectionName, 
-        String collectionName)
+        String connectionName)
     {
         try 
 	{

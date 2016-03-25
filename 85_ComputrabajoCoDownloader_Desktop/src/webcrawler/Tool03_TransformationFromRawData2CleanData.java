@@ -14,7 +14,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-import databaseMongo.ComputrabajoDatabaseConnection;
+import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.Resume;
 import vsdk.toolkit.common.VSDK;
 
@@ -24,12 +24,12 @@ import vsdk.toolkit.common.VSDK;
  */
 public class Tool03_TransformationFromRawData2CleanData {
 
-    private static final ComputrabajoDatabaseConnection databaseConnection;
+    private static final ComputrabajoMongoDatabaseConnection databaseConnection;
     private static final DBCollection professionalResume;
     private static final DBCollection professionalResumeTrans;
 
     static {
-        databaseConnection = new ComputrabajoDatabaseConnection(
+        databaseConnection = new ComputrabajoMongoDatabaseConnection(
                 "localhost", 27017, "computrabajoCo", "professionalResume");
         professionalResume = databaseConnection.createMongoCollection("professionalResume");
         professionalResumeTrans = databaseConnection.createMongoCollection(

@@ -25,8 +25,8 @@ import databaseConnection.DatabaseMongoConnection;import vsdk.toolkit.common.VSD
 
 /**
 */
-public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
-
+public class ComputrabajoMongoDatabaseConnection extends  DatabaseMongoConnection
+{
     private static DBCollection professionalResume;
 
     static 
@@ -34,28 +34,27 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
         professionalResume = null;
     }
     
-    public ComputrabajoDatabaseConnection(String url, int port, String connectionName, String collectionName) 
+    public ComputrabajoMongoDatabaseConnection(
+        String url, int port, String connectionName, String collectionName) 
     {
-        super(url, port, connectionName, collectionName);
-        try
-        {
-                professionalResume = mongoConnection.getCollection(collectionName);
+        super(url, port, connectionName);
+        try {
+            professionalResume = mongoConnection.getCollection(collectionName);
         }
-        catch ( MongoException ex)
-        {
-                VSDK.reportMessageWithException(
-                                null,
-                                VSDK.FATAL_ERROR,
-                                "createMongoCollection",
-                                "Error connecting",
-                                ex);
+        catch ( MongoException ex) {
+            VSDK.reportMessageWithException(
+                null,
+                VSDK.FATAL_ERROR,
+                "createMongoCollection",
+                "Error connecting",
+                ex);
         }
 
     }
 
-    public void insertResumeMongo(Resume r)
+    public void insertResume(Resume r)
     {
-        if ( this.getProfessionalResume() == null ) {
+        if ( professionalResume == null ) {
             return;
         }
         
@@ -74,16 +73,15 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
 
         try {
             if ( r.getName() == null || r.getName().equals("null") ) {
-                System.out.println("    . Saltando hoja de vida vacia");
+                System.out.println("    . Skipping empty resume");
             }
             else {
-                //System.out.println("    . Intertando: " + newDocument.getString("sourceUrl"));
-                getProfessionalResume().insert(newDocument);
+                professionalResume.insert(newDocument);
             }
         }
         catch ( MongoException e ) {
-            System.out.println("    . Saltando hoja de vida - ya existe "+
-                "(deberia actualizarse?)");
+            System.out.println("    . Skipping already existing resume "+
+                "(should be updated?)");
             System.out.println("    . " + r.getSourceUrl());
         }
     }
@@ -123,7 +121,7 @@ public class ComputrabajoDatabaseConnection extends  DatabaseMongoConnection{
             VSDK.reportMessageWithException(
                 null, 
                 VSDK.WARNING, 
-                "insertResumeMongo", 
+                "insertResume", 
                 "Hoja de vida ya existente en base de datos", e);
             */
         }

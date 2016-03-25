@@ -2,118 +2,100 @@
 package webcrawler;
 
 // Java basic classes
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.TreeSet;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
-// Toolkit classes
+// MongoDB classes
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import databaseMongo.model.Resume;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.TreeSet;
+
+// VSDK classes
 import vsdk.toolkit.io.PersistenceElement;
 
 // Application specific classes
-import databaseMongo.ComputrabajoDatabaseConnection;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.util.HashMap;
+import databaseMongo.model.Resume;
+import databaseMongo.ComputrabajoMongoDatabaseConnection;
 
 /**
 */
 public class Tool01_ExtractionDownloader {
 
-    private static final ComputrabajoDatabaseConnection databaseConnection;
+    private static final ComputrabajoMongoDatabaseConnection databaseConnection;
+    private static final boolean WITH_DEBUG_MESSAGES = false;
 
     static 
     {
-        databaseConnection = new ComputrabajoDatabaseConnection("localhost", 
-            27018, "computrabajoCo", "professionalResume");
+        databaseConnection = new ComputrabajoMongoDatabaseConnection(
+            "localhost", 
+            27018, 
+            "computrabajoCo", 
+            "professionalResume");
     }
 
-
     /**
-    @param login
-    @param password
-    @param cookies
+    Connects to Computrabajo Colombia system and try to log in with given user
+    credentials. On success, login identification cookies are appended to 
+    'cookies' list and true is returned.
+    @param inLogin username, usually an email address
+    @param inPassword current user password
+    @param outCookies
+    @return true if login process went well, false otherwise.
     */
     private static boolean doLoginIntoComputrabajoSystem(
-        String login,
-        String password,
-        ArrayList<String> cookies)
+        final String inLogin,
+        final String inPassword,
+        ArrayList<String> outCookies)
     {
         System.out.println("1. Downloading initial main/front-end page");
         String initialPage = "http://empresa.computrabajo.com.co/Login.aspx";
 
         ComputrabajoTaggedHtml pageProcessor;
         pageProcessor = new ComputrabajoTaggedHtml();
-        pageProcessor.getInternetPage(initialPage, cookies, false);
+        pageProcessor.getInternetPage(initialPage, outCookies, false);
         
-        //printCookies(cookies);
+        if ( WITH_DEBUG_MESSAGES ) {
+            printCookies(outCookies);
+        }
 
         if ( pageProcessor.segmentList2 == null ) {
-            System.out.println("Warning: empty page A");
+            System.out.println("Warning: empty page, stage A");
             return false;
         }
+        
         HashMap<String, String> initialIdentifiers;
         initialIdentifiers = new HashMap<String, String>();
-        extractIdentifiers(pageProcessor, initialIdentifiers);
+        extractLoginIdentifiers(pageProcessor, initialIdentifiers);
 
-        System.out.println("2. Sending user login credentials");
+        System.out.println("3. Sending user login credentials");
         String loginJsonPage = "http://empresa.computrabajo.com.co/Login.aspx";
         pageProcessor = new ComputrabajoTaggedHtml();
         
         return pageProcessor.postInternetPageForLogin(
-            loginJsonPage, cookies, login, password, initialIdentifiers);
+            loginJsonPage, outCookies, inLogin, inPassword, initialIdentifiers);
     }
 
     /**
-    @param pageProcessor
-    */
-    public static void listTagsFromPage(ComputrabajoTaggedHtml pageProcessor)
-    {
-        if ( pageProcessor.segmentList2 == null ) {
-            System.out.println("Warning: empty page B");
-            return;
-        }
-
-        ComputrabajoTagSegment ts;
-        int i;
-        int j;
-        String n;
-        String v;
-
-        boolean doNext = false;
-
-        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
-            ts = pageProcessor.segmentList2.get(i);
-
-            if ( !ts.insideTag && doNext ) {
-                doNext = false;
-                System.out.println(ts.getContent());
-            }
-            System.out.println("TAG: " + ts.getTagName());
-
-            for ( j = 0; j < ts.getTagParameters().size(); j++ ) {
-                n = ts.getTagParameters().get(j).name;
-                v = ts.getTagParameters().get(j).value;
-
-                System.out.println("  - " + n + " = " + v);
-            }
-        }
-    }
-
-    /**
+    Detects some FORM INPUT tags which contains identifier data used on login
+    process.
     @param pageProcessor
     @param identifiers
     */
-    public static void extractIdentifiers(
+    private static void extractLoginIdentifiers(
         ComputrabajoTaggedHtml pageProcessor,
         HashMap<String, String> identifiers)
     {
         if ( pageProcessor.segmentList2 == null ) {
-            System.out.println("Warning: empty page C");
+            System.out.println("Warning: empty page stage C");
             return;
         }
 
@@ -122,7 +104,6 @@ public class Tool01_ExtractionDownloader {
         int j;
         String n;
         String v;
-
         boolean doNext = false;
 
         for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
@@ -157,73 +138,91 @@ public class Tool01_ExtractionDownloader {
                 if ( elementName != null && elementValue != null ) {
                     identifiers.put(elementName, elementValue);
                 }
-            }
-            
+            }            
         }
     }
 
     /**
+    Print debug information from current cookies list.
     @param cookies 
     */
-    private static void printCookies(ArrayList<String> cookies) {
+    private static void printCookies(ArrayList<String> cookies) 
+    {
         int i;
 
-        System.out.println("  - Iniciando con " + cookies.size() + " cookies:");
+        System.out.println("  - Current cookies set with " + cookies.size() + 
+            " elements:");
         for ( i = 0; i < cookies.size(); i++ ) {
             System.out.println("    . " + cookies.get(i));
         }
     }
 
-    private static void analizeIndexPages(
-        TreeSet<String> listOfResumeLinks,
-        ComputrabajoTaggedHtml parentPageProcessor, ArrayList<String> cookies) 
+    /**
+    Downloads index pages. The main objective for this method is to get a list
+    of resume URL links, which are returned on listOfResumeLinks parameter.
+    @param outListOfResumeLinks
+    @param inOutCookies 
+    */
+    private static void downloadIndexPages(
+        TreeSet<String> outListOfResumeLinks,
+        ArrayList<String> inOutCookies) 
     {
-        System.out.println("4. Accesing resume lists");
         ComputrabajoTaggedHtml pageProcessor;
         pageProcessor = new ComputrabajoTaggedHtml();
-        pageProcessor.getInternetPage("http://empresa.computrabajo.com.co/Company/Cvs", cookies, false);
+        pageProcessor.getInternetPage(
+            "http://empresa.computrabajo.com.co/Company/Cvs", 
+            inOutCookies, false);
                 
         int n;
         n = getNumberOfResumes(pageProcessor);
-        System.out.println("  - 4.1. Preparing for downloading " + n + " resumes from "  + (n/20) + " listing pages:" );
+        System.out.println("  - 5.1. Preparing for downloading " + n + 
+            " resumes from "  + (n/20) + " listing pages:" );
         
         int i; // 106700
         // 1000 paginas de 20 se bajan ambas fases en 3h13min..
-        int nb = 32; // Bloques de a 4000 listas, 80000 hojas de vida
-        // El domingo a las 8:00am se baja el bloque 32 LENTO
+        int nb = 33; // Bloques de a 4000 listas, 80000 hojas de vida
+        // El viernes a las 10:12pm se baja el bloque 33
         int start;
         int end;
         start = (n/20) - (nb+1)*4000;
         //start = 1;
         end = (n/20) - (nb)*4000 + 100;
         //end = 1000;
-//        for ( i = start; i <= (n/20) + 1; i++ ) {
-//            // Process current page
-//            Date date = new Date();
-//            DateFormat format = new SimpleDateFormat(
-//                "yyyy-MM-dd'T'HH:mm:ss'Z'", 
-//                Locale.ENGLISH);
-//
-//            System.out.println("    . Downloading listing page " + 
-//                i + " of " + 
-//                (n/20 + 1) + " on time " + format.format(date));
-//            importResumeLinksFromListPage(pageProcessor, listOfResumeLinks);
-//            
-//            if ( i == end ) {
-//                System.out.println("***** SEQUENCE DONE, CONTINUING TO DOWNLOAD! *****");
-//                break;
-//            }
-//
-//            // Advance to next
-//            pageProcessor = new ComputrabajoTaggedHtml();
-//            pageProcessor.getInternetPage(
-//                "http://empresa.computrabajo.com.co/Company/Cvs/?p=" + 
-//                 (i+1), cookies, false);
-//        }
+        for ( i = start; i <= (n/20) + 1; i++ ) {
+            // Process current page
+            Date date = new Date();
+            DateFormat format = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss'Z'", 
+                Locale.ENGLISH);
 
+            System.out.println("    . Downloading listing page " + 
+                i + " of " + 
+                (n/20 + 1) + " on time " + format.format(date));
+            importResumeLinksFromIndexPage(pageProcessor, outListOfResumeLinks);
+            
+            if ( i == end ) {
+                System.out.println(
+                    "***** SEQUENCE DONE, ENDING INDEX PAGES DOWNLOAD! *****");
+                break;
+            }
+
+            // Advance to next
+            pageProcessor = new ComputrabajoTaggedHtml();
+            pageProcessor.getInternetPage(
+                "http://empresa.computrabajo.com.co/Company/Cvs/?p=" + 
+                 (i+1), inOutCookies, false);
+        }
     }
 
-    private static int getNumberOfResumes(ComputrabajoTaggedHtml pageProcessor) {
+    /**
+    Identifies the total number of resumes available for download from an index
+    page which data is stored at inPageProcessor parameter.
+    @param inPageProcessor
+    @return 
+    */
+    private static int getNumberOfResumes(
+        ComputrabajoTaggedHtml inPageProcessor) 
+    {
         ComputrabajoTagSegment ts;
         int i;
         int j;
@@ -232,8 +231,8 @@ public class Tool01_ExtractionDownloader {
         boolean insideSpan = false;
         boolean insideTitleSection = false;
 
-        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
-            ts = pageProcessor.segmentList2.get(i);
+        for ( i = 0; i < inPageProcessor.segmentList2.size(); i++ ) {
+            ts = inPageProcessor.segmentList2.get(i);
 
             if ( !ts.insideTag ) {
                 if ( insideTitleSection && insideSpan ) {
@@ -267,12 +266,19 @@ public class Tool01_ExtractionDownloader {
         return 0;
     }
 
-    private static int convertToInteger(String content) {
+    /**
+    Parses inContent String in search for an integer number, taking care of
+    trimming out unneeded format characters.
+    @param inContent
+    @return 
+    */
+    private static int convertToInteger(String inContent) 
+    {
         int i;
         String m = "";
-        for ( i = 0; i < content.length(); i++ ) {
+        for ( i = 0; i < inContent.length(); i++ ) {
             char c;
-            c = content.charAt(i);
+            c = inContent.charAt(i);
             if ( Character.isDigit(c) ) {
                 m += c;    
             }
@@ -282,10 +288,12 @@ public class Tool01_ExtractionDownloader {
     }
 
     /**
+    @param inPageProcessor
+    @param outResumeLinks 
     */
-    private static void importResumeLinksFromListPage(
-        ComputrabajoTaggedHtml pageProcessor, 
-        TreeSet<String> resumeLinks) 
+    private static void importResumeLinksFromIndexPage(
+        ComputrabajoTaggedHtml inPageProcessor, 
+        TreeSet<String> outResumeLinks) 
     {
         ComputrabajoTagSegment ts;
         int i;
@@ -295,9 +303,9 @@ public class Tool01_ExtractionDownloader {
         boolean insideList = false;
         String lastUrl = "";
 
-        for ( i = 0; i < pageProcessor.segmentList2.size(); i++ ) {
+        for ( i = 0; i < inPageProcessor.segmentList2.size(); i++ ) {
             
-            ts = pageProcessor.segmentList2.get(i);
+            ts = inPageProcessor.segmentList2.get(i);
             if ( ts == null ) continue;
 
             String tn = ts.getTagName();
@@ -318,7 +326,7 @@ public class Tool01_ExtractionDownloader {
                     if ( n.equals("href") ) {
                         if ( !v.equals(lastUrl) ) {
                             lastUrl = v;
-                            addNewResume(resumeLinks, v);
+                            addNewResume(outResumeLinks, v);
                         }
                     }
                 }                
@@ -326,7 +334,12 @@ public class Tool01_ExtractionDownloader {
         }
     }
 
-    private static void addNewResume(TreeSet<String> resumeLinks, String url) {
+    /**
+    @param resumeLinks
+    @param url 
+    */
+    private static void addNewResume(TreeSet<String> resumeLinks, String url) 
+    {
         try {
             if ( resumeLinks.contains(url) ||
                  !url.contains("/Company/Cvs/hojas-de-vida/")) {
@@ -349,12 +362,15 @@ public class Tool01_ExtractionDownloader {
     }
 
     /**
+    @param list
+    @param filename 
     */
     private static void importListFromCache(
         TreeSet<String> list,
         String filename)
     {
-        System.out.println("  - 3.1. Importing loaded profiles cache");
+        System.out.println("  - 1.1. Importing loaded profiles cache from " + 
+            filename);
         try {
             File fd;
             fd = new File(filename);
@@ -386,11 +402,15 @@ public class Tool01_ExtractionDownloader {
     }
     
     /**
+    @param resumeList
+    @param filename 
     */
-    private static void exportList(TreeSet<String> resumeList) {
+    private static void exportListToCache(
+        TreeSet<String> resumeList, String filename) 
+    {
         try {
             File fd;
-            fd = new File("totalResumeListCache.txt");
+            fd = new File(filename);
             FileOutputStream fos;
             fos = new FileOutputStream(fd, true);
             
@@ -403,31 +423,42 @@ public class Tool01_ExtractionDownloader {
         catch ( Exception e ) {
             
         }
-        
     }
 
+    /**
+    @param resumeList
+    @param cookies 
+    */
     private static void downloadResumes(
         TreeSet<String> resumeList, ArrayList<String> cookies) 
     {
         int n = resumeList.size();
         int i = 1;
-        System.out.println("7. Analizing individual resumes: " + n);
+        System.out.println("7. Downloading individual resumes: " + n);
         for ( String url : resumeList ) {
             System.out.println("  - Downloading resume " + i + " of " + n);
             ComputrabajoTaggedHtml pageProcessor;
             pageProcessor = new ComputrabajoTaggedHtml();
             String totalUrl = "http://empresa.computrabajo.com.co" + url;
-            //System.out.println("    . URL: " + totalUrl);
             pageProcessor.getInternetPage(totalUrl, cookies, true);
             Resume r;
-            r = importResumeFromPage(pageProcessor, "http://empresa.computrabajo.com.co" + url, cookies);
+            r = importResumeFromPage(
+                pageProcessor, 
+                "http://empresa.computrabajo.com.co" + url, 
+                cookies);
             if ( r != null ) {
-		databaseConnection.insertResumeMongo(r);
+		databaseConnection.insertResume(r);
 	    }
             i++;
         }
     }
 
+    /**
+    @param pageProcessor
+    @param originUrl
+    @param cookies
+    @return 
+    */
     private static Resume importResumeFromPage(
         ComputrabajoTaggedHtml pageProcessor, 
         String originUrl,
@@ -698,7 +729,8 @@ public class Tool01_ExtractionDownloader {
                         
                         }
                         else {
-                            System.out.println("ERROR: Tipo de icono desconocido: " + v);
+                            System.out.println(
+                                "ERROR: Unknown icon type: " + v);
                             System.exit(666);
                         }
                     }
@@ -736,16 +768,21 @@ public class Tool01_ExtractionDownloader {
 
     /**
     Not implemented yet
+    @param v
     */
     private static String fixStringForUtf(String v) {
         return v;
     }
     
+    /**
+    @param properties
+    @param resumeListAlreadyDownloaded 
+    */
     private static void checkExistingResumesOnDatabase(
         DBCollection properties, 
         TreeSet<String> resumeListAlreadyDownloaded)
     {
-        System.out.println("0. Importing all Objects loaded in database... ");
+        System.out.println("1. Importing all Objects loaded in database... ");
         BasicDBObject query;
         BasicDBObject options;
 
@@ -755,7 +792,7 @@ public class Tool01_ExtractionDownloader {
         options.append("_id", false);                                                                                   
         DBCursor c = properties.find(query, options);
 
-        System.out.println("  - 0.1. Importing database entries...");
+        System.out.println("  - 1.1. Importing database entries...");
         int i;
 
         for ( i = 0; c.hasNext(); i++ )
@@ -765,14 +802,13 @@ public class Tool01_ExtractionDownloader {
                 System.out.println("     . " + i);
             }
             Object o = c.next().get("sourceUrl");                                                                            
-            //Object o = c.next().get(key);
 
             if ( o == null ) {
                 continue;
             }
 
             String url = o.toString();
-            // Trim "http://empresa.computrabajo.com.ve" out                                                                   
+            // Trim "http://empresa.computrabajo.com.co" out                                                                   
             url = url.substring(34);
             if ( url != null && !url.equals("null") )
                         {
@@ -780,7 +816,28 @@ public class Tool01_ExtractionDownloader {
             }
         }
 
-        System.out.println("  - 0.2. Number of resumes already imported in database: " + i);
+        System.out.println(
+            "  - 1.2. Number of resumes already imported in database: " + i);
+    }
+    
+    /**
+    @param resumeListToDownload
+    @param resumeListAlreadyDownloaded 
+    */
+    private static void removeExistingResumes(
+        TreeSet<String> resumeListToDownload, 
+        TreeSet<String> resumeListAlreadyDownloaded) 
+    {
+        System.out.println("6. Removing existing resumes from download list");
+        System.out.println(
+            "  - 6.1. Items before: " + resumeListToDownload.size());
+        for ( String l : resumeListAlreadyDownloaded ) {
+            while ( resumeListToDownload.contains(l) ) {
+                resumeListToDownload.remove(l);
+            }
+        }
+        System.out.println(
+            "  - 6.2. Items after: " + resumeListToDownload.size());
     }
 
     /**
@@ -792,17 +849,18 @@ public class Tool01_ExtractionDownloader {
         ArrayList<String> cookies;
         cookies = new ArrayList<String>();
 
-        String filename = "totalResumeListCache.txt";
-        File fd = new File(filename);
+        String totalCacheFilename = "totalResumeListCache.txt";
+        File fd = new File(totalCacheFilename);
         TreeSet<String> resumeListToDownload;
         resumeListToDownload = new TreeSet<String>();
         TreeSet<String> resumeListAlreadyDownloaded;
         resumeListAlreadyDownloaded = new TreeSet<String>();
 
         if ( fd.exists() ) {
-            importListFromCache(resumeListToDownload, filename);
+            importListFromCache(resumeListToDownload, totalCacheFilename);
         }
-        System.out.println("Number of URLs on cache: " + resumeListToDownload.size());
+        System.out.println(
+            "2. Number of URLs on cache: " + resumeListToDownload.size());
 
         checkExistingResumesOnDatabase(
             databaseConnection.getProfessionalResume(),
@@ -812,32 +870,18 @@ public class Tool01_ExtractionDownloader {
             "hismael@80milprofesionales.com", "d.jfoQ?1*", cookies);
         
         if ( ready == false ) {
-            System.out.println("99. Saliendo por no confirmar login");
+            System.out.println("99. Incorrect login. Quitting.");
             return;
         }
-        
-        indexPageProcessor = new ComputrabajoTaggedHtml();
-        analizeIndexPages(resumeListToDownload, indexPageProcessor, cookies);
 
-        removeExistingResumes(resumeListToDownload, resumeListAlreadyDownloaded);
-        exportList(resumeListToDownload);
+        System.out.println("5. Accesing resume lists");
+        indexPageProcessor = new ComputrabajoTaggedHtml();
+        //downloadIndexPages(resumeListToDownload, cookies);
+        removeExistingResumes(
+            resumeListToDownload, resumeListAlreadyDownloaded);
+        exportListToCache(resumeListToDownload, totalCacheFilename);
         downloadResumes(resumeListToDownload, cookies);
     }
-
-    private static void removeExistingResumes(
-        TreeSet<String> resumeListToDownload, 
-        TreeSet<String> resumeListAlreadyDownloaded) 
-    {
-        System.out.println("6. Removing existing resumes from download list");
-        System.out.println("  - 6.1. Items before: " + resumeListToDownload.size());
-        for ( String l : resumeListAlreadyDownloaded ) {
-            while ( resumeListToDownload.contains(l) ) {
-                resumeListToDownload.remove(l);
-            }
-        }
-        System.out.println("  - 6.2. Items after: " + resumeListToDownload.size());
-    }
-
 }
 
 //===========================================================================
