@@ -18,7 +18,6 @@ cd webcrawler/
 ln -s  ~/JavaWebCrawlerRobots/01_Utilities/src/webcrawler/* .
 cd ..
 ln -s ~/JavaWebCrawlerRobots/10_VitralLib_Desktop/src/vsdk/ .
-ls ~/JavaWebCrawlerRobots/85_ComputrabajoCoDownloader_Desktop/src/
 cd databaseMongo/
 ln -s ~/JavaWebCrawlerRobots/85_ComputrabajoCoDownloader_Desktop/src/databaseMongo/*.java .
 cd model/
