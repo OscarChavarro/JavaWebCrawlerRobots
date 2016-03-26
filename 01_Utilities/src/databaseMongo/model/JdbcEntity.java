@@ -39,7 +39,7 @@ public class JdbcEntity extends Entity {
   private String getStringValue(String t, String n)
   {
       try {
-          Class c = this.getClass();
+          Class<?> c = this.getClass();
 
           char f;
           f = n.charAt(0);
@@ -47,7 +47,7 @@ public class JdbcEntity extends Entity {
           String name = "get" + f + n.substring(1);
 
           Method m = (Method)c.getMethod(name);
-
+          
           Object r;
           r = m.invoke(this);
 
