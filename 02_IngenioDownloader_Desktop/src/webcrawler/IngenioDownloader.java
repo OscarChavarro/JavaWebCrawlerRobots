@@ -12,7 +12,9 @@ import databaseMongo.IngenioDatabaseConnection;
 import java.util.ArrayList;
 
 /**
-Estimated time: 1h20min, 1381 MarPico products
+Estimated times: 
+  - Congested network: 1h20min, 1381 MarPico products, no images download
+  - 1h42min: On AWS hosting server with full images download, 1381 MarPico products
 */
 public class IngenioDownloader {
     private static void resetCollections(

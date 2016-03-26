@@ -1,6 +1,7 @@
 mkdir 82_IngenioDownloader_Desktop
 cd 82_IngenioDownloader_Desktop
-mkdir lib src classes
+mkdir lib src classes output
+mkdir output/images
 cp ~/JavaWebCrawlerRobots/02_IngenioDownloader_Desktop/compile.sh .
 cp ~/JavaWebCrawlerRobots/02_IngenioDownloader_Desktop/run.sh .
 cd src

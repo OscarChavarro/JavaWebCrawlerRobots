@@ -189,8 +189,8 @@ public class Tool01_ExtractionDownloader {
         
         int i; // 106700
         // 1000 paginas de 20 se bajan ambas fases en 3h13min..
-        int nb = 35; // Bloques de a 4000 listas, 80000 hojas de vida
-        // El sabado a las 4:15am se baja el bloque 35
+        int nb = 36; // Bloques de a 4000 listas, 80000 hojas de vida
+        // El sabado a las 2:51pm se baja el bloque 36
         int start;
         int end;
         start = (n/20) - (nb+1)*4000;
