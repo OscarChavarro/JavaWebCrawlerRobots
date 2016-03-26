@@ -177,6 +177,13 @@ public class Tool01_ExtractionDownloader {
                 
         int n;
         n = getNumberOfResumes(pageProcessor);
+        
+        if ( n < 2 ) {
+            System.out.println("ERROR: Check Computrabajo Account is not " + 
+                "being used in another session");
+            System.exit(9);
+        }
+        
         System.out.println("  - 5.1. Preparing for downloading " + n + 
             " resumes from "  + (n/20) + " listing pages:" );
         
