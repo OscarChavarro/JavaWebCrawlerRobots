@@ -1,29 +1,36 @@
+//===========================================================================
 package webcrawler;
 
-import webcrawler.processors.ProfessionHintFilter;
+// Java basic classes
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// Apache HTTP classes
 import org.apache.http.ParseException;
 
+// Mongo classes
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+// VSDK classes
+import vsdk.toolkit.common.VSDK;
+
+// Application specific classes
 import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.Resume;
-import vsdk.toolkit.common.VSDK;
 import webcrawler.processors.LocationProcessor;
+import webcrawler.processors.ProfessionHintFilter;
 
 /**
 This program reads records from "professionalResume" Mongo collection and
 writes a transformed version to "professionalResumeTrans".
 
-Estimated running time: for 3'117.859 registers: 2h12min
+Estimated running time: for 3'117.859 registers: 2h15min
 */
 public class Tool03_TransformationFromRawData2CleanData {
 
@@ -33,10 +40,11 @@ public class Tool03_TransformationFromRawData2CleanData {
 
     static {
         databaseConnection = new ComputrabajoMongoDatabaseConnection(
-                "localhost", 27017, "computrabajoCo", "professionalResume");
-        professionalResume = databaseConnection.createMongoCollection("professionalResume");
+            "localhost", 27017, "computrabajoCo", "professionalResume");
+        professionalResume = 
+            databaseConnection.createMongoCollection("professionalResume");
         professionalResumeTrans = databaseConnection.createMongoCollection(
-                "professionalResumeTransformed");
+            "professionalResumeTransformed");
     }
 
     /**
@@ -236,7 +244,8 @@ public class Tool03_TransformationFromRawData2CleanData {
                 
                 if ( ei.containsField("location") ) {
                     String l;
-                    l = LocationProcessor.processLocation(ei, 0, 0, null, false);
+                    l = LocationProcessor.processLocation(
+                        ei, 0, 0, null, false);
                     searchQuery.append("location", l);
                 }
                 else {
@@ -270,7 +279,9 @@ public class Tool03_TransformationFromRawData2CleanData {
                         date.parse(transformDate(r.getLastLoginDate())));
                 } 
                 catch ( Exception e ) {
-                    System.out.println("Warning: Error importing object with _id:" + r.get_id());
+                    System.out.println(
+                        "Warning: Error importing object with _id:" + 
+                        r.get_id());
                 }
                 searchQuery.append("profilePictureUrl", 
                     r.getProfilePictureUrl());
@@ -308,3 +319,7 @@ public class Tool03_TransformationFromRawData2CleanData {
         }
     }
 }
+
+//===========================================================================
+//= EOF                                                                     =
+//===========================================================================
