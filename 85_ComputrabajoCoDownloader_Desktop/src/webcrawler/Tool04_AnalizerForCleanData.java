@@ -32,6 +32,11 @@ import webcrawler.processors.EmailProcessor;
 
 /**
 This tool also updates emailStatus to -10 for emails on invalid domains.
+
+Estimated time:
+  - Analize tool with some domains checked: 30min
+  - Genre script: 1h04min
+  - Invalid mails script: 6m10seg
 */
 public class Tool04_AnalizerForCleanData {
     private static boolean reportAdvances = false;
@@ -41,9 +46,12 @@ public class Tool04_AnalizerForCleanData {
     static 
     {
 	emailMarkFos = null;
-        databaseConnection = new ComputrabajoMongoDatabaseConnection(
-            "localhost" , 27017, "computrabajoCo", 
-            null);
+        databaseConnection = 
+            new ComputrabajoMongoDatabaseConnection(
+            "localhost", 
+            27017, 
+            "computrabajoCo", 
+            "professionalResume");
     }
 
     private static HashMap<String, EmailElement> loadEmailElementCache()

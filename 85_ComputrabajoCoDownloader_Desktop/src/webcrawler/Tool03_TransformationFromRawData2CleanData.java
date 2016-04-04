@@ -30,7 +30,13 @@ import webcrawler.processors.ProfessionHintFilter;
 This program reads records from "professionalResume" Mongo collection and
 writes a transformed version to "professionalResumeTrans".
 
-Estimated running time: for 3'117.859 registers: 2h15min
+  - Mongodump time: 0h45min
+  - Transfer time: 15h00min
+ 
+Estimated running times: 
+  - for 3'117.859 registers (no indexes?): 2h15min
+  - for 3'824.214 registers with indexes: 
+
 */
 public class Tool03_TransformationFromRawData2CleanData {
 
@@ -258,7 +264,8 @@ public class Tool03_TransformationFromRawData2CleanData {
                 else {
                     searchQuery.append("htmlContent", "null");
                 }
-                //searchQuery.append("location", r.getLocation());
+                searchQuery.append("location", r.getLocation());
+                searchQuery.append("firstName", "");
                 
                 if ( r.getCountry().equals("co") ) {
                     searchQuery.append("country", "co");
@@ -300,7 +307,12 @@ public class Tool03_TransformationFromRawData2CleanData {
                 searchQuery.append("transformationDate", transformationDate);
 
                 if ( professionalResumeTrans.findOne(r.get_id()) == null ) {
-                    professionalResumeTrans.insert(searchQuery);
+                    try {
+                        professionalResumeTrans.insert(searchQuery);
+                    }
+                    catch ( Exception e ) {
+
+		    }
                 }
             } 
             catch ( ParseException e ) {
