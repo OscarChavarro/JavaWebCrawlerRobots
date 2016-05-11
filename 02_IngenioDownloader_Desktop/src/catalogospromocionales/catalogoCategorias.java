@@ -13,6 +13,7 @@ import catalogospromocionales.utils.htmlparser;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sarah on 08/05/16.
@@ -25,18 +26,25 @@ public class catalogoCategorias extends htmlparser {
 //    http://www.catalogospromocionales.com/promocionales/plasticos-con-stylus.html
 //    http://www.catalogospromocionales.com
 
-    public static ArrayList<String> procesar(DBCollection categoriaCollection) {
 
+    public static ArrayList<String> getCookie(){
         ArrayList<String> cookies = new ArrayList<String>();
-        ArrayList<String> ctegoriasurl = new ArrayList<String>();
-
         IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
-//        pageProcessor.getInternetPage("http://www.mppromocionales.com/menuproductos.php", cookies, false);
+        pageProcessor.getInternetPage("http://www.catalogospromocionales.com/Catalogo/Default.aspx?id=265&page=7", cookies, false);
+        return cookies;
+    }
+
+
+    public static ArrayList<String> procesar(DBCollection categoriaCollection,ArrayList<String> cookies) {
+
+        ArrayList<String> ctegoriasurl = new ArrayList<String>();
+        IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
         pageProcessor.getInternetPage(URL + "/seccion/subcategorias.html", cookies, false);
         int count = 0;
         for (int indexSegment = 0; indexSegment < pageProcessor.segmentList.size(); indexSegment++) {
             TagSegment segment = pageProcessor.segmentList.get(indexSegment);
             if (isEndPoint(segment, ENDPOINT_CATEGORIA)) {
+//                print(segment);
                 if (!getContent(indexSegment, pageProcessor.segmentList).isEmpty()) {
                     DBObject searchKey = new BasicDBObject("url", getParameter(segment.getTagParameters(), HREF).trim().replaceAll("\"", ""));
                     DBCursor cursor = categoriaCollection.find(searchKey);
@@ -55,26 +63,21 @@ public class catalogoCategorias extends htmlparser {
         return ctegoriasurl;
     }
 
-    public static String procesarPaginaCatalogo(DBCollection productosCollecton, String categoriaPath) {
+    public static String procesarPaginaCatalogo(DBCollection productosCollecton, String categoriaPath,ArrayList<String> cookies) {
         try {
 
             int indexNombrePath = 2;
             int indexIdProduct = 3;
             int indexIdCategoria = 4;
             String idCategoria = null;
-            ArrayList<String> cookies = new ArrayList<String>();
             IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
-//            System.out.println(URL + categoriaPath);
-//            System.out.println(URL + URLEncoder.encode(categoriaPath, "UTF-8"));
-//            URLEncoder.encode(query, "UTF-8");
-
+            System.out.println(URL + categoriaPath);
             pageProcessor.getInternetPage(URL + categoriaPath, cookies, false);
 
             for (int indexSegment = 0; indexSegment < pageProcessor.segmentList.size(); indexSegment++) {
                 TagSegment segment = pageProcessor.segmentList.get(indexSegment);
-                print(segment);
+//                print(segment);
                 if (isEndPoint(segment, ENDPOINT_PRODUCTOS)) {
-
                     String href = (getParameter(segment.getTagParameters(), HREF).trim().replaceAll("\"", ""));
                     System.out.println(href);
                     String path[] = href.split("/");
@@ -82,11 +85,10 @@ public class catalogoCategorias extends htmlparser {
                     idCategoria = path[indexIdCategoria];
                     String nombrePath = path[indexNombrePath];
                     DBObject searchKey = new BasicDBObject("id", idProducto);
-
                     if (productosCollecton.find(searchKey).hasNext()) {
-                        System.out.println(searchKey + " ya existe");
+//                        System.out.println(searchKey + " ya existe");
                     } else {
-                        System.out.println("Entro");
+//                        System.out.println("Entro");
                         BasicDBObject producto = new BasicDBObject();
                         producto.append("id", idProducto);
                         producto.append("cat_id", idCategoria);
