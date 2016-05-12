@@ -18,7 +18,7 @@ public class htmlparser {
         System.out.println(segment.getContent());
 //             System.out.println(segment.insideTag);
 //        System.out.println(segment.getTagParameters().size());
-//            segment.getTagParameters().forEach(parameter -> processProducts.print(parameter));
+//            segment.getTagParameters().forEach(parameter -> ProcessProducts.print(parameter));
 
 //        }
     }
