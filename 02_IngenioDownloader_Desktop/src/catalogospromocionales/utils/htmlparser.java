@@ -1,5 +1,6 @@
 package catalogospromocionales.utils;
 
+import webcrawler.IngenioTaggedHtml;
 import webcrawler.TagParameter;
 import webcrawler.TagSegment;
 
@@ -11,8 +12,9 @@ import java.util.ArrayList;
 public class htmlparser {
 
     public static final String HREF ="href";
+    public static final String URL_COOKIE = "http://www.catalogospromocionales.com/Catalogo/Default.aspx";
 
-    public static  void print (TagSegment segment){
+    public   void print (TagSegment segment){
 //        if(segment.insideTag){
 //        System.out.println("----------------------------");
         System.out.println(segment.getContent());
@@ -24,11 +26,11 @@ public class htmlparser {
     }
 
 
-    public static void print(TagParameter parameter){
+    public  void print(TagParameter parameter){
         System.out.println(parameter.name + ":" + parameter.value);
     }
 
-    public static String getParameter(ArrayList<TagParameter> params, String paramName){
+    public  String getParameter(ArrayList<TagParameter> params, String paramName){
         for (TagParameter parameter:params) {
 //            System.out.println(parameter.name+":"+parameter.value);
             if(parameter.name.equals(paramName)){
@@ -38,17 +40,27 @@ public class htmlparser {
         return null;
     }
 
-    public static boolean isEndPoint(TagSegment segment, String enpoint){
+    public  boolean isEndPoint(TagSegment segment, String enpoint){
         if(!segment.insideTag) return false;
         if(!segment.getContent().contains(HREF)) return false;
         if(!segment.getContent().contains(enpoint)) return false;
         return true;
     }
 
-    public static String getContent(int index,ArrayList<TagSegment> list){
+    public  String getContent(int index,ArrayList<TagSegment> list){
         if(list.get(index+1).insideTag) return "";
         return list.get(index+1).getContent().trim().replace("&nbsp;", " ");
     }
 
+
+
+
+
+    public ArrayList<String> getCookie() {
+        ArrayList<String> cookies = new ArrayList<String>();
+        IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
+        pageProcessor.getInternetPage(URL_COOKIE, cookies, false);
+        return cookies;
+    }
 
 }

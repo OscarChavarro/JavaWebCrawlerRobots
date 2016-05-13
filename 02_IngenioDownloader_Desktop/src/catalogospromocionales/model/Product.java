@@ -12,6 +12,12 @@ public class Product {
     private String catId;
 
 
+    private String urlImage;
+    private String nombreArticulo;
+    private String referencia;
+
+
+
     public Product() {
     }
 
@@ -62,5 +68,30 @@ public class Product {
                 ", path='" + path + '\'' +
                 ", catId='" + catId + '\'' +
                 '}';
+    }
+
+
+    public String getUrlImage() {
+        return urlImage;
+    }
+
+    public void setUrlImage(String urlImage) {
+        this.urlImage = urlImage;
+    }
+
+    public String getNombreArticulo() {
+        return nombreArticulo;
+    }
+
+    public void setNombreArticulo(String nombreArticulo) {
+        this.nombreArticulo = nombreArticulo;
+    }
+
+    public String getReferencia() {
+        return referencia;
+    }
+
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
     }
 }

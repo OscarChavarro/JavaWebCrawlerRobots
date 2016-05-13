@@ -2,6 +2,7 @@ package catalogospromocionales.core;
 
 import catalogospromocionales.managedb.CategoryDb;
 import catalogospromocionales.managedb.Connection;
+import catalogospromocionales.managedb.ProductDb;
 import catalogospromocionales.model.Category;
 import catalogospromocionales.model.Product;
 
@@ -19,8 +20,9 @@ public class ProcessProducts {
 
                 ArrayList<Product> products = new  ArrayList<Product>();
                 ArrayList<Product> allProducts = new  ArrayList<Product>();
-                ParserData categoriaParser = new ParserData();
+                ParserCategory categoriaParser = new ParserCategory();
                 CategoryDb catalogoManager = new CategoryDb( Connection.getConnection());
+                ProductDb producManager = new ProductDb(Connection.getConnection());
 
                 ArrayList<String> cookies = categoriaParser.getCookie(); // se busca una sola vez el cookie por cestiones de desempeño
                 System.out.println("cookie ready");
@@ -48,7 +50,17 @@ public class ProcessProducts {
                         catalogoManager.updateIdCategoriaByUrl(categoria);
                         System.out.println("Numero de produtos :"+products.size());
                         System.out.println("------------------------------");
-                        allProducts.addAll(products);
+
+
+                        // registra los productos en la base de datos
+                        for(Product newProduct:products){
+
+                                producManager.createProduct(newProduct);
+                                System.out.println("Agregando producto:"+newProduct.getId());
+
+                        }
+
+//                        allProducts.addAll(products);
 
 
                 }

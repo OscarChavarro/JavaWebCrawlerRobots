@@ -12,11 +12,14 @@ import java.util.HashMap;
 /**
  * Created by sarah on 08/05/16.
  */
-public class ParserData extends htmlparser {
+public class ParserCategory extends htmlparser {
 
     public static final String ENDPOINT_CATEGORIA = "promocionales/";
     public static final String ENDPOINT_PRODUCTOS = "/p/";
     public static final String URL = "http://www.catalogospromocionales.com";
+
+    public static final String ENDPOINT_NEXT_PAGE = "/Catalogo/Default.aspx?id={1}&Page={2}";
+
 //    http://www.catalogospromocionales.com/promocionales/plasticos-con-stylus.html
 //    http://www.catalogospromocionales.com
 
@@ -62,7 +65,7 @@ public class ParserData extends htmlparser {
         ArrayList<Product> productos = new ArrayList<>();
         ArrayList<Product> result = null;
 
-        String path= "/Catalogo/Default.aspx?id={1}&Page={2}".replace("{1}",categoryId);
+        String path= ENDPOINT_NEXT_PAGE.replace("{1}",categoryId);
         do{
             result = processPageOfCategory(path.replace("{2}",startIndex+""),cookies);
             System.out.println(path.replace("{2}",startIndex+""));
@@ -100,8 +103,9 @@ public class ParserData extends htmlparser {
                     String nombrePath = path[indexNombrePath];
 
                     if(products.get(idProducto)==null) {
-                        System.out.println("Agregando producto: "+idProducto);
+                        System.out.println("Indexando producto: "+idProducto);
                         products.put(idProducto,new Product(idProducto,nombrePath,href,idCategoria));
+
                     }
 
                 }
@@ -112,18 +116,22 @@ public class ParserData extends htmlparser {
         return (new ArrayList<Product>(products.values()));
     }
 
-    public ArrayList<String> getCookie() {
-        ArrayList<String> cookies = new ArrayList<String>();
-        IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
-        pageProcessor.getInternetPage("http://www.catalogospromocionales.com/Catalogo/Default.aspx", cookies, false);
-        return cookies;
-    }
+
+
+
+
+
 
     public static void  main(String[] args) {
 
-        ParserData categoriaParser = new ParserData();
+        ParserCategory categoriaParser = new ParserCategory();
         ArrayList<String> cookies = categoriaParser.getCookie();
         System.out.println("cookie ready");
+
+
+
+        if(true) return;
+
 
         Category cat = new Category("","/promocionales/antiestres.html","antiestres");
         ArrayList<Product> productosCat = categoriaParser.manageProductOfCategory(cat,cookies);
