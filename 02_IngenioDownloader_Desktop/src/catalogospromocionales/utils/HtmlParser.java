@@ -9,15 +9,28 @@ import java.util.ArrayList;
 /**
  * Created by sarah on 08/05/16.
  */
-public class htmlparser {
+public class HtmlParser {
 
     public static final String HREF ="href";
-    public static final String URL_COOKIE = "http://www.catalogospromocionales.com/Catalogo/Default.aspx";
+    public static String URL_COOKIE = "http://www.catalogospromocionales.com/Catalogo/Default.aspx";
+    public static final String START_TR ="TR";
+    public static final String END_TR ="/TR";
+
+    public static final String START_TD ="TD";
+    public static final String END_TD ="/TD";
+
+    public static final String START_TABLE ="TABLE";
+    public static final String END_TABLE ="/TABLE";
+    public static final String END_TABLE_BODY ="/TBODY";
+
+
 
     public   void print (TagSegment segment){
 //        if(segment.insideTag){
 //        System.out.println("----------------------------");
         System.out.println(segment.getContent());
+        System.out.println(segment.getTagName());
+        System.out.println("-----------------");
 //             System.out.println(segment.insideTag);
 //        System.out.println(segment.getTagParameters().size());
 //            segment.getTagParameters().forEach(parameter -> ProcessProducts.print(parameter));
@@ -52,14 +65,17 @@ public class htmlparser {
         return list.get(index+1).getContent().trim().replace("&nbsp;", " ");
     }
 
-
-
-
-
-    public ArrayList<String> getCookie() {
+    public static ArrayList<String>  getCookie() {
         ArrayList<String> cookies = new ArrayList<String>();
         IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
         pageProcessor.getInternetPage(URL_COOKIE, cookies, false);
+        return cookies;
+    }
+
+    public static ArrayList<String> getCookie(String cookieUrl) {
+        ArrayList<String> cookies = new ArrayList<String>();
+        IngenioTaggedHtml pageProcessor = new IngenioTaggedHtml();
+        pageProcessor.getInternetPage(cookieUrl, cookies, false);
         return cookies;
     }
 

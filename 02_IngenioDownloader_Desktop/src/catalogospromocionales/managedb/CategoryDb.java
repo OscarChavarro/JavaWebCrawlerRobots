@@ -38,6 +38,9 @@ public class CategoryDb {
         BasicDBObject query = new BasicDBObject(URL, category.getUrl());
         DBObject update = new BasicDBObject();
         update.put("$set", new BasicDBObject(ID, category.getId()));
+
+
+
         return populateCategoria(getCategoriasCollection().findAndModify(query, update));
     }
 

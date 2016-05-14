@@ -1,5 +1,7 @@
 package catalogospromocionales.model;
 
+import java.util.ArrayList;
+
 /**
  * Created by gerardo on 11/05/16.
  */
@@ -11,12 +13,14 @@ public class Product {
     private String path;
     private String catId;
 
-
     private String urlImage;
     private String nombreArticulo;
     private String referencia;
+    private String unidaes;
+    private String empaque;
+    private String descripcion;
 
-
+    private ArrayList<Existencia> existenca;
 
     public Product() {
     }
@@ -60,15 +64,15 @@ public class Product {
         this.catId = catId;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id='" + id + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", path='" + path + '\'' +
-                ", catId='" + catId + '\'' +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Product{" +
+//                "id='" + id + '\'' +
+//                ", nombre='" + nombre + '\'' +
+//                ", path='" + path + '\'' +
+//                ", catId='" + catId + '\'' +
+//                '}';
+//    }
 
 
     public String getUrlImage() {
@@ -93,5 +97,56 @@ public class Product {
 
     public void setReferencia(String referencia) {
         this.referencia = referencia;
+    }
+
+
+    public String getUnidaes() {
+        return unidaes;
+    }
+
+    public void setUnidaes(String unidaes) {
+        this.unidaes = unidaes;
+    }
+
+    public String getEmpaque() {
+        return empaque;
+    }
+
+    public void setEmpaque(String empaque) {
+        this.empaque = empaque;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id='" + id + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", path='" + path + '\'' +
+                ", catId='" + catId + '\'' +
+                ", urlImage='" + urlImage + '\'' +
+                ", nombreArticulo='" + nombreArticulo + '\'' +
+                ", referencia='" + referencia + '\'' +
+                ", unidaes='" + unidaes + '\'' +
+                ", empaque='" + empaque + '\'' +
+                ", descripcion='" + descripcion + '\'' +
+
+                '}';
+
+    }
+
+    public ArrayList<Existencia> getExistenca() {
+        return existenca;
+    }
+
+    public void setExistenca(ArrayList<Existencia> existenca) {
+        this.existenca = existenca;
     }
 }

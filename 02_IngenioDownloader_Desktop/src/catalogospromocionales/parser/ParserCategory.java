@@ -1,10 +1,10 @@
-package catalogospromocionales.core;
+package catalogospromocionales.parser;
 
 import catalogospromocionales.model.Category;
 import catalogospromocionales.model.Product;
 import webcrawler.IngenioTaggedHtml;
 import webcrawler.TagSegment;
-import catalogospromocionales.utils.htmlparser;
+import catalogospromocionales.utils.HtmlParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 /**
  * Created by sarah on 08/05/16.
  */
-public class ParserCategory extends htmlparser {
+public class ParserCategory extends HtmlParser {
 
     public static final String ENDPOINT_CATEGORIA = "promocionales/";
     public static final String ENDPOINT_PRODUCTOS = "/p/";
@@ -118,17 +118,11 @@ public class ParserCategory extends htmlparser {
 
 
 
-
-
-
-
     public static void  main(String[] args) {
 
         ParserCategory categoriaParser = new ParserCategory();
         ArrayList<String> cookies = categoriaParser.getCookie();
         System.out.println("cookie ready");
-
-
 
         if(true) return;
 
