@@ -1,7 +1,5 @@
 package databaseConnection;
 
-import java.net.UnknownHostException;
-
 // MongoDB classes
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -17,7 +15,21 @@ public class DatabaseMongoConnection
 
     static 
 	{
-        mongoConnection = null;
+        setMongoConnection(null);
+    }
+
+    /**
+     * @return the mongoConnection
+     */
+    public static DB getMongoConnection() {
+        return mongoConnection;
+    }
+
+    /**
+     * @param aMongoConnection the mongoConnection to set
+     */
+    public static void setMongoConnection(DB aMongoConnection) {
+        mongoConnection = aMongoConnection;
     }
     
     public DatabaseMongoConnection(
@@ -47,7 +59,7 @@ public class DatabaseMongoConnection
 	{
             MongoClient mongoClient;
             mongoClient = new MongoClient(url, port);
-            mongoConnection = mongoClient.getDB(connectionName);
+            setMongoConnection(mongoClient.getDB(connectionName));
         }
         catch ( Exception ex ) {
             VSDK.reportMessageWithException(
@@ -57,14 +69,14 @@ public class DatabaseMongoConnection
                 "Error connecting", 
                 ex);
         }
-        return mongoConnection;
+        return getMongoConnection();
     }
     
     public DBCollection createMongoCollection(String collectionName)
     {
         DBCollection c = null;
     	try {
-    	    c = mongoConnection.getCollection(collectionName);
+    	    c = getMongoConnection().getCollection(collectionName);
     	}
     	catch ( MongoException ex)
     	{
@@ -80,7 +92,7 @@ public class DatabaseMongoConnection
 	
     public String getNameMongoConnection()
     {
-            return mongoConnection.getName();
+            return getMongoConnection().getName();
     }
 	
 }

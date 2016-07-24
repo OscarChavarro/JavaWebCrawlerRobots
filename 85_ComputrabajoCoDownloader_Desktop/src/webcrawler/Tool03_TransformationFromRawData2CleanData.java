@@ -35,7 +35,7 @@ writes a transformed version to "professionalResumeTrans".
  
 Estimated running times: 
   - for 3'117.859 registers (no indexes?): 2h15min
-  - for 3'824.214 registers with indexes: 
+  - for 3'824.214 registers with indexes: 14h?
 
 */
 public class Tool03_TransformationFromRawData2CleanData {
@@ -46,7 +46,7 @@ public class Tool03_TransformationFromRawData2CleanData {
 
     static {
         databaseConnection = new ComputrabajoMongoDatabaseConnection(
-            "localhost", 27017, "computrabajoCo", "professionalResume");
+            "localhost", 27017, "computrabajoVe", "professionalResume");
         professionalResume = 
             databaseConnection.createMongoCollection("professionalResume");
         professionalResumeTrans = databaseConnection.createMongoCollection(
@@ -258,12 +258,12 @@ public class Tool03_TransformationFromRawData2CleanData {
                     searchQuery.append("location", "null");
                 }
                 
-                if ( ei.containsField("htmlContent") ) {
-                    searchQuery.append("htmlContent", ei.get("htmlContent"));
-                }
-                else {
-                    searchQuery.append("htmlContent", "null");
-                }
+                //if ( ei.containsField("htmlContent") ) {
+                //    searchQuery.append("htmlContent", ei.get("htmlContent"));
+                //}
+                //else {
+                //    searchQuery.append("htmlContent", "null");
+                //}
                 searchQuery.append("location", r.getLocation());
                 searchQuery.append("firstName", "");
                 

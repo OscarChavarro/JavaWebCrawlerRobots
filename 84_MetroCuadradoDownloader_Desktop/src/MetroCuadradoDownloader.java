@@ -20,27 +20,24 @@ import databaseMysqlMongo.model.Property;
 
 // Toolkit classes
 import webcrawler.TagSegment;
-import webcrawler.TaggedHtml;
-
-// Application specific classes
-//import databaseMysqlMongo.MetroCuadradoDatabaseConnection;
-//import databaseMysqlMongo.model.Property;
+import webcrawler.DomolyTaggedHtml;
 
 /**
 */
 public class MetroCuadradoDownloader {
-//    private static final MetroCuadradoDatabaseConnection databaseConnection;
-	private static final MetroCuadradoDatabaseConnection databaseConnection;
+    private static final MetroCuadradoDatabaseConnection databaseConnection;
 
     static 
     {
-        databaseConnection = new MetroCuadradoDatabaseConnection("localhost" , 27017, "domolyRobot", "landPropertyInSale_test");
+        databaseConnection = new MetroCuadradoDatabaseConnection(
+            "localhost" , 27017, "domolyRobot", "landProperty");
     }
 
     /**
     @param page
     */
-    private static void analyzeIndexPage(String page, String cityName, String cacheFilename)
+    private static void analyzeIndexPage(
+        String page, String cityName, String cacheFilename)
     {
         HashMap<String, String> sites;
         sites = new HashMap<String, String>();
@@ -58,7 +55,7 @@ public class MetroCuadradoDownloader {
             System.out.println("INMUEBLES: " + sites.size());
             for ( Object e : s ) {
                 System.out.println("  - " + e.toString());
-                String line = TaggedHtml.trimQuotes(e.toString());
+                String line = DomolyTaggedHtml.trimQuotes(e.toString());
                 PersistenceElement.writeAsciiLine(fos, line);
             }
             fos.close();
@@ -79,9 +76,9 @@ public class MetroCuadradoDownloader {
         HashMap<String, String> sites,
         String cityName)
     {
-        TaggedHtml pageProcessor;
+        DomolyTaggedHtml pageProcessor;
 
-        pageProcessor = new TaggedHtml();
+        pageProcessor = new DomolyTaggedHtml();
 
         System.out.println("Bajando pagina inicial: " + page);
         List<String> cookies;
@@ -97,6 +94,7 @@ public class MetroCuadradoDownloader {
         msg = JsonHeaderGenerator.doHeader(cityName, "", "");
         JsonHeaderGenerator.writeStringToFile(msg, "initHeader.json");
         
+        /*
         System.out.println("Configurando para bajar en grupos de a 52 elementos");
         end = pageProcessor.postInternetPage(
             "http://www.metrocuadrado.com/web/busqueda/numeroResultados-52",
@@ -105,7 +103,9 @@ public class MetroCuadradoDownloader {
             "initHeader.json",
             cookies,
             page);
+        */
         importIncrementalList(pageProcessor, sites);
+        end = false;
 
         while ( !end ) {
             int n = (pageNumber.get()+1);
@@ -136,7 +136,8 @@ public class MetroCuadradoDownloader {
     @param pageProcessor
     @param sites
     */
-    private static void importLinkListFromIndexPage(TaggedHtml pageProcessor,
+    private static void importLinkListFromIndexPage(
+        DomolyTaggedHtml pageProcessor,
         HashMap<String, String> sites)
     {
         if ( pageProcessor.segmentList == null ) {
@@ -185,7 +186,9 @@ public class MetroCuadradoDownloader {
                         isItemProp = true;
                     }
                 }
-                if ( isItemProp && !sites.containsKey(url) && insideMainDivTag ) {
+                if ( isItemProp && 
+                     !sites.containsKey(url) && 
+                     insideMainDivTag ) {
                     sites.put(url, url);
                 }
             }
@@ -197,7 +200,7 @@ public class MetroCuadradoDownloader {
     @param sites
     */
     private static void importIncrementalList(
-        TaggedHtml pageProcessor,
+        DomolyTaggedHtml pageProcessor,
         HashMap<String, String> sites)
     {
         if ( pageProcessor.segmentList == null ) {
@@ -246,7 +249,7 @@ public class MetroCuadradoDownloader {
     @param pageProcessor
     */
     private static Property buildEntryFromPage(
-        TaggedHtml pageProcessor, int businessType, String businessCity)
+        DomolyTaggedHtml pageProcessor, int businessType, String businessCity)
     {
         Property p;
 
@@ -338,7 +341,8 @@ public class MetroCuadradoDownloader {
                     p.setNumberOfRooms(intNumber(ts.content));
                     doRooms = false;
                 }
-                else if  ( ts.content.contains("Ba") && ts.content.contains("os:") ) {
+                else if ( ts.content.contains("Ba") && 
+                          ts.content.contains("os:") ) {
                     doWc = true;
                 }
                 else if ( doWc ) {
@@ -352,7 +356,8 @@ public class MetroCuadradoDownloader {
                     p.setNumberOfParkingLots(intNumber(ts.content));
                     doParkings = false;
                 }
-                else if  ( ts.content.contains("Nombre") && ts.content.contains("Barrio") ) {
+                else if ( ts.content.contains("Nombre") && 
+                          ts.content.contains("Barrio") ) {
                     doCommonBlock = true;
                 }
                 else if ( doCommonBlock ) {
@@ -383,25 +388,19 @@ public class MetroCuadradoDownloader {
                 else if  ( ts.content.contains("Ver otras cara") ) {
                     if ( lastLink != null ) {
                         String url = "http://www.metrocuadrado.com/" +
-                            TaggedHtml.trimQuotes(lastLink);
-                        TaggedHtml childProcessor = new TaggedHtml();
-
+                            DomolyTaggedHtml.trimQuotes(lastLink);
+                        DomolyTaggedHtml childProcessor;
+                        childProcessor = new DomolyTaggedHtml();
                         childProcessor.getInternetPage(url);
-                        /*
-                        Property c = buildEntryFromPage(childProcessor);
-
-                        p.setPhoneFixed(c.getPhoneFixed());
-                        p.setPhoneMobile(c.getPhoneMobile());
-                        p.setAddress(c.getAddress());
-                        */
                         lastLink = null;
                     }
                 }
 
                 if ( doPriceAdmin ) {
                     String dataSegment = ts.content.replace("\">", "");
-                    dataSegment = TaggedHtml.trimSpaces(dataSegment);
-                    if ( dataSegment.contains("$") && lastPriceType.contains("Valor Administrac") ) {
+                    dataSegment = DomolyTaggedHtml.trimSpaces(dataSegment);
+                    if ( dataSegment.contains("$") && 
+                         lastPriceType.contains("Valor Administrac") ) {
                         lastPriceType = "Done";
                         p.setBusinessPriceAdmin(doubleNumber(dataSegment));
                     }
@@ -410,7 +409,7 @@ public class MetroCuadradoDownloader {
                 
                 if ( doExtra ) {
                     String dataSegment = ts.content.replace("\">", "");
-                    dataSegment = TaggedHtml.trimSpaces(dataSegment);
+                    dataSegment = DomolyTaggedHtml.trimSpaces(dataSegment);
 
                     if ( dataSegment.contains("Tel:") ) {
                         doPhone = true;
@@ -436,7 +435,7 @@ public class MetroCuadradoDownloader {
                 }
             }
             
-            if ( ts != null && ts.getTagName() != null && ts.getTagName().equals("STRONG") ) {
+            if ( ts.getTagName() != null && ts.getTagName().equals("STRONG") ) {
                 doPriceAdmin = true;
             }
             
@@ -455,14 +454,14 @@ public class MetroCuadradoDownloader {
                     doExtra = false;
                     //return p;
                 }
-                if ((n.equals("id")) && (v.contains("latitud")))
-                {
-                	p.setLatitudeDegrees(doubleNumberCoordinate(ts.getTagParameters().get(j+1).value));
+                if ( (n.equals("id")) && (v.contains("latitud")) ) {
+                    p.setLatitudeDegrees(doubleNumberCoordinate(
+                        ts.getTagParameters().get(j+1).value));
                 }
                 
-                if ((n.equals("id")) && (v.contains("longitud")))
-                {
-                	p.setLongitudeDegrees(doubleNumberCoordinate(ts.getTagParameters().get(j+1).value));
+                if ( (n.equals("id")) && (v.contains("longitud")) ) {
+                    p.setLongitudeDegrees(doubleNumberCoordinate(
+                        ts.getTagParameters().get(j+1).value));
                 }
             }
         }
@@ -532,7 +531,7 @@ public class MetroCuadradoDownloader {
     /**
     @param pageProcessor
     */
-    private static void listTagsFromPage(TaggedHtml pageProcessor)
+    private static void listTagsFromPage(DomolyTaggedHtml pageProcessor)
     {
         if ( pageProcessor.segmentList == null ) {
             System.out.println("Warning: empty page");
@@ -579,15 +578,14 @@ public class MetroCuadradoDownloader {
 
             fis = new FileInputStream(fd);
             bis = new BufferedInputStream(fis);
-            int cont = 0;
+            int counter;
 
-            while ( bis.available() > 0 ) {
+            for ( counter = 0; bis.available() > 0; counter++ ) {
                 String line;
                 line = PersistenceElement.readAsciiLine(bis);
                 processUrl(line, businessType, businessCity);
-                cont++;
             }
-            System.out.println("Se procesaron "+cont+" URL");
+            System.out.println("Se procesaron " + counter + " URL");
 
         }
         catch ( Exception e ) {
@@ -607,13 +605,13 @@ public class MetroCuadradoDownloader {
         String businessCity)
     {
         System.out.println("URL: " + url);
-        TaggedHtml pageProcessor;
+        DomolyTaggedHtml pageProcessor;
 
-        if ( databaseConnection.existInMongoDatabase("url",url) ) {
-            return;
-        }
+        //if ( databaseConnection.existInMongoDatabase("url", url) ) {
+        //    return;
+        //}
 
-        pageProcessor = new TaggedHtml();
+        pageProcessor = new DomolyTaggedHtml();
 
         pageProcessor.getInternetPage(url);
 
@@ -623,7 +621,6 @@ public class MetroCuadradoDownloader {
 
         if ( p != null ) {
             p.setUrl(url);
-            //databaseConnection.insertPropertyMysql(p);
             databaseConnection.insertPropertyMongo(p);
         }
 
@@ -684,7 +681,8 @@ public class MetroCuadradoDownloader {
     @param cityName
     @param cacheFilename
     */
-    public static void downloadPageIndexes(String baseUrl, String cityName, String cacheFilename)
+    public static void downloadPageIndexes(
+        String baseUrl, String cityName, String cacheFilename)
     {
         int i;
 
@@ -703,10 +701,10 @@ public class MetroCuadradoDownloader {
         analyzeIndexPage(baseUrl, cityName, cacheFilename);
     }
 
-    private static String[][] calculateRegions()
+    private static String[][] defineRegions()
     {
         String m[][] = {
-            {"Bogotá", "bogota"},
+            {"Bogotá", "bogota"} /*,
             {"Cali", "cali"},
             {"Medellín", "medellín"},
             {"Barranquilla", "barranquilla"},            
@@ -1187,7 +1185,7 @@ public class MetroCuadradoDownloader {
             {"Zarzal", "zarzal"},
             {"Zetaquira", "zetaquira"},
             {"Zipacon", "zipacon"},
-            {"Zipaquira", "zipaquira"}
+            {"Zipaquira", "zipaquira"}*/
         };
         return m;
     }
@@ -1197,20 +1195,23 @@ public class MetroCuadradoDownloader {
     */
     public static void main(String args [])
     {
-        String m[][] = calculateRegions();
+        String m[][] = defineRegions();
         int i;
         for ( i = 0; i < m.length; i++ ) {
-            System.out.println("********* PROCESANDO: " + m[i][0] + " **********");
+            System.out.println(
+                "********* PROCESANDO: " + m[i][0] + " **********");
             String cityName = m[i][1];
             String cacheFilename = "cache_for_" + cityName + ".txt";
             File fd = new File(cacheFilename);
 
             if ( !fd.exists() ) {
-                downloadPageIndexes("http://www.metrocuadrado.com/web/buscarFiltros/" + cityName + "-casa-venta", cityName, cacheFilename);
+                downloadPageIndexes(
+                    "http://www.metrocuadrado.com/web/buscarFiltros/" + 
+                    cityName + "-apartamento-arriendo", cityName, 
+                    cacheFilename);
             }
             processIndexes(fd, 4, m[i][0]);
         }
-        
     }
 }
 

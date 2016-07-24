@@ -62,10 +62,10 @@ public class HtmlForm
             t = tag.get(i);
             name = t.name.toUpperCase();
 	    if ( name.equals("METHOD") ) {
-                method = TaggedHtml.trimQuotes(t.value.toUpperCase());
+                method = DomolyTaggedHtml.trimQuotes(t.value.toUpperCase());
 	    }
 	    if ( name.equals("ACTION") ) {
-                actionUrl = TaggedHtml.trimQuotes(t.value);
+                actionUrl = DomolyTaggedHtml.trimQuotes(t.value);
 	    }
         }
     }
@@ -85,11 +85,11 @@ public class HtmlForm
                 return;
             }
             if ( name.equals("NAME") ) {
-                input.name = TaggedHtml.trimQuotes(p.value);
+                input.name = DomolyTaggedHtml.trimQuotes(p.value);
                 activeTag = true;
             }
             if ( name.equals("VALUE") ) {
-                input.value = TaggedHtml.trimQuotes(p.value);
+                input.value = DomolyTaggedHtml.trimQuotes(p.value);
             }
         }
         if ( activeTag ) {

@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 // MongoDB driver classes
 import com.mongodb.BasicDBObject;
@@ -23,7 +24,6 @@ import databaseMongo.ComputrabajoMongoDatabaseConnection;
 import databaseMongo.model.NameElement;
 import databaseMongo.model.ProfessionHint;
 import databaseMongo.model.EmailElement;
-import java.util.TreeSet;
 import webcrawler.processors.GenderProcessor;
 import webcrawler.processors.ProfessionHintProcessor;
 import webcrawler.processors.NameProcessor;
@@ -34,9 +34,15 @@ import webcrawler.processors.EmailProcessor;
 This tool also updates emailStatus to -10 for emails on invalid domains.
 
 Estimated time:
-  - Analize tool with some domains checked: 30min
-  - Genre script: 1h04min
-  - Invalid mails script: 6m10seg
+  - Analize tool with some domains checked: 30min with htmlContent, 12min 
+    without htmlContent
+  - Genre script: 1h04min, 49min without htmlContent
+  - First names script: 49min
+  - Invalid mails script: 6m10seg (2m20seg without htmlContent)
+  - mongodump from professionalResumeTransformed: 7min (35seg w/o htmlContent)
+  - mongorestore to professionalResumeTransformedClean: 1h20min 
+    (8m12seg w/o htmlContent)
+  - index for email_ unique with drop duplicates: < 2h30min?  3'445.402    
 */
 public class Tool04_AnalizerForCleanData {
     private static boolean reportAdvances = false;
@@ -159,11 +165,54 @@ public class Tool04_AnalizerForCleanData {
 	}
 	System.out.println("Invalid emails: " + invalidCount + " of " + i);
     }
+    
+    private static void markAsTransformed(
+        DBCollection transformedCollection) 
+    {
+        try {
+            File fd = new File("./output/setTransformStatus.mongo");
+            FileOutputStream fos;
+            fos = new FileOutputStream(fd);
+            DBCursor c;
+            BasicDBObject filter = new BasicDBObject();
+            BasicDBObject options = new BasicDBObject();
+            options.append("name", 1);
+            options.append("_id", 1);
+            //c = professionalResume.find(filter, options);
+            c = transformedCollection.find();
+            System.out.println("Exporting transformed mark: " + c.size());
 
-    public static void main(String args[]) {
+            int i;
+            for ( i = 0; c.hasNext(); i++ ) {
+                DBObject o = c.next();
+                if ( !o.containsField("_id") ) {
+                    continue;
+                }
+                String _id = o.get("_id").toString();
+
+                if ( i % 1000 == 0 ) {
+                    System.out.println("  - Marking " + i + " / " + 
+                        c.size() + " : [" + _id + "]");
+                }
+
+                PersistenceElement.writeAsciiLine(fos, 
+                    "db.professionalResume.update({_id: \"" + 
+                    o.get("_id") + "\"}, {$set: {transformStatus: 1}});");
+            }
+            fos.close();
+        }
+        catch ( Exception e ) {
+
+        }
+
+    }
+
+    public static void main(String args[]) 
+    {
         DBCollection professionalResume;
         professionalResume = 
-            databaseConnection.createMongoCollection("professionalResumeTransformed");
+            databaseConnection.createMongoCollection(
+                "professionalResumeTransformed");
         if ( professionalResume == null ) {
             return;
         }
@@ -202,6 +251,9 @@ public class Tool04_AnalizerForCleanData {
             if ( reportAdvances ) {
                 System.out.println(
                     "  - (" + (i+1) + " of " + c.count() + "): " + id); 
+                if ( i > 1000 ) {
+                    break;
+                }
             }
 
             boolean considerThis = true;
@@ -245,14 +297,17 @@ public class Tool04_AnalizerForCleanData {
             //}
             reportAdvances = false;
         }
-
+        
         saveEmailElementCache(emailElements);
-        NameProcessor.reportNameElements(nameElements);        
+        NameProcessor.reportNameElements(nameElements);   
+        NameProcessor.calculateFirstNames(professionalResume, nameElements);
         EmailProcessor.reportEmailElements(emailElements);        
         ProfessionHintProcessor.reportResultingProfessionHints(professions);
         //RelationshipStatusProcessor.reportResultingRelationshipStatuses(relations);
         GenderProcessor.calculateGender(professionalResume, nameElements);
         //RelationshipStatusProcessor.calculateRelationshipStatus(professionalResume);
 	updateEmailStatusForInvalidDomains(professionalResume, emailElements);
+        
+        //markAsTransformed(professionalResume);        
     }
 }

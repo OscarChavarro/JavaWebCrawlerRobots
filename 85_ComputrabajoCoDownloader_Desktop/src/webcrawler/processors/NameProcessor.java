@@ -1,5 +1,6 @@
 package webcrawler.processors;
 
+// Java basic classes
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -8,12 +9,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+// Mongodb driver classes
 import com.mongodb.DBObject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 
+// VSDK classes
 import vsdk.toolkit.common.VSDK;
 import vsdk.toolkit.io.PersistenceElement;
 
+// Application specific classes
 import databaseMongo.model.NameElement;
+import java.io.FileInputStream;
+import java.util.TreeSet;
 
 /**
 */
@@ -21,10 +30,12 @@ public class NameProcessor {
 
     public static int minNumberOfElements;
     public static int maxNumberOfElements;
+    private static TreeSet<String> lastNamesFromKnownList;
     
     static {
         minNumberOfElements = Integer.MAX_VALUE;
         maxNumberOfElements = Integer.MIN_VALUE;
+        lastNamesFromKnownList = null;
     }
     
     public static void reportNameElements(HashMap<String, NameElement> nameElements) {
@@ -58,7 +69,7 @@ public class NameProcessor {
             fosfemale = new FileOutputStream(fdfemale);
             fosneutral = new FileOutputStream(fdneutral);
             
-            for (i = 0; i < sorted.size(); i++) {
+            for ( i = 0; i < sorted.size(); i++ ) {
                 String l;
                 NameElement n = sorted.get(i);
                 double f = n.getPositionAverage();
@@ -115,6 +126,8 @@ public class NameProcessor {
         ni = ni.replace("]", " ");
         ni = ni.replace("{", " ");
         ni = ni.replace("}", " ");
+        ni = ni.replace("Ñ", "N");
+        ni = ni.replace("ñ", "n");
         ni = ni.replace("á", "a");
         ni = ni.replace("é", "e");
         ni = ni.replace("í", "i");
@@ -216,12 +229,13 @@ public class NameProcessor {
                     elements.put(ni, ne);
                 }
                 double nnt;
-                if (nt == 1) {
+                if ( nt == 1 ) {
                     nnt = 0;
-                } else {
+                }
+                else {
                     nnt = ((double) i) / ((double) (nt - 1));
                 }
-                if (nnt < 0 || nnt > 1.0 || nnt == Double.NaN) {
+                if ( nnt < 0 || nnt > 1.0 || nnt == Double.NaN ) {
                     System.out.println("Parando! ERROR ALGORITMO");
                     System.exit(1);
                 }
@@ -260,5 +274,151 @@ public class NameProcessor {
             return NameElement.GENRE_FEMALE;
         }
         return NameElement.GENRE_UNKNOWN;
+    }
+
+    public static void calculateFirstNames(
+        DBCollection professionalResume, 
+        HashMap<String, NameElement> nameElements) 
+    {
+        loadLastnamesList("./etc/lastNames.txt");
+        try {
+            File fd = new File("./output/setFirstNames.mongo");
+            FileOutputStream fos;
+            fos = new FileOutputStream(fd);
+            DBCursor c;
+            BasicDBObject filter = new BasicDBObject();
+            BasicDBObject options = new BasicDBObject();
+            options.append("name", 1);
+            options.append("_id", 1);
+            //c = professionalResume.find(filter, options);
+            c = professionalResume.find();
+            System.out.println("Calculating first names: " + c.size());
+
+            int i;
+            for ( i = 0; c.hasNext(); i++ ) {
+                boolean debug = (i % 1000 == 0);
+                DBObject o = c.next();
+                if ( !o.containsField("name") ) {
+                    continue;
+                }
+                String n = o.get("name").toString();
+
+                if ( debug ) {
+                    System.out.println("  - Processing full name " + i + " / " + 
+                        c.size() + " : [" + n + "]");
+                }
+
+                StringTokenizer parser = new StringTokenizer(n, " ");
+                int j;
+                String firstName = "";
+                for ( j = 1; parser.hasMoreTokens(); j++ ) {
+                    String t;
+                    t = parser.nextToken();
+                    boolean isLastName = false;
+                    String ln;
+                    ln = normalizeName(t);
+
+                    //if ( debug ) {
+                    //    System.out.println("    . Normalized name element: [" + ln + "]");
+                    //}
+
+                    if ( lastNamesFromKnownList != null && ln != null &&
+                         lastNamesFromKnownList.contains(ln) ) {
+                        isLastName = true;
+                    }
+                    
+                    //if ( nameElements.containsKey(t) ) {
+                    //    NameElement ne = nameElements.get(t);
+                    //    if ( ne.getPositionAverage() >= 0.5 ) {
+                    //        isLastName = true;
+                    //    }
+                    //}
+
+                    if ( j == 1 ) {
+                        firstName = t;
+                    }
+                    else if ( isLastName ) {
+                        break;
+                    }
+                    else {
+                        firstName += " " + t;
+                    }
+                }
+
+                if ( debug ) {
+                    System.out.println("    * Firstname: " + firstName);
+                }
+                
+                firstName = trimExtraNameElements(firstName);
+                
+                //BasicDBObject content = new BasicDBObject();
+                //content.append("firstName", firstName);
+                //BasicDBObject newFirstName = new BasicDBObject();
+                //newFirstName.append("$set", content);
+                //professionalResume.update(o, newFirstName);
+                
+                PersistenceElement.writeAsciiLine(fos, 
+                    "db.professionalResumeTransformed.update({_id: \"" + 
+                    o.get("_id") + "\"}, {$set: {firstName: \"" + 
+                    firstName + "\"}});");
+            }
+            fos.close();
+        }
+        catch ( Exception e ) {
+            System.out.println("ERROR: last name proccessing loop!");
+            try { Thread.sleep(5000); } catch (Exception ee ){}
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private static void loadLastnamesList(String filename) {
+        if ( lastNamesFromKnownList != null ) {
+            return;
+        }
+        lastNamesFromKnownList = new TreeSet<String>();
+        try {
+            File fd = new File(filename);
+            FileInputStream fis;
+            fis = new FileInputStream(fd);
+            
+            while ( fis.available() > 0 ) {
+                String lastname = PersistenceElement.readAsciiLine(fis);
+                System.out.println("  - " + lastname);
+                lastNamesFromKnownList.add(lastname);
+            }
+            
+            fis.close();
+        }
+        catch ( Exception e ) {
+            
+        }
+    }
+
+    private static String trimExtraNameElements(String firstName) {
+        StringTokenizer parser = new StringTokenizer(firstName, " ");
+        if ( parser.countTokens() <= 1 ) {
+            return firstName;
+        }
+        String cn = "";
+        int i;
+        int count = parser.countTokens();
+        String arr[] = new String[count];
+        
+        for ( i = 0; i < count; i++ ) {
+            arr[i] = parser.nextToken();
+        }
+        
+        int n = count;
+        if ( arr[count-1].equals("De") ) {
+            n--;
+        }
+        if ( arr[count-1].equals("La") && arr[count-2].equals("De") ) {
+            n -= 2;
+        }
+        for ( i = 0; i < n; i++ ) {
+            cn = cn + " " + arr[i];
+        }
+        return cn;
     }
 }

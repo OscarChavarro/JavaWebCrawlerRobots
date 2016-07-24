@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
 import org.bson.types.ObjectId;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -27,15 +28,12 @@ public class MetroCuadradoDatabaseConnection extends DatabaseMongoConnection{
         properties = null;
     }
 
-	
-	public MetroCuadradoDatabaseConnection(String url, int port, String connectionName, String collectionName) {
-		super(url, port, connectionName, collectionName);
-		properties = super.getProperties();
-	}
-
-	    
+    public MetroCuadradoDatabaseConnection(
+        String url, int port, String connectionName, String collectionName) {
+            super(url, port, connectionName);
+            properties = getMongoConnection().getCollection(collectionName);
+    }
     
-
     public void insertPropertyMongo(Property p)
     {
         if ( properties == null ) {

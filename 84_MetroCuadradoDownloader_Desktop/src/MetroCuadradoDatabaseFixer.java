@@ -36,7 +36,7 @@ public class MetroCuadradoDatabaseFixer {
                 System.out.println("ERROR: Repetido: ");
                 System.out.println("  - Original: " + map.get(url).get_id());
                 System.out.println("  - Ofensivo: " + list.get(i).get_id());
-                databaseConnection.removeMongo(list.get(i).get_id());
+                //databaseConnection.removeMongo(list.get(i).get_id());
             }
         }
     }
@@ -55,7 +55,7 @@ public class MetroCuadradoDatabaseFixer {
         int i;
         System.out.println("Properties found: " + list.size());
         for ( i = 0; i < list.size(); i++ ) {
-            databaseConnection.updateDateMongo(list.get(i).get_id(), format);
+            //databaseConnection.updateDateMongo(list.get(i).get_id(), format);
         }
     }
     

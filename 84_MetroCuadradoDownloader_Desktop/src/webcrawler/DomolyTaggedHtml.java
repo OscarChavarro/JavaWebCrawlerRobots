@@ -47,7 +47,7 @@ original HTML type data:
   - Some tag search/query operations are provided over the structure
   - Original data can be reconstructed from data structure's copy
 */
-public class TaggedHtml
+public class DomolyTaggedHtml
 {
     private static final int OUTSIDE_TAG = 1;
     private static final int INSIDE_TAG = 2;
@@ -56,7 +56,7 @@ public class TaggedHtml
     private TagSegment currentSegment;
     private final CookieManager cookieManager;
 
-    public TaggedHtml()
+    public DomolyTaggedHtml()
     {
         segmentList = null;
         currentSegment = null;
@@ -612,16 +612,16 @@ public class TaggedHtml
     }
 
     /**
-    Extracts a subpage from `this` TaggedHtml, and returns it
-    in the `trimmed` TaggedHtml.  The trimmed page contains
+    Extracts a subpage from `this` DomolyTaggedHtml, and returns it
+    in the `trimmed` DomolyTaggedHtml.  The trimmed page contains
     the `tableIndex` first level table from inside the original
     page.
     @param tableIndex
     @return
     */
-    public TaggedHtml extractTrimmedByTable(int tableIndex)
+    public DomolyTaggedHtml extractTrimmedByTable(int tableIndex)
     {
-        TaggedHtml trimmed = new TaggedHtml();
+        DomolyTaggedHtml trimmed = new DomolyTaggedHtml();
         trimmed.segmentList = new ArrayList<TagSegment>();
 
         int i;
@@ -654,16 +654,16 @@ public class TaggedHtml
         return trimmed;
     }
 
-    public ArrayList<TaggedHtml> extractTableCells()
+    public ArrayList<DomolyTaggedHtml> extractTableCells()
     {
-        ArrayList<TaggedHtml> cells;
-        cells = new ArrayList<TaggedHtml>();
+        ArrayList<DomolyTaggedHtml> cells;
+        cells = new ArrayList<DomolyTaggedHtml>();
 
         int i;
         TagSegment segi;
         String tagName;
         int level = 0;
-        TaggedHtml trimmed = null;
+        DomolyTaggedHtml trimmed = null;
 
         for ( i = 0; i < segmentList.size(); i++ ) {
             segi = segmentList.get(i);
@@ -671,7 +671,7 @@ public class TaggedHtml
             if ( tagName!= null && tagName.equals("TD") ) {
                 level++;
                 if ( level == 1 ) {
-                    trimmed = new TaggedHtml();
+                    trimmed = new DomolyTaggedHtml();
                     trimmed.segmentList = new ArrayList<TagSegment>();
                     cells.add(trimmed);
                 }
